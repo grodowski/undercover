@@ -1,0 +1,8 @@
+0000000000000000000000000000000000000000 90ac11205ad672387842aa389c29809172cd7488 Jan Grodowski <jgrodowski@gmail.com> 1524598679 +0200	commit (initial): add file one
+90ac11205ad672387842aa389c29809172cd7488 2912cf8b3691e7c02e443891ee79ed8926e976a0 Jan Grodowski <jgrodowski@gmail.com> 1524598703 +0200	commit: rename
+2912cf8b3691e7c02e443891ee79ed8926e976a0 46cddbdfdf8767a7b06274d4b5e8b46ebc463e6c Jan Grodowski <jgrodowski@gmail.com> 1524598746 +0200	commit: add file two
+46cddbdfdf8767a7b06274d4b5e8b46ebc463e6c 46cddbdfdf8767a7b06274d4b5e8b46ebc463e6c Jan Grodowski <jgrodowski@gmail.com> 1524598904 +0200	checkout: moving from master to branch
+46cddbdfdf8767a7b06274d4b5e8b46ebc463e6c d65e49c562a55ff19eeb5cb690c3b08920f12070 Jan Grodowski <jgrodowski@gmail.com> 1524598958 +0200	commit: add third file
+d65e49c562a55ff19eeb5cb690c3b08920f12070 d65e49c562a55ff19eeb5cb690c3b08920f12070 Jan Grodowski <jgrodowski@gmail.com> 1524598977 +0200	reset: moving to d65e49c562a55ff19eeb5cb690c3b08920f12070
+d65e49c562a55ff19eeb5cb690c3b08920f12070 46cddbdfdf8767a7b06274d4b5e8b46ebc463e6c Jan Grodowski <jgrodowski@gmail.com> 1524598981 +0200	reset: moving to d65e49c562a55ff19eeb5cb690c3b08920f12070~1
+46cddbdfdf8767a7b06274d4b5e8b46ebc463e6c c6568aee6f90a7fe60482bf502563c643c18f8e8 Jan Grodowski <jgrodowski@gmail.com> 1524598998 +0200	commit: add file three
