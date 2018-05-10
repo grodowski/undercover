@@ -33,7 +33,7 @@ module Undercover
     # rubocop:disable Metrics/MethodLength
     def parse(args)
       OptionParser.new do |opts|
-        opts.banner = 'Usage: example.rb [options]'
+        opts.banner = 'Usage: undercover [options]'
 
         opts.on_tail('-h', '--help', 'Prints this help') do
           puts(opts)
