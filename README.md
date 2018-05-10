@@ -1,5 +1,8 @@
 # Undercover
 
+[![Build Status](https://travis-ci.org/grodowski/undercover.svg?branch=master)](https://travis-ci.org/grodowski/undercover)
+[![codebeat badge](https://codebeat.co/badges/be548247-2421-4448-bdab-896d13eb02e9)](https://codebeat.co/projects/github-com-grodowski-undercover-master)
+
 Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/undercover`. To experiment with that code, run `bin/console` for an interactive prompt.
 
 TODO: Delete this and the text above, and describe your gem
