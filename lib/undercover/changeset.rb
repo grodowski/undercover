@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'rugged'
+require 'time'
 
 module Undercover
   # Base class for different kinds of input
