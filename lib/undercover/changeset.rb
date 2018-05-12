@@ -36,7 +36,7 @@ module Undercover
 
     def last_modified
       mod = files.keys.map do |f|
-        next T_ZERO unless File.exists?(f)
+        next T_ZERO unless File.exist?(f)
         File.mtime(File.join(repo.workdir, f))
       end.max
       mod || T_ZERO
