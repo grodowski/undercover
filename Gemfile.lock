@@ -65,7 +65,7 @@ DEPENDENCIES
   pry
   rake (~> 10.0)
   rspec (~> 3.0)
-  rubocop
+  rubocop (~> 0.55.0)
   simplecov
   simplecov-lcov
   undercover!
