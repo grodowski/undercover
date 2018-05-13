@@ -8,4 +8,4 @@ before_install:
   - gem update --system
 script:
   - bundle exec rake
-  - undercover --compare master
+  - git pull origin master && undercover --compare master
