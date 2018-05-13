@@ -4,5 +4,8 @@ rvm:
   - 2.4.4
   - 2.3.4
 before_install:
-  - gem install bundler
+  - gem install bundler undercover
   - gem update --system
+script:
+  - bundle exec rake
+  - undercover --compare master
