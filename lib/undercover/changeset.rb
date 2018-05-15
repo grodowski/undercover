@@ -36,8 +36,9 @@ module Undercover
 
     def last_modified
       mod = file_paths.map do |f|
-        next T_ZERO unless File.exist?(f)
-        File.mtime(File.join(repo.workdir, f))
+        path = File.join(repo.workdir, f)
+        next T_ZERO unless File.exist?(path)
+        File.mtime(path)
       end.max
       mod || T_ZERO
     end
