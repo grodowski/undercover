@@ -43,7 +43,7 @@ module Undercover
     end
 
     def file_paths
-      files.keys
+      files.keys.sort
     end
 
     def each_changed_line
