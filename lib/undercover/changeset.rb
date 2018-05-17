@@ -35,11 +35,16 @@ module Undercover
     end
 
     def last_modified
-      mod = files.keys.map do |f|
-        next T_ZERO unless File.exist?(f)
-        File.mtime(File.join(repo.workdir, f))
+      mod = file_paths.map do |f|
+        path = File.join(repo.workdir, f)
+        next T_ZERO unless File.exist?(path)
+        File.mtime(path)
       end.max
       mod || T_ZERO
+    end
+
+    def file_paths
+      files.keys.sort
     end
 
     def each_changed_line

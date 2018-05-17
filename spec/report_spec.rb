@@ -12,6 +12,11 @@ describe Undercover::Report do
       git_dir: 'test.git'
     )
 
+    # does not parse files outside of the lcov report
+    allow(Parser::CurrentRuby).to receive(:parse_file).and_call_original
+    expect(Parser::CurrentRuby)
+      .not_to receive(:parse_file).with('spec/fixtures/no_lcov.rb')
+
     report.build
 
     expect(report.results.size).to eq(2)

@@ -19,7 +19,6 @@ module Undercover
     def_delegators :changeset, :validate
 
     attr_reader :changeset,
-                :code_structure,
                 :lcov,
                 :results
 
@@ -27,8 +26,6 @@ module Undercover
     # add dependecy on "options" for all opts (dirs, git_dir, etc)
     def initialize(lcov_report_path, code_dir, git_dir: '.git', compare: nil)
       @lcov = LcovParser.parse(File.open(lcov_report_path))
-      # TODO: optimise by building changeset structure only!
-      @code_structure = Imagen.from_local(code_dir)
       @changeset = Changeset.new(File.join(code_dir, git_dir), compare).update
       @results = Hash.new { |hsh, key| hsh[key] = [] }
     end
@@ -71,13 +68,16 @@ module Undercover
 
     private
 
+    # TODO: some of this could be moved to the imagen gem
+    # TODO: should that start from changeset.file_paths?
+    # this way we could report things that weren't even loaded in any spec,
+    # so is this still good idea? (Rakefile, .gemspec etc)
     def each_result_arg
-      matches_path = lambda do |path|
-        ->(node) { node.file_path.end_with?(path) }
-      end
-
+      match_all = ->(_) { true }
       lcov.source_files.each do |filename, coverage|
-        code_structure.find_all(matches_path[filename]).each do |node|
+        ast = Imagen::Node::Root.new
+        Imagen::Visitor.traverse(Parser::CurrentRuby.parse_file(filename), ast)
+        ast.children[0].find_all(match_all).each do |node|
           yield(filename, coverage, node)
         end
       end
