@@ -8,6 +8,10 @@ Style/RegexpLiteral:
 Style/Documentation:
   Enabled: false
 
+Style/SpaceInsideHashLiteralBraces:
+  Enabled: true
+  EnforcedStyle: no_space
+
 Metrics/BlockLength:
   Enabled: true
   Exclude:

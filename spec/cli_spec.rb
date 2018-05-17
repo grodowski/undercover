@@ -63,7 +63,7 @@ describe Undercover::CLI do
     expect(subject.run([])).to eq(1)
   end
 
-  it 'prints changeset validation errors' do
+  it 'prints changeset validation for stale coverage' do
     mock_report = instance_double(Undercover::Report, validate: :stale_coverage)
     stub_build.and_return(mock_report)
 
@@ -71,6 +71,17 @@ describe Undercover::CLI do
 
     expect do
       expect(subject.run([])).to eq(1)
+    end.to output(expected_output).to_stdout
+  end
+
+  it 'prints changeset validation for no changes' do
+    mock_report = instance_double(Undercover::Report, validate: :no_changes)
+    stub_build.and_return(mock_report)
+
+    expected_output = Undercover::CLI::WARNINGS_TO_S[:no_changes] + "\n"
+
+    expect do
+      expect(subject.run([])).to eq(0)
     end.to output(expected_output).to_stdout
   end
 

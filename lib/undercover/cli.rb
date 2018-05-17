@@ -14,6 +14,8 @@ module Undercover
       no_changes: Rainbow('✅ No reportable changes').green
     }.freeze
 
+    WARNINGS_TO_EXITCODE = {stale_coverage: 1, no_changes: 0}.freeze
+
     # TODO: add executable in ./bin later
     # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     def self.run(args)
@@ -28,7 +30,7 @@ module Undercover
       error = report.validate(opts.lcov)
       if error
         puts(WARNINGS_TO_S[error])
-        return 1
+        return WARNINGS_TO_EXITCODE[error]
       end
 
       warnings = report.build_warnings
