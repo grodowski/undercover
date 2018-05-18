@@ -15,6 +15,7 @@ And like this, given that specs were added:
 The project is in an early phase, so please expect the unexpected and [report any problems or feedback as issues](https://github.com/grodowski/undercover/issues).
 
 [![Build Status](https://travis-ci.org/grodowski/undercover.svg?branch=master)](https://travis-ci.org/grodowski/undercover)
+[![Maintainability](https://api.codeclimate.com/v1/badges/b403feed68a18c072ec5/maintainability)](https://codeclimate.com/github/grodowski/undercover/maintainability)
 [![codebeat badge](https://codebeat.co/badges/be548247-2421-4448-bdab-896d13eb02e9)](https://codebeat.co/projects/github-com-grodowski-undercover-master)
 
 ## Installation
