@@ -41,7 +41,7 @@ module Undercover
         end
 
         opts.on_tail('--version', 'Show version') do
-          puts Version
+          puts VERSION
           exit
         end
 

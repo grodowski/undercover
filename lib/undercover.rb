@@ -12,6 +12,7 @@ require 'undercover/cli'
 require 'undercover/changeset'
 require 'undercover/formatter'
 require 'undercover/options'
+require 'undercover/version'
 
 module Undercover
   class Report

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    undercover (0.1.1)
+    undercover (0.1.2)
       imagen (~> 0.1.1)
       rainbow (~> 3.0.0)
       rugged (~> 0.27.0)
@@ -73,4 +73,4 @@ DEPENDENCIES
   undercover!
 
 BUNDLED WITH
-   1.16.1
+   1.16.2
