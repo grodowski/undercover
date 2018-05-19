@@ -9,7 +9,7 @@ describe Undercover::Result do
   let(:lcov) do
     Undercover::LcovParser.parse('spec/fixtures/fixtures.lcov')
   end
-  let(:coverage) { lcov.source_files['spec/fixtures/class.rb'] }
+  let(:coverage) { lcov.source_files['class.rb'] }
 
   it 'computes class coverage as float' do
     node = ast.find_all(with_name('BaconClass')).first

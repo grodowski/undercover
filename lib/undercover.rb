@@ -21,12 +21,14 @@ module Undercover
 
     attr_reader :changeset,
                 :lcov,
-                :results
+                :results,
+                :code_dir
 
     # TODO: pass merge base as cli argument
     # add dependecy on "options" for all opts (dirs, git_dir, etc)
     def initialize(lcov_report_path, code_dir, git_dir: '.git', compare: nil)
       @lcov = LcovParser.parse(File.open(lcov_report_path))
+      @code_dir = code_dir
       @changeset = Changeset.new(File.join(code_dir, git_dir), compare).update
       @results = Hash.new { |hsh, key| hsh[key] = [] }
     end
@@ -77,9 +79,10 @@ module Undercover
       match_all = ->(_) { true }
       lcov.source_files.each do |filename, coverage|
         ast = Imagen::Node::Root.new
-        Imagen::Visitor.traverse(Parser::CurrentRuby.parse_file(filename), ast)
+        path = File.join(code_dir, filename)
+        Imagen::Visitor.traverse(Parser::CurrentRuby.parse_file(path), ast)
         ast.children[0].find_all(match_all).each do |node|
-          yield(filename, coverage, node)
+          yield(path, coverage, node)
         end
       end
     end

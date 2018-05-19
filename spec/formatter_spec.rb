@@ -20,7 +20,7 @@ describe Undercover::Formatter do
     let(:lcov) do
       Undercover::LcovParser.parse('spec/fixtures/fixtures.lcov')
     end
-    let(:coverage) { lcov.source_files['spec/fixtures/class.rb'] }
+    let(:coverage) { lcov.source_files['class.rb'] }
     let(:node) { ast.find_all(with_name('BaconClass')).first }
     let(:result) { Undercover::Result.new(node, coverage, 'class.rb') }
 
