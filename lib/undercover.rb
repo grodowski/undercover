@@ -24,12 +24,14 @@ module Undercover
                 :results,
                 :code_dir
 
-    # TODO: pass merge base as cli argument
-    # add dependecy on "options" for all opts (dirs, git_dir, etc)
-    def initialize(lcov_report_path, code_dir, git_dir: '.git', compare: nil)
-      @lcov = LcovParser.parse(File.open(lcov_report_path))
-      @code_dir = code_dir
-      @changeset = Changeset.new(File.join(code_dir, git_dir), compare).update
+    # Initializes a new Undercover::Report
+    #
+    # @param options [Undercover::Options]
+    def initialize(opts)
+      @lcov = LcovParser.parse(File.open(opts.lcov))
+      @code_dir = opts.path
+      git_dir = File.join(opts.path, opts.git_dir)
+      @changeset = Changeset.new(git_dir, opts.compare).update
       @results = Hash.new { |hsh, key| hsh[key] = [] }
     end
 

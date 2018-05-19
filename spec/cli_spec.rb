@@ -8,10 +8,12 @@ describe Undercover::CLI do
     expect(Undercover::Report)
       .to receive(:new)
       .with(
-        a_string_ending_with('coverage/lcov/undercover.lcov'),
-        '.',
-        git_dir: '.git',
-        compare: nil
+        undercover_options(
+          lcov: a_string_ending_with('coverage/lcov/undercover.lcov'),
+          path: '.',
+          git_dir: '.git',
+          compare: nil
+        )
       )
       .and_call_original
     subject.run([])
@@ -22,10 +24,12 @@ describe Undercover::CLI do
     expect(Undercover::Report)
       .to receive(:new)
       .with(
-        'spec/fixtures/sample.lcov',
-        'spec/fixtures',
-        git_dir: 'test.git',
-        compare: nil
+        undercover_options(
+          lcov: 'spec/fixtures/sample.lcov',
+          path: 'spec/fixtures',
+          git_dir: 'test.git',
+          compare: nil
+        )
       )
       .and_call_original
     subject.run(%w[-lspec/fixtures/sample.lcov -pspec/fixtures -gtest.git])
@@ -36,10 +40,12 @@ describe Undercover::CLI do
     expect(Undercover::Report)
       .to receive(:new)
       .with(
-        a_string_ending_with('coverage/lcov/undercover.lcov'),
-        '.',
-        git_dir: '.git',
-        compare: 'HEAD~1'
+        undercover_options(
+          lcov: a_string_ending_with('coverage/lcov/undercover.lcov'),
+          path: '.',
+          git_dir: '.git',
+          compare: 'HEAD~1'
+        )
       )
       .and_call_original
     subject.run(%w[-cHEAD~1])
