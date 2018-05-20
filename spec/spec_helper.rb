@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'timecop'
+require 'pry'
 
 require 'simplecov'
 require 'simplecov-lcov'
@@ -18,6 +19,14 @@ RSpec.configure do |config|
 
   config.expect_with :rspec do |c|
     c.syntax = :expect
+  end
+end
+
+RSpec::Matchers.define :undercover_options do |opts_hash|
+  match do |actual|
+    opts_hash.all? do |opt_key, opt_value|
+      expect(actual.send(opt_key)).to match(opt_value)
+    end
   end
 end
 

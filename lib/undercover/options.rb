@@ -25,7 +25,6 @@ module Undercover
       @run_mode = RUN_MODE_DIFF_STRICT
       @enabled_formatters = [OUTPUT_STDOUT]
       # set defaults
-      self.lcov = guess_lcov_path
       self.path = '.'
       self.git_dir = '.git'
     end
@@ -54,6 +53,7 @@ module Undercover
         # --exit-status (do not print report, just exit)
         # --ruby-version (string, like '2.4.4', how to support in parser?)
       end.parse(args)
+      guess_lcov_path unless lcov
       self
     end
     # rubocop:enable Metrics/MethodLength
@@ -87,8 +87,8 @@ module Undercover
     end
 
     def guess_lcov_path
-      pwd = Pathname.pwd
-      File.join(pwd, 'coverage', 'lcov', "#{pwd.split.last}.lcov")
+      cwd = Pathname.new(File.expand_path(path))
+      self.lcov = File.join(cwd, 'coverage', 'lcov', "#{cwd.split.last}.lcov")
     end
   end
 end

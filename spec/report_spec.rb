@@ -6,11 +6,12 @@ require 'pry'
 
 describe Undercover::Report do
   it 'builds a report with coverage metrics' do
-    report = described_class.new(
-      'spec/fixtures/fixtures.lcov',
-      'spec/fixtures',
-      git_dir: 'test.git'
-    )
+    options = Undercover::Options.new.tap do |opt|
+      opt.lcov = 'spec/fixtures/fixtures.lcov'
+      opt.path = 'spec/fixtures'
+      opt.git_dir = 'test.git'
+    end
+    report = described_class.new(options)
 
     # does not parse files outside of the lcov report
     allow(Parser::CurrentRuby).to receive(:parse_file).and_call_original

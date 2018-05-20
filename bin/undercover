@@ -11,5 +11,5 @@ time = Benchmark.realtime do
   result = Undercover::CLI.run(ARGV)
 end
 
-puts "Undercover finished in #{time}ms"
+puts "Undercover finished in #{time.round(4)}s"
 exit result

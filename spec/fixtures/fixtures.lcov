@@ -1,4 +1,4 @@
-SF:./spec/fixtures/class.rb
+SF:./class.rb
 DA:3,1
 DA:4,12
 DA:5,4
@@ -14,7 +14,7 @@ DA:16,2
 DA:17,1
 DA:18,1
 end_of_record
-SF:./spec/fixtures/module.rb
+SF:./module.rb
 DA:3,1
 DA:4,1
 DA:5,1

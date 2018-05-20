@@ -16,16 +16,9 @@ module Undercover
 
     WARNINGS_TO_EXITCODE = {stale_coverage: 1, no_changes: 0}.freeze
 
-    # TODO: add executable in ./bin later
-    # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     def self.run(args)
       opts = Undercover::Options.new.parse(args)
-      report = Undercover::Report.new(
-        opts.lcov,
-        opts.path,
-        git_dir: opts.git_dir,
-        compare: opts.compare
-      ).build
+      report = Undercover::Report.new(opts).build
 
       error = report.validate(opts.lcov)
       if error
@@ -37,6 +30,5 @@ module Undercover
       puts Undercover::Formatter.new(warnings)
       warnings.any? ? 1 : 0
     end
-    # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
   end
 end
