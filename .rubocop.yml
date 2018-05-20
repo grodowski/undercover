@@ -8,7 +8,7 @@ Style/RegexpLiteral:
 Style/Documentation:
   Enabled: false
 
-Style/SpaceInsideHashLiteralBraces:
+Layout/SpaceInsideHashLiteralBraces:
   Enabled: true
   EnforcedStyle: no_space
 

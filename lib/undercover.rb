@@ -37,7 +37,9 @@ module Undercover
 
     def build
       each_result_arg do |filename, coverage, imagen_node|
-        results[filename] << Result.new(imagen_node, coverage, filename)
+        results[filename.gsub(/^\.\//, '')] << Result.new(
+          imagen_node, coverage, filename
+        )
       end
       self
     end
@@ -73,17 +75,15 @@ module Undercover
 
     private
 
-    # TODO: some of this could be moved to the imagen gem
     # TODO: should that start from changeset.file_paths?
     # this way we could report things that weren't even loaded in any spec,
     # so is this still good idea? (Rakefile, .gemspec etc)
     def each_result_arg
       match_all = ->(_) { true }
       lcov.source_files.each do |filename, coverage|
-        ast = Imagen::Node::Root.new
         path = File.join(code_dir, filename)
-        Imagen::Visitor.traverse(Parser::CurrentRuby.parse_file(path), ast)
-        ast.children[0].find_all(match_all).each do |node|
+        root_ast = Imagen::Node::Root.new.build_from_file(path)
+        root_ast.children[0].find_all(match_all).each do |node|
           yield(path, coverage, node)
         end
       end
