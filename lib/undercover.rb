@@ -83,6 +83,7 @@ module Undercover
       lcov.source_files.each do |filename, coverage|
         path = File.join(code_dir, filename)
         root_ast = Imagen::Node::Root.new.build_from_file(path)
+        next if root_ast.children.empty?
         root_ast.children[0].find_all(match_all).each do |node|
           yield(path, coverage, node)
         end
