@@ -4,6 +4,17 @@
 
 **Inspects files in a git diff and warns on methods, classes and blocks which need test coverage.** Use it locally or as part of an automated build to shorten your code coverage feedback loop!
 
+## Why?
+
+I wanted to create a tool to help others and myself ensure that tests are written for all the recent code changes. This should be useful for any ruby project, but especially those large or legacy codebases that lack testing (and we can't or don't want to invest in full test coverage).
+
+The goal was to provide automated warnings, that are:
+- relevant, so scoped to the actual code changes
+- timely, so we don't end up writing tests long after the implementation
+- actionable, so we can fix them before the code is committed or reaches production
+
+## How?
+
 Technically, `undercover` combines data from git, coverage reports and code structure graphs.
 
 A sample output of `undercover` ran before a commit may look like this:
