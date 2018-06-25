@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'imagen', '~> 0.1.2'
-  spec.add_dependency 'rainbow', '~> 3.0.0'
+  spec.add_dependency 'rainbow', '~> 2.1'
   spec.add_dependency 'rugged', '~> 0.27.0'
 
   spec.add_development_dependency 'bundler', '~> 1.16'
