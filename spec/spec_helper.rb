@@ -30,6 +30,10 @@ RSpec::Matchers.define :undercover_options do |opts_hash|
   end
 end
 
+def stub_stdout
+  allow(STDOUT).to receive(:puts)
+end
+
 # Matchers compatible with Imagen::Node::Base#find_all
 # TODO: deduplicate with Imagen gem
 def of_type(type)

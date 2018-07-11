@@ -5,6 +5,7 @@ require 'spec_helper'
 describe Undercover::CLI do
   it 'creates an Undercover::Report with defaults' do
     stub_build
+    stub_stdout
     expect(Undercover::Report)
       .to receive(:new)
       .with(
@@ -21,6 +22,7 @@ describe Undercover::CLI do
 
   it 'creates an Undercover::Report with options' do
     stub_build
+    stub_stdout
     expect(Undercover::Report)
       .to receive(:new)
       .with(
@@ -37,6 +39,7 @@ describe Undercover::CLI do
 
   it 'accepts --compare' do
     stub_build
+    stub_stdout
     expect(Undercover::Report)
       .to receive(:new)
       .with(
@@ -52,6 +55,8 @@ describe Undercover::CLI do
   end
 
   it 'returns 0 exit code on success' do
+    stub_stdout
+
     mock_report = instance_double(Undercover::Report, validate: nil)
     stub_build.and_return(mock_report)
 
@@ -60,6 +65,8 @@ describe Undercover::CLI do
   end
 
   it 'returns 1 exit code on warnings' do
+    stub_stdout
+
     mock_report = instance_double(Undercover::Report, validate: nil)
     stub_build.and_return(mock_report)
 

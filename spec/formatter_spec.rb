@@ -10,7 +10,6 @@ describe Undercover::Formatter do
 
     it 'returns a message' do
       formatted = described_class.new(results).to_s
-      puts formatted
       expect(formatted).to include('No coverage is missing in latest changes')
     end
   end
