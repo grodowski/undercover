@@ -33,5 +33,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rubocop', '~> 0.55.0'
   spec.add_development_dependency 'simplecov'
   spec.add_development_dependency 'simplecov-lcov'
+  spec.add_development_dependency 'simplecov-html'
   spec.add_development_dependency 'timecop'
 end
