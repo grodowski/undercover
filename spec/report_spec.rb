@@ -2,7 +2,6 @@
 
 require 'spec_helper'
 require 'undercover'
-require 'pry'
 
 describe Undercover::Report do
   it 'builds a report with coverage metrics' do

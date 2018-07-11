@@ -2,7 +2,6 @@
 
 require 'spec_helper'
 require 'undercover'
-require 'pry'
 
 describe Undercover::Result do
   let(:ast) { Imagen.from_local('spec/fixtures/class.rb') }

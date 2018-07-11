@@ -2,7 +2,6 @@
 
 require 'spec_helper'
 require 'undercover'
-require 'pry'
 
 describe Undercover::Formatter do
   context 'without warnings' do
