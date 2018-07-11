@@ -4,6 +4,7 @@ lib = File.expand_path('lib', __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'undercover/version'
 
+# rubocop:disable Metrics/BlockLength
 Gem::Specification.new do |spec|
   spec.name          = 'undercover'
   spec.version       = Undercover::VERSION
@@ -32,7 +33,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rspec', '~> 3.0'
   spec.add_development_dependency 'rubocop', '~> 0.55.0'
   spec.add_development_dependency 'simplecov'
-  spec.add_development_dependency 'simplecov-lcov'
   spec.add_development_dependency 'simplecov-html'
+  spec.add_development_dependency 'simplecov-lcov'
   spec.add_development_dependency 'timecop'
 end
+# rubocop:enable Metrics/BlockLength
