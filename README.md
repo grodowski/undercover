@@ -13,6 +13,8 @@ The goal was to provide automated warnings, that are:
 - timely, so we don't end up writing tests long after the implementation
 - actionable, so we can fix them before the code is committed or reaches production
 
+For more background, please [read the blog post](https://medium.com/futuredev/stop-shipping-untested-ruby-code-with-undercover-1edc963be4a6).
+
 ## How?
 
 Technically, `undercover` combines data from git, coverage reports and code structure graphs.
