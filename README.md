@@ -1,6 +1,6 @@
 # undercover 👮‍♂️
 
-**RuboCop for code coverage**
+**Like RuboCop but for code coverage**
 
 **Inspects files in a git diff and warns on methods, classes and blocks which need test coverage.** Use it locally or as part of an automated build to shorten your code coverage feedback loop!
 
@@ -49,7 +49,7 @@ Or install it yourself as:
 
 ## Setting up required LCOV reporting
 
-To make your specs compatible with `undercover` by providing an LCOV report, please add `simplecov` and `simplecov-lcov` to your test setup. Example for rspec:
+To make your specs or tests compatible with `undercover` by providing an LCOV report, please add `simplecov` and `simplecov-lcov` to your test setup.
 
 ```ruby
 # Gemfile
@@ -64,13 +64,17 @@ require 'simplecov-lcov'
 SimpleCov::Formatter::LcovFormatter.config.report_with_single_file = true
 SimpleCov.formatter = SimpleCov::Formatter::LcovFormatter
 SimpleCov.start do
-  add_filter(/^\/spec\//)
+  add_filter(/^\/spec\//) # For RSpec
+  
+  add_filter(/^\/test\//) # For Minitest
 end
 
 require 'undercover'
 
 # ...
 ```
+
+Then run your test suite once through to generate the initial `coverage/lcov/*.lcov` file before you can run the `undercover` command
 
 ## Usage
 
