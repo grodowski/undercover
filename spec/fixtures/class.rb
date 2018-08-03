@@ -2,7 +2,7 @@
 
 class BaconClass
   def self.bar
-    puts 'BaconClass.bar'
+    puts "BaconClass.bar\x87"
   end
 
   def foo
