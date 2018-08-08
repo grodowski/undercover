@@ -9,7 +9,7 @@ module Undercover
     # traversing the whole project at first!
 
     WARNINGS_TO_S = {
-      stale_coverage: Rainbow('♻️  Coverage data is older than your' \
+      stale_coverage: Rainbow('♻️  Coverage data is older than your ' \
         'latest changes. Re-run tests to update').yellow,
       no_changes: Rainbow('✅ No reportable changes').green
     }.freeze
