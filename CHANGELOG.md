@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - This `CHANGELOG.md`
 
+### Fixed
+- typo in stale coverage warning message by @ilyakorol
+
 ## [0.1.7] - 2018-08-03
 ### Changed
 - Readme updates by @westonganger.
