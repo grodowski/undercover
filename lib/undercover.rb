@@ -26,12 +26,12 @@ module Undercover
 
     # Initializes a new Undercover::Report
     #
-    # @param options [Undercover::Options]
-    def initialize(opts)
+    # @param changeset [Undercover::Changeset]
+    # @param opts [Undercover::Options]
+    def initialize(changeset, opts)
       @lcov = LcovParser.parse(File.open(opts.lcov))
       @code_dir = opts.path
-      git_dir = File.join(opts.path, opts.git_dir)
-      @changeset = Changeset.new(git_dir, opts.compare).update
+      @changeset = changeset.update
       @results = {}
     end
 

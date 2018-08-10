@@ -12,7 +12,11 @@ describe Undercover::Report do
     end
   end
 
-  subject(:report) { described_class.new(options) }
+  let(:changeset) do
+    git_dir = File.join(options.path, options.git_dir)
+    Undercover::Changeset.new(git_dir, options.compare)
+  end
+  subject(:report) { described_class.new(changeset, options) }
 
   it 'builds a report with coverage metrics' do
     report.build

@@ -18,7 +18,7 @@ module Undercover
 
     def self.run(args)
       opts = Undercover::Options.new.parse(args)
-      report = Undercover::Report.new(opts).build
+      report = Undercover::Report.new(changeset(opts), opts).build
 
       error = report.validate(opts.lcov)
       if error
@@ -29,6 +29,11 @@ module Undercover
       warnings = report.build_warnings
       puts Undercover::Formatter.new(warnings)
       warnings.any? ? 1 : 0
+    end
+
+    def self.changeset(opts)
+      git_dir = File.join(opts.path, opts.git_dir)
+      Undercover::Changeset.new(git_dir, opts.compare)
     end
   end
 end

@@ -9,6 +9,7 @@ describe Undercover::CLI do
     expect(Undercover::Report)
       .to receive(:new)
       .with(
+        instance_of(Undercover::Changeset),
         undercover_options(
           lcov: a_string_ending_with('coverage/lcov/undercover.lcov'),
           path: '.',
@@ -26,6 +27,7 @@ describe Undercover::CLI do
     expect(Undercover::Report)
       .to receive(:new)
       .with(
+        instance_of(Undercover::Changeset),
         undercover_options(
           lcov: 'spec/fixtures/sample.lcov',
           path: 'spec/fixtures',
@@ -43,6 +45,7 @@ describe Undercover::CLI do
     expect(Undercover::Report)
       .to receive(:new)
       .with(
+        instance_of(Undercover::Changeset),
         undercover_options(
           lcov: a_string_ending_with('coverage/lcov/undercover.lcov'),
           path: '.',
