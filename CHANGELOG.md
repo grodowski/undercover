@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - This `CHANGELOG.md`
 
 ### Fixed
+- Relative and absolute project path support
+
+### Fixed
 - typo in stale coverage warning message by @ilyakorol
 
 ## [0.1.7] - 2018-08-03
