@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.2.0] - 2018-08-19
 ### Added
 - This `CHANGELOG.md`
 - Ruby syntax version customisable with `-r` or `--ruby-syntax`
@@ -48,7 +50,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - First release of `undercover` 🎉
 
-[Unreleased]: https://github.com/grodowski/undercover/compare/v0.1.7...HEAD
+[Unreleased]: https://github.com/grodowski/undercover/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/grodowski/undercover/compare/v0.1.7...v0.2.0
 [0.1.7]: https://github.com/grodowski/undercover/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/grodowski/undercover/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/grodowski/undercover/compare/v0.1.4...v0.1.5
