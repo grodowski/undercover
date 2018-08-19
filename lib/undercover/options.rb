@@ -17,7 +17,7 @@ module Undercover
       # OUTPUT_CIRCLEMATOR = :circlemator # posts warnings as review comments
     ].freeze
 
-    attr_accessor :lcov, :path, :git_dir, :compare
+    attr_accessor :lcov, :path, :git_dir, :compare, :syntax_version
 
     def initialize
       # TODO: use run modes
@@ -29,7 +29,7 @@ module Undercover
       self.git_dir = '.git'
     end
 
-    # rubocop:disable Metrics/MethodLength
+    # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
     def parse(args)
       OptionParser.new do |opts|
         opts.banner = 'Usage: undercover [options]'
@@ -48,15 +48,15 @@ module Undercover
         project_path_option(opts)
         git_dir_option(opts)
         compare_option(opts)
+        ruby_syntax_option(opts)
         # TODO: parse dem other options and assign to self
         # --quiet (skip progress bar)
         # --exit-status (do not print report, just exit)
-        # --ruby-version (string, like '2.4.4', how to support in parser?)
       end.parse(args)
       guess_lcov_path unless lcov
       self
     end
-    # rubocop:enable Metrics/MethodLength
+    # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
 
     private
 
@@ -83,6 +83,14 @@ module Undercover
       desc = 'Generate coverage warnings for all changes after `ref`'
       parser.on('-c', '--compare ref', desc) do |ref|
         self.compare = ref
+      end
+    end
+
+    def ruby_syntax_option(parser)
+      versions = Imagen::AVAILABLE_RUBY_VERSIONS.sort.join(', ')
+      desc = "Ruby syntax version, one of: #{versions}"
+      parser.on('-r', '--ruby-synax ver', desc) do |version|
+        self.syntax_version = version.strip
       end
     end
 
