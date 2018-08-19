@@ -16,8 +16,10 @@ module Undercover
 
     WARNINGS_TO_EXITCODE = {stale_coverage: 1, no_changes: 0}.freeze
 
+    # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
     def self.run(args)
       opts = Undercover::Options.new.parse(args)
+      syntax_version(opts.syntax_version)
       report = Undercover::Report.new(changeset(opts), opts).build
 
       error = report.validate(opts.lcov)
@@ -29,6 +31,12 @@ module Undercover
       warnings = report.build_warnings
       puts Undercover::Formatter.new(warnings)
       warnings.any? ? 1 : 0
+    end
+    # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
+
+    def self.syntax_version(version)
+      return unless version
+      Imagen.parser_version = version
     end
 
     def self.changeset(opts)

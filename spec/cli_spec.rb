@@ -101,6 +101,16 @@ describe Undercover::CLI do
     end.to output(expected_output).to_stdout
   end
 
+  it 'sets ruby syntax version from options' do
+    v_default = Imagen.parser_version
+    stub_build
+
+    subject.run('-r ruby19')
+    expect(Imagen.parser_version).to eq('ruby19')
+
+    Imagen.parser_version = v_default
+  end
+
   # rubocop:disable Metrics/AbcSize
   def stub_build
     lcov = double
