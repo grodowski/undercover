@@ -50,16 +50,21 @@ module Undercover
     # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
     def build_warnings
       flagged_results = Set.new
+
       changeset.each_changed_line do |filepath, line_no|
         dist_from_line_no = lambda do |res|
           return BigDecimal::INFINITY if line_no < res.first_line
+
+          res_lines = res.first_line..res.last_line
+          return BigDecimal::INFINITY unless res_lines.cover?(line_no)
+
           line_no - res.first_line
         end
         dist_from_line_no_sorter = lambda do |res1, res2|
           dist_from_line_no[res1] <=> dist_from_line_no[res2]
         end
-
         next unless results[filepath]
+
         res = results[filepath].min(&dist_from_line_no_sorter)
         flagged_results << res if res&.uncovered?(line_no)
       end
