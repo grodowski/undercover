@@ -92,6 +92,7 @@ module Undercover
         path = File.join(code_dir, relative_filename)
         root_ast = Imagen::Node::Root.new.build_from_file(path)
         next if root_ast.children.empty?
+
         root_ast.children[0].find_all(match_all).each do |node|
           yield(relative_filename, coverage, node)
         end

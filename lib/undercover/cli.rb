@@ -36,6 +36,7 @@ module Undercover
 
     def self.syntax_version(version)
       return unless version
+
       Imagen.parser_version = version
     end
 

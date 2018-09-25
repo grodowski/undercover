@@ -51,10 +51,10 @@ module Undercover
       cov_enum = coverage.each
       cov_source_lines = (node.first_line..node.last_line).map do |line_no|
         cov_line_no = begin
-          cov_enum.peek[0]
-        rescue StopIteration
-          -1
-        end
+                        cov_enum.peek[0]
+                      rescue StopIteration
+                        -1
+                      end
         cov_enum.next[1] if cov_line_no == line_no
       end
       cov_source_lines.zip(node.source_lines_with_numbers)
