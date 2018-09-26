@@ -46,4 +46,27 @@ describe Undercover::Report do
 
     expect(report.results.keys.sort).to eq(%w[class.rb module.rb])
   end
+
+  context 'with mock changeset' do
+    let(:changeset) do
+      mock_changeset = instance_double(Undercover::Changeset)
+      allow(mock_changeset).to receive(:update) { mock_changeset }
+      allow(mock_changeset)
+        .to receive(:each_changed_line)
+        .and_yield('test_two_patches.rb', 6)
+        .and_yield('test_two_patches.rb', 21)
+      mock_changeset
+    end
+
+    it 'builds 2 warnings from two patches' do
+      options.lcov = 'spec/fixtures/test_two_patches.lcov'
+      report.build
+      warnings = report.build_warnings.to_a
+      expect(warnings.size).to eq(2)
+      expect(warnings[0].file_path).to eq('test_two_patches.rb')
+      expect(warnings[0].first_line).to eq(3)
+      expect(warnings[1].file_path).to eq('test_two_patches.rb')
+      expect(warnings[1].first_line).to eq(15)
+    end
+  end
 end

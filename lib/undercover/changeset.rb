@@ -38,6 +38,7 @@ module Undercover
       mod = file_paths.map do |f|
         path = File.join(repo.workdir, f)
         next T_ZERO unless File.exist?(path)
+
         File.mtime(path)
       end.max
       mod || T_ZERO
@@ -71,6 +72,7 @@ module Undercover
 
     def compare_base_obj
       return nil unless compare_base
+
       repo.lookup(repo.merge_base(compare_base.to_s, head))
     end
 

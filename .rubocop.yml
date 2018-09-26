@@ -1,5 +1,7 @@
 AllCops:
   TargetRubyVersion: 2.4.4
+  Exclude:
+    - spec/fixtures/**/*
 
 Style/RegexpLiteral:
   EnforcedStyle: slashes

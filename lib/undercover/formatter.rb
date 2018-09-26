@@ -8,6 +8,7 @@ module Undercover
 
     def to_s
       return success unless @results.any?
+
       ([warnings_header] + formatted_warnings).join("\n")
     end
 
