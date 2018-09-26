@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.2.1] - 2018-09-26
+### Fixed
+- Bug in mapping changed lines to coverage results
+
 ## [0.2.0] - 2018-08-19
 ### Added
 - This `CHANGELOG.md`
@@ -50,7 +54,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - First release of `undercover` 🎉
 
-[Unreleased]: https://github.com/grodowski/undercover/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/grodowski/undercover/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/grodowski/undercover/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/grodowski/undercover/compare/v0.1.7...v0.2.0
 [0.1.7]: https://github.com/grodowski/undercover/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/grodowski/undercover/compare/v0.1.5...v0.1.6
