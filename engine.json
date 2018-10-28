@@ -1,0 +1,12 @@
+// codeclimate engine metadata
+{
+  "name": "undercover",
+  "description": "Actionable code coverage checks for Ruby",
+  "maintainer": {
+    "name": "Jan Grodowski",
+    "email": "jgrodowski@gmail.com"
+  },
+  "languages" : ["Ruby"],
+  "version": "0.1.0",
+  "spec_version": "0.0.1"
+}
