@@ -1,0 +1,12 @@
+language: ruby
+rvm:
+  - 2.5.1
+  - 2.4.4
+  - 2.3.4
+before_install:
+  - gem install bundler undercover
+  - gem update --system
+script:
+  - bundle exec rake
+  - git pull origin master:master
+  - undercover --compare master

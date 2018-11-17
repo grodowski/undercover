@@ -21,11 +21,11 @@ Technically, `undercover` combines data from git, coverage reports and code stru
 
 A sample output of `undercover` ran before a commit may look like this:
 
-![screenshot warning](screenshot_warnings.png)
+![screenshot warning](docs/screenshot_warnings.png)
 
 And like this, given that specs were added:
 
-![screenshot success](screenshot_success.png)
+![screenshot success](docs/screenshot_success.png)
 
 The project is in an early phase, so please expect the unexpected and [report any problems or feedback as issues](https://github.com/grodowski/undercover/issues).
 
@@ -67,7 +67,7 @@ SimpleCov::Formatter::LcovFormatter.config.report_with_single_file = true
 SimpleCov.formatter = SimpleCov::Formatter::LcovFormatter
 SimpleCov.start do
   add_filter(/^\/spec\//) # For RSpec
-  
+
   add_filter(/^\/test\//) # For Minitest
 end
 
