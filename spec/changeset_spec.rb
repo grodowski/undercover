@@ -37,7 +37,7 @@ describe Undercover::Changeset do
     Timecop.freeze do
       file_paths = changeset.file_paths.map { |p| "spec/fixtures/#{p}" }
       FileUtils.touch(file_paths, mtime: Time.now)
-      expect(changeset.last_modified).to eq(Time.now)
+      expect(changeset.last_modified.to_i).to eq(Time.now.to_i)
     end
   end
 

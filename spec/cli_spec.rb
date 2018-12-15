@@ -4,14 +4,15 @@ require 'spec_helper'
 
 describe Undercover::CLI do
   it 'creates an Undercover::Report with defaults' do
-    stub_build
     stub_stdout
+    stub_build
+
     expect(Undercover::Report)
       .to receive(:new)
       .with(
         instance_of(Undercover::Changeset),
         undercover_options(
-          lcov: a_string_ending_with('coverage/lcov/undercover.lcov'),
+          lcov: a_string_matching(/coverage\/lcov\/\w+\.lcov/),
           path: '.',
           git_dir: '.git',
           compare: nil
@@ -22,8 +23,8 @@ describe Undercover::CLI do
   end
 
   it 'creates an Undercover::Report with options' do
-    stub_build
     stub_stdout
+    stub_build
     expect(Undercover::Report)
       .to receive(:new)
       .with(
@@ -40,14 +41,14 @@ describe Undercover::CLI do
   end
 
   it 'accepts --compare' do
-    stub_build
     stub_stdout
+    stub_build
     expect(Undercover::Report)
       .to receive(:new)
       .with(
         instance_of(Undercover::Changeset),
         undercover_options(
-          lcov: a_string_ending_with('coverage/lcov/undercover.lcov'),
+          lcov: a_string_matching(/coverage\/lcov\/\w+\.lcov/),
           path: '.',
           git_dir: '.git',
           compare: 'HEAD~1'
@@ -102,6 +103,8 @@ describe Undercover::CLI do
   end
 
   it 'sets ruby syntax version from options' do
+    stub_stdout
+
     v_default = Imagen.parser_version
     stub_build
 
@@ -116,7 +119,6 @@ describe Undercover::CLI do
     lcov = double
     allow(File).to receive(:open) { lcov }
     allow(Undercover::LcovParser).to receive(:parse).with(lcov)
-    allow(Imagen).to receive(:from_local)
     allow_any_instance_of(Undercover::Report).to receive(:validate) { nil }
     allow_any_instance_of(Undercover::Report).to receive(:build) { |rep| rep }
   end
