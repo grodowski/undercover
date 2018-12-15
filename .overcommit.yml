@@ -15,6 +15,9 @@
 #
 # Uncomment the following lines to make the configuration take effect.
 
+CommitMsg:
+  CapitalizedSubject:
+    enabled: false
 PrePush:
   Undercover:
     enabled: true

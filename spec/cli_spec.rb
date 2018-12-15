@@ -114,7 +114,6 @@ describe Undercover::CLI do
     Imagen.parser_version = v_default
   end
 
-  # rubocop:disable Metrics/AbcSize
   def stub_build
     lcov = double
     allow(File).to receive(:open) { lcov }
@@ -122,5 +121,4 @@ describe Undercover::CLI do
     allow_any_instance_of(Undercover::Report).to receive(:validate) { nil }
     allow_any_instance_of(Undercover::Report).to receive(:build) { |rep| rep }
   end
-  # rubocop:enable Metrics/AbcSize
 end
