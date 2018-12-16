@@ -86,9 +86,12 @@ describe Undercover::CLI do
 
     expected_output = Undercover::CLI::WARNINGS_TO_S[:stale_coverage] + "\n"
 
+    allow(Undercover::Formatter).to receive(:new)
+    expect(mock_report).to receive(:build_warnings) { [] }
+
     expect do
-      expect(subject.run([])).to eq(1)
-    end.to output(expected_output).to_stdout
+      expect(subject.run([])).to eq(0)
+    end.to output(a_string_starting_with(expected_output)).to_stdout
   end
 
   it 'prints changeset validation for no changes' do
