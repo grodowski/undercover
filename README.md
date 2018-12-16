@@ -4,6 +4,14 @@
 
 **Inspects files in a git diff and warns on methods, classes and blocks which need test coverage.** Use it locally or as part of an automated build to shorten your code coverage feedback loop!
 
+A sample output of `undercover` ran before a commit may look like this:
+
+![screenshot warning](docs/screenshot_warnings.png)
+
+And like this, given that specs were added:
+
+![screenshot success](docs/screenshot_success.png)
+
 [![Build Status](https://travis-ci.org/grodowski/undercover.svg?branch=master)](https://travis-ci.org/grodowski/undercover)
 [![Maintainability](https://api.codeclimate.com/v1/badges/b403feed68a18c072ec5/maintainability)](https://codeclimate.com/github/grodowski/undercover/maintainability)
 [![codebeat badge](https://codebeat.co/badges/be548247-2421-4448-bdab-896d13eb02e9)](https://codebeat.co/projects/github-com-grodowski-undercover-master)
@@ -98,20 +106,6 @@ The goal was to provide automated warnings, that are:
 - actionable, so we can fix them before the code is committed or reaches production
 
 For more background, please [read the blog post](https://medium.com/futuredev/stop-shipping-untested-ruby-code-with-undercover-1edc963be4a6).
-
-## How?
-
-Technically, `undercover` combines data from git, coverage reports and code structure graphs.
-
-A sample output of `undercover` ran before a commit may look like this:
-
-![screenshot warning](docs/screenshot_warnings.png)
-
-And like this, given that specs were added:
-
-![screenshot success](docs/screenshot_success.png)
-
-The project is in an early phase, so please expect the unexpected and [report any problems or feedback as issues](https://github.com/grodowski/undercover/issues).
 
 ## Development
 
