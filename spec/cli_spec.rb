@@ -137,7 +137,7 @@ describe Undercover::CLI do
     v_default = Imagen.parser_version
     stub_build
 
-    subject.run('-r ruby19')
+    subject.run(['-r ruby19'])
     expect(Imagen.parser_version).to eq('ruby19')
 
     Imagen.parser_version = v_default

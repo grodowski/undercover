@@ -81,7 +81,11 @@ Check out `docs/` for CI configuration examples:
 - [Semaphore](docs/semaphore.yml)
 - [Codeship](docs/codeship.md)
 
-### Options
+## Configuration
+
+### CLI Options
+
+Options can be passed when running the command from the command line:
 
 ```sh
 undercover -h
@@ -94,7 +98,19 @@ Usage: undercover [options]
         --version                    Show version
 ```
 
-Default options assume that the program is run from the top level of the project directory.
+### Configuration File
+
+A configuration file named `.undercover` can be created at the top level of a project's directory containing the same set of options for the CLI.
+Example file:
+
+```sh
+-l path/to/different.lcov
+-c origin/master
+```
+
+The options set in the file can be overriden by passing arguments when invoking the executable.
+
+Options assume that the program is run from the top level of the project directory.
 
 ## Why?
 

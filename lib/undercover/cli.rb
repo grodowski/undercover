@@ -35,7 +35,7 @@ module Undercover
     # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
 
     def self.build_opts(args)
-      configuration = project_options.concat(Array(args))
+      configuration = project_options.concat(args)
       Undercover::Options.new.parse(configuration)
     end
 
