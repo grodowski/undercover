@@ -53,6 +53,7 @@ module Undercover
         # --quiet (skip progress bar)
         # --exit-status (do not print report, just exit)
       end.parse(args)
+
       guess_lcov_path unless lcov
       self
     end

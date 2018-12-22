@@ -22,6 +22,32 @@ describe Undercover::CLI do
     subject.run([])
   end
 
+  it 'reads options from project configuration file' do
+    allow(Undercover::CLI).to receive(:project_options_file) do
+      './spec/fixtures/.undercover_config'
+    end
+
+    expect_any_instance_of(Undercover::Options)
+      .to receive(:parse)
+      .with(['-l', 'coverage/another.lcov'])
+      .and_call_original
+
+    subject.build_opts([])
+  end
+
+  it 'allows overriding config with cli args' do
+    allow(Undercover::CLI).to receive(:project_options_file) do
+      './spec/fixtures/.undercover_config'
+    end
+
+    expect_any_instance_of(Undercover::Options)
+      .to receive(:parse)
+      .with(include('-lspec/fixtures/sample.lcov'))
+      .and_call_original
+
+    subject.build_opts(['-lspec/fixtures/sample.lcov'])
+  end
+
   it 'creates an Undercover::Report with options' do
     stub_stdout
     stub_build

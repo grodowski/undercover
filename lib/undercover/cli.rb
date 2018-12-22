@@ -17,7 +17,8 @@ module Undercover
 
     # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
     def self.run(args)
-      opts = Undercover::Options.new.parse(args)
+      opts = build_opts(args)
+
       syntax_version(opts.syntax_version)
       report = Undercover::Report.new(changeset(opts), opts).build
 
@@ -32,6 +33,25 @@ module Undercover
       warnings.any? ? 1 : 0
     end
     # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
+
+    def self.build_opts(args)
+      configuration = project_options.concat(Array(args))
+      Undercover::Options.new.parse(configuration)
+    end
+
+    def self.project_options
+      args_from_options_file(project_options_file)
+    end
+
+    def self.args_from_options_file(path)
+      return [] unless File.exist?(path)
+
+      File.read(path).split('\n').flat_map { |line| line.split(' ') }
+    end
+
+    def self.project_options_file
+      './.undercover'
+    end
 
     def self.syntax_version(version)
       return unless version
