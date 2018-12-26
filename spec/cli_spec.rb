@@ -114,6 +114,9 @@ describe Undercover::CLI do
     subject.run('-r ruby19')
     expect(Imagen.parser_version).to eq('ruby19')
 
+    subject.run(%w[--ruby-syntax ruby20])
+    expect(Imagen.parser_version).to eq('ruby20')
+
     Imagen.parser_version = v_default
   end
 

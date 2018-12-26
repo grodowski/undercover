@@ -89,7 +89,7 @@ module Undercover
     def ruby_syntax_option(parser)
       versions = Imagen::AVAILABLE_RUBY_VERSIONS.sort.join(', ')
       desc = "Ruby syntax version, one of: #{versions}"
-      parser.on('-r', '--ruby-synax ver', desc) do |version|
+      parser.on('-r', '--ruby-syntax ver', desc) do |version|
         self.syntax_version = version.strip
       end
     end
