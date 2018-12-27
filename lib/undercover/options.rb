@@ -31,6 +31,8 @@ module Undercover
 
     # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
     def parse(args)
+      args = build_opts(args)
+
       OptionParser.new do |opts|
         opts.banner = 'Usage: undercover [options]'
 
@@ -60,6 +62,24 @@ module Undercover
     # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
 
     private
+
+    def build_opts(args)
+      project_options.concat(args)
+    end
+
+    def project_options
+      args_from_options_file(project_options_file)
+    end
+
+    def args_from_options_file(path)
+      return [] unless File.exist?(path)
+
+      File.read(path).split('\n').flat_map { |line| line.split(' ') }
+    end
+
+    def project_options_file
+      './.undercover'
+    end
 
     def lcov_path_option(parser)
       parser.on('-l', '--lcov path', 'LCOV report file path') do |path|

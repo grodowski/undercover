@@ -1,1 +1,1 @@
--l coverage/another.lcov
+-l spec/fixtures/sample.lcov

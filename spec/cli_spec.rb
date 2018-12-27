@@ -23,29 +23,41 @@ describe Undercover::CLI do
   end
 
   it 'reads options from project configuration file' do
-    allow(Undercover::CLI).to receive(:project_options_file) do
-      './spec/fixtures/.undercover_config'
-    end
+    allow_any_instance_of(Undercover::Options)
+      .to receive(:project_options_file)
+      .and_return('./spec/fixtures/.undercover_config')
 
-    expect_any_instance_of(Undercover::Options)
-      .to receive(:parse)
-      .with(['-l', 'coverage/another.lcov'])
-      .and_call_original
+    expect(subject)
+      .to receive(:run_report)
+      .with(
+        undercover_options(
+          lcov: match('spec/fixtures/sample.lcov'),
+          path: '.',
+          git_dir: '.git',
+          compare: nil
+        )
+      )
 
-    subject.build_opts([])
+    subject.run([])
   end
 
   it 'allows overriding config with cli args' do
-    allow(Undercover::CLI).to receive(:project_options_file) do
-      './spec/fixtures/.undercover_config'
-    end
+    allow_any_instance_of(Undercover::Options)
+      .to receive(:project_options_file)
+      .and_return('./spec/fixtures/.undercover_config')
 
-    expect_any_instance_of(Undercover::Options)
-      .to receive(:parse)
-      .with(include('-lspec/fixtures/sample.lcov'))
-      .and_call_original
+    expect(subject)
+      .to receive(:run_report)
+      .with(
+        undercover_options(
+          lcov: match('made_up.lcov'),
+          path: '.',
+          git_dir: '.git',
+          compare: nil
+        )
+      )
 
-    subject.build_opts(['-lspec/fixtures/sample.lcov'])
+    subject.run(['-lmade_up.lcov'])
   end
 
   it 'creates an Undercover::Report with options' do
