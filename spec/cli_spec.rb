@@ -22,6 +22,44 @@ describe Undercover::CLI do
     subject.run([])
   end
 
+  it 'reads options from project configuration file' do
+    allow_any_instance_of(Undercover::Options)
+      .to receive(:project_options_file)
+      .and_return('./spec/fixtures/.undercover_config')
+
+    expect(subject)
+      .to receive(:run_report)
+      .with(
+        undercover_options(
+          lcov: match('spec/fixtures/sample.lcov'),
+          path: '.',
+          git_dir: '.git',
+          compare: nil
+        )
+      )
+
+    subject.run([])
+  end
+
+  it 'allows overriding config with cli args' do
+    allow_any_instance_of(Undercover::Options)
+      .to receive(:project_options_file)
+      .and_return('./spec/fixtures/.undercover_config')
+
+    expect(subject)
+      .to receive(:run_report)
+      .with(
+        undercover_options(
+          lcov: match('made_up.lcov'),
+          path: '.',
+          git_dir: '.git',
+          compare: nil
+        )
+      )
+
+    subject.run(['-lmade_up.lcov'])
+  end
+
   it 'creates an Undercover::Report with options' do
     stub_stdout
     stub_build
@@ -111,7 +149,7 @@ describe Undercover::CLI do
     v_default = Imagen.parser_version
     stub_build
 
-    subject.run('-r ruby19')
+    subject.run(['-r ruby19'])
     expect(Imagen.parser_version).to eq('ruby19')
 
     subject.run(%w[--ruby-syntax ruby20])
