@@ -14,11 +14,15 @@ module Undercover
         'Re-run tests to update').yellow,
       no_changes: Rainbow('✅ No reportable changes').green
     }.freeze
-
-    # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
     def self.run(args)
       opts = Undercover::Options.new.parse(args)
       syntax_version(opts.syntax_version)
+
+      run_report(opts)
+    end
+    # rubocop:enable
+
+    def self.run_report(opts)
       report = Undercover::Report.new(changeset(opts), opts).build
 
       error = report.validate(opts.lcov)
@@ -31,7 +35,6 @@ module Undercover
       puts Undercover::Formatter.new(warnings)
       warnings.any? ? 1 : 0
     end
-    # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
 
     def self.syntax_version(version)
       return unless version
