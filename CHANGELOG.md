@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.3.1] - 2019-03-19
+### Changed
+- Compatibility with `pronto > 0.9` and `rainbow > 2.1`
+
 ## [0.3.0] - 2019-01-05
 ### Added
 - Support for `.undercover` config file by @cgeorgii
@@ -69,7 +73,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - First release of `undercover` 🎉
 
-[Unreleased]: https://github.com/grodowski/undercover/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/grodowski/undercover/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/grodowski/undercover/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/grodowski/undercover/compare/v0.2.3...v0.3.0
 [0.2.3]: https://github.com/grodowski/undercover/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/grodowski/undercover/compare/v0.2.1...v0.2.2
