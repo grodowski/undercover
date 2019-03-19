@@ -24,7 +24,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_dependency 'imagen', '~> 0.1.5'
-  spec.add_dependency 'rainbow', '~> 2.1'
+  spec.add_runtime_dependency('rainbow', '>= 2.2', '< 4.0')
   spec.add_dependency 'rugged', '~> 0.27.0'
 
   spec.add_development_dependency 'bundler'
