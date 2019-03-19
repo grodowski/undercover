@@ -10,6 +10,9 @@ Style/RegexpLiteral:
 Style/Documentation:
   Enabled: false
 
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: comma
+
 Layout/SpaceInsideHashLiteralBraces:
   Enabled: true
   EnforcedStyle: no_space
