@@ -27,7 +27,7 @@ module Undercover
     # rubocop:disable Metrics/MethodLength, Style/SpecialGlobalVars
     def parse_line(line)
       case line
-      when /^SF:([\.\/\w]+)/
+      when /^SF:(.+)/
         @current_filename = $~[1].gsub(/^\.\//, '')
         source_files[@current_filename] = []
       when /^DA:(\d+),(\d+)/
