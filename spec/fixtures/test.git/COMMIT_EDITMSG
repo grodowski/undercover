@@ -1,1 +1,1 @@
-add file three
+update master with a change that should be visible when diffing  (reproducing merge_base issue)
