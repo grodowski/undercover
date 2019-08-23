@@ -73,7 +73,7 @@ module Undercover
     def compare_base_obj
       return nil unless compare_base
 
-      repo.lookup(repo.merge_base(compare_base.to_s, head))
+      repo.rev_parse(compare_base.to_s)
     end
 
     def head
