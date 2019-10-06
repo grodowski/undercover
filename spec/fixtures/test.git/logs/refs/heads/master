@@ -1,4 +1,3 @@
 0000000000000000000000000000000000000000 90ac11205ad672387842aa389c29809172cd7488 Jan Grodowski <jgrodowski@gmail.com> 1524598679 +0200	commit (initial): add file one
 90ac11205ad672387842aa389c29809172cd7488 2912cf8b3691e7c02e443891ee79ed8926e976a0 Jan Grodowski <jgrodowski@gmail.com> 1524598703 +0200	commit: rename
 2912cf8b3691e7c02e443891ee79ed8926e976a0 46cddbdfdf8767a7b06274d4b5e8b46ebc463e6c Jan Grodowski <jgrodowski@gmail.com> 1524598746 +0200	commit: add file two
-46cddbdfdf8767a7b06274d4b5e8b46ebc463e6c 12f86977cfcce6151ac7c23dcc768adbf81a4514 Jan Grodowski <jgrodowski@gmail.com> 1566590855 +0200	commit: update master with a change that should be visible when diffing (reproducing merge_base issue)
