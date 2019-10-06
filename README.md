@@ -12,7 +12,7 @@ And like this, given that specs were added:
 
 ![screenshot success](docs/screenshot_success.png)
 
-[![Build Status](https://travis-ci.org/grodowski/undercover.svg?branch=master)](https://travis-ci.org/grodowski/undercover)
+[![Build Status](https://action-badges.now.sh/grodowski/undercover)
 [![Maintainability](https://api.codeclimate.com/v1/badges/b403feed68a18c072ec5/maintainability)](https://codeclimate.com/github/grodowski/undercover/maintainability)
 [![codebeat badge](https://codebeat.co/badges/be548247-2421-4448-bdab-896d13eb02e9)](https://codebeat.co/projects/github-com-grodowski-undercover-master)
 
