@@ -81,6 +81,8 @@ Check out `docs/` for CI configuration examples:
 - [Semaphore](docs/semaphore.yml)
 - [Codeship](docs/codeship.md)
 
+Merging coverage results ([sample gist](https://gist.github.com/grodowski/9744ff91034dce8df20c2a8210409fb0)) is required for parallel tests before processing with `undercover`.
+
 ## Configuration
 
 ### CLI Options
