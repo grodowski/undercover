@@ -149,19 +149,19 @@ describe Undercover::CLI do
     v_default = Imagen.parser_version
     stub_build
 
-    subject.run(['-r ruby19'])
-    expect(Imagen.parser_version).to eq('ruby19')
+    subject.run(['-r ruby23'])
+    expect(Imagen.parser_version).to eq('ruby23')
 
-    subject.run(%w[--ruby-syntax ruby20])
-    expect(Imagen.parser_version).to eq('ruby20')
+    subject.run(%w[--ruby-syntax ruby26])
+    expect(Imagen.parser_version).to eq('ruby26')
 
     Imagen.parser_version = v_default
   end
 
   def stub_build
-    lcov = double
-    allow(File).to receive(:open) { lcov }
-    allow(Undercover::LcovParser).to receive(:parse).with(lcov)
+    allow(Undercover::LcovParser).to receive(:parse) do
+      double(coverage: [])
+    end
     allow_any_instance_of(Undercover::Report).to receive(:validate) { nil }
     allow_any_instance_of(Undercover::Report).to receive(:build) { |rep| rep }
   end

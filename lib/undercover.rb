@@ -36,17 +36,10 @@ module Undercover
     end
 
     def build
-      each_result_arg do |filename, coverage, imagen_node|
-        key = filename.gsub(/^\.\//, '')
-        results[key] ||= []
-        results[key] << Result.new(
-          imagen_node, coverage, filename
-        )
-      end
+      build_warnings
       self
     end
 
-    # TODO: this is experimental and might be incorrect!
     # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
     def build_warnings
       flagged_results = Set.new
@@ -63,6 +56,8 @@ module Undercover
         dist_from_line_no_sorter = lambda do |res1, res2|
           dist_from_line_no[res1] <=> dist_from_line_no[res2]
         end
+        lazy_load_file(filepath)
+
         next unless results[filepath]
 
         res = results[filepath].min(&dist_from_line_no_sorter)
@@ -83,20 +78,23 @@ module Undercover
 
     private
 
-    # TODO: should that start from changeset.file_paths?
-    # this way we could report things that weren't even loaded in any spec,
-    # so is this still good idea? (Rakefile, .gemspec etc)
-    def each_result_arg
-      match_all = ->(_) { true }
-      lcov.source_files.each do |relative_filename, coverage|
-        path = File.join(code_dir, relative_filename)
-        root_ast = Imagen::Node::Root.new.build_from_file(path)
-        next if root_ast.children.empty?
+    # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+    def lazy_load_file(filepath)
+      key = filepath.gsub(/^\.\//, '')
+      return if results[key]
 
-        root_ast.children[0].find_all(match_all).each do |node|
-          yield(relative_filename, coverage, node)
-        end
+      path = File.join(code_dir, filepath)
+      root_ast = Imagen::Node::Root.new.build_from_file(path)
+
+      return if root_ast.children.empty?
+
+      results[key] = []
+      root_ast.children[0].find_all(->(_) { true }).each do |imagen_node|
+        results[key] << Result.new(
+          imagen_node, lcov.coverage(filepath), filepath
+        )
       end
     end
+    # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
   end
 end

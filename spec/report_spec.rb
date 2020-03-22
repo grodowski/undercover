@@ -24,6 +24,9 @@ describe Undercover::Report do
     expect(report.results.size).to eq(2)
     expect(report.all_results.first).to be_an(Undercover::Result)
     expect(report.all_results.first.coverage_f).to eq(0.8333)
+    expect(
+      report.all_results.select { |res| res.node.name == 'BaconClass' }.size
+    ).to eq(1)
   end
 
   it 'does not parse files outside of the lcov report' do
