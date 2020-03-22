@@ -83,6 +83,9 @@ module Undercover
       key = filepath.gsub(/^\.\//, '')
       return if results[key]
 
+      coverage = lcov.coverage(filepath)
+      return if coverage.empty?
+
       path = File.join(code_dir, filepath)
       begin
         root_ast = Imagen::Node::Root.new.build_from_file(path)
@@ -91,11 +94,7 @@ module Undercover
         warn("Skipping file #{path}: #{e.class}")
         return
       end
-
       return if root_ast.children.empty?
-
-      coverage = lcov.coverage(filepath)
-      return if coverage.empty?
 
       results[key] = []
       root_ast.children[0].find_all(->(_) { true }).each do |imagen_node|
