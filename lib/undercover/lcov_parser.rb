@@ -26,7 +26,7 @@ module Undercover
       _filename, coverage = source_files.find do |relative_path, _|
         relative_path == filepath
       end
-      coverage
+      coverage || []
     end
 
     private

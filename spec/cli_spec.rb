@@ -145,9 +145,9 @@ describe Undercover::CLI do
 
   it 'sets ruby syntax version from options' do
     stub_stdout
+    stub_build
 
     v_default = Imagen.parser_version
-    stub_build
 
     subject.run(['-r ruby23'])
     expect(Imagen.parser_version).to eq('ruby23')
@@ -158,11 +158,15 @@ describe Undercover::CLI do
     Imagen.parser_version = v_default
   end
 
+  # rubocop:disable Metrics/AbcSize
   def stub_build
-    allow(Undercover::LcovParser).to receive(:parse) do
+    lcov = double
+    allow(File).to receive(:open) { lcov }
+    allow(Undercover::LcovParser).to receive(:parse).with(lcov) do
       double(coverage: [])
     end
     allow_any_instance_of(Undercover::Report).to receive(:validate) { nil }
     allow_any_instance_of(Undercover::Report).to receive(:build) { |rep| rep }
   end
+  # rubocop:enable Metrics/AbcSize
 end
