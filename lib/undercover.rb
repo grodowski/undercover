@@ -86,14 +86,9 @@ module Undercover
       coverage = lcov.coverage(filepath)
       return if coverage.empty?
 
-      path = File.join(code_dir, filepath)
-      begin
-        root_ast = Imagen::Node::Root.new.build_from_file(path)
-        # TODO: add tests for known errors
-      rescue EncodingError => e
-        warn("Skipping file #{path}: #{e.class}")
-        return
-      end
+      root_ast = Imagen::Node::Root.new.build_from_file(
+        File.join(code_dir, filepath)
+      )
       return if root_ast.children.empty?
 
       results[key] = []
