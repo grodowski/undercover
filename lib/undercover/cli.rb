@@ -31,9 +31,9 @@ module Undercover
         return 0 if error == :no_changes
       end
 
-      warnings = report.build_warnings
-      puts Undercover::Formatter.new(warnings)
-      warnings.any? ? 1 : 0
+      flagged = report.flagged_results
+      puts Undercover::Formatter.new(flagged)
+      flagged.any? ? 1 : 0
     end
 
     def self.syntax_version(version)

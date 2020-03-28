@@ -102,7 +102,7 @@ describe Undercover::CLI do
     mock_report = instance_double(Undercover::Report, validate: nil)
     stub_build.and_return(mock_report)
 
-    expect(mock_report).to receive(:build_warnings) { [] }
+    expect(mock_report).to receive(:flagged_results) { [] }
     expect(subject.run([])).to eq(0)
   end
 
@@ -114,7 +114,7 @@ describe Undercover::CLI do
 
     allow(Undercover::Formatter).to receive(:new)
 
-    expect(mock_report).to receive(:build_warnings) { [double] }
+    expect(mock_report).to receive(:flagged_results) { [double] }
     expect(subject.run([])).to eq(1)
   end
 
@@ -125,7 +125,7 @@ describe Undercover::CLI do
     expected_output = Undercover::CLI::WARNINGS_TO_S[:stale_coverage] + "\n"
 
     allow(Undercover::Formatter).to receive(:new)
-    expect(mock_report).to receive(:build_warnings) { [] }
+    expect(mock_report).to receive(:flagged_results) { [] }
 
     expect do
       expect(subject.run([])).to eq(0)
