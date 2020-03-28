@@ -24,9 +24,16 @@ describe Undercover::Report do
     expect(report.results.size).to eq(2)
     expect(report.all_results.first).to be_an(Undercover::Result)
     expect(report.all_results.first.coverage_f).to eq(0.8333)
+
+    # does not duplicate namespaces
     expect(
       report.all_results.select { |res| res.node.name == 'BaconClass' }.size
     ).to eq(1)
+
+    # only includes changed methods
+    expect(
+      report.results['module.rb'].map { |res| res.node.name }
+    ).to eq(%w[BaconModule bar])
   end
 
   it 'does not parse files outside of the lcov report' do
@@ -43,9 +50,8 @@ describe Undercover::Report do
     expect(report.results.keys.sort).to eq(%w[class.rb module.rb])
   end
 
-  it 'builds warnings does not mess up with result keys' do
+  it 'builds does not mess up with result keys' do
     report.build
-    report.build_warnings
 
     expect(report.results.keys.sort).to eq(%w[class.rb module.rb])
   end
@@ -61,7 +67,18 @@ describe Undercover::Report do
       mock_changeset
     end
 
-    it 'builds 2 warnings from two patches' do
+    it 'flags 2 two results' do
+      options.lcov = 'spec/fixtures/test_two_patches.lcov'
+      report.build
+      flagged = report.flagged_results
+      expect(flagged.size).to eq(2)
+      expect(flagged[0].file_path).to eq('test_two_patches.rb')
+      expect(flagged[0].first_line).to eq(3)
+      expect(flagged[1].file_path).to eq('test_two_patches.rb')
+      expect(flagged[1].first_line).to eq(15)
+    end
+
+    it 'deprecated build_warnings still works' do
       options.lcov = 'spec/fixtures/test_two_patches.lcov'
       report.build
       warnings = report.build_warnings.to_a

@@ -16,6 +16,15 @@ module Undercover
         ln > first_line && ln < last_line
       end
       @file_path = file_path
+      @flagged = false
+    end
+
+    def flag
+      @flagged = true
+    end
+
+    def flagged?
+      @flagged
     end
 
     # TODO: make DRY

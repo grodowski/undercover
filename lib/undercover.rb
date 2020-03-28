@@ -32,18 +32,12 @@ module Undercover
       @lcov = LcovParser.parse(File.open(opts.lcov))
       @code_dir = opts.path
       @changeset = changeset.update
+      @loaded_files = {}
       @results = {}
     end
 
-    def build
-      build_warnings
-      self
-    end
-
     # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
-    def build_warnings
-      flagged_results = Set.new
-
+    def build
       changeset.each_changed_line do |filepath, line_no|
         dist_from_line_no = lambda do |res|
           return BigDecimal::INFINITY if line_no < res.first_line
@@ -56,19 +50,31 @@ module Undercover
         dist_from_line_no_sorter = lambda do |res1, res2|
           dist_from_line_no[res1] <=> dist_from_line_no[res2]
         end
-        lazy_load_file(filepath)
+        load_and_parse_file(filepath)
 
-        next unless results[filepath]
+        next unless loaded_files[filepath]
 
-        res = results[filepath].min(&dist_from_line_no_sorter)
-        flagged_results << res if res&.uncovered?(line_no)
+        res = loaded_files[filepath].min(&dist_from_line_no_sorter)
+        res.flag if res&.uncovered?(line_no)
+        results[filepath] ||= Set.new
+        results[filepath] << res
       end
-      flagged_results
+      self
     end
     # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
 
+    def build_warnings
+      warn('Undercover::Report#build_warnings is deprecated! ' \
+           'Please use the #flagged_results accessor instead.')
+      all_results.select(&:flagged?)
+    end
+
     def all_results
-      results.values.flatten
+      results.values.map(&:to_a).flatten
+    end
+
+    def flagged_results
+      all_results.select(&:flagged?)
     end
 
     def inspect
@@ -78,10 +84,12 @@ module Undercover
 
     private
 
+    attr_reader :loaded_files
+
     # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
-    def lazy_load_file(filepath)
+    def load_and_parse_file(filepath)
       key = filepath.gsub(/^\.\//, '')
-      return if results[key]
+      return if loaded_files[key]
 
       coverage = lcov.coverage(filepath)
       return if coverage.empty?
@@ -91,11 +99,10 @@ module Undercover
       )
       return if root_ast.children.empty?
 
-      results[key] = []
+      loaded_files[key] = []
+      # TODO: children[0] ignores the lonely_method (see spec fixtures)!
       root_ast.children[0].find_all(->(_) { true }).each do |imagen_node|
-        results[key] << Result.new(
-          imagen_node, coverage, filepath
-        )
+        loaded_files[key] << Result.new(imagen_node, coverage, filepath)
       end
     end
     # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
