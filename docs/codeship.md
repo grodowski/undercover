@@ -12,7 +12,7 @@ gem install undercover
 
 ```
 bundle exec rspec --format documentation --color
-# pull origin/master to have a ref to compare against
+# fetch origin/master to have a ref to compare against
 git remote set-branches --add origin master
 git fetch
 undercover -c origin/master
