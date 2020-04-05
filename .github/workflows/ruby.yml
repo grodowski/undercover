@@ -17,5 +17,5 @@ jobs:
           gem install bundler undercover --no-doc
           bundle install --jobs 4 --retry 3
           bundle exec rake
-          git pull origin master:master
+          git fetch origin master:master
           undercover --compare master
