@@ -22,18 +22,34 @@ describe Undercover::Report do
     report.build
 
     expect(report.results.size).to eq(2)
-    expect(report.all_results.first).to be_an(Undercover::Result)
-    expect(report.all_results.first.coverage_f).to eq(0.8333)
+    all = report.all_results
+    expect(all[0]).to be_an(Undercover::Result)
+    expect(all[0].coverage_f).to eq(0.8333)
 
     # does not duplicate namespaces
     expect(
-      report.all_results.select { |res| res.node.name == 'BaconClass' }.size
+      all.select { |res| res.node.name == 'BaconClass' }.size
     ).to eq(1)
 
+    module_results = report.results['module.rb']
     # only includes changed methods
-    expect(
-      report.results['module.rb'].map { |res| res.node.name }
-    ).to eq(%w[BaconModule bar])
+    expect(module_results.map(&:name))
+      .to eq(%w[BaconModule bar baz])
+
+    # includes flagged blocks
+    module_flagged = module_results.select(&:flagged?)
+    expect(module_flagged.size).to eq(1)
+    expect(module_flagged[0].node.name).to eq('bar')
+    expect(module_flagged[0].coverage_f).to eq(0.0)
+
+    # includes unflagged blocks
+    unflagged = (module_results - report.flagged_results).to_a.sort_by(&:name)
+    expect(unflagged.size).to eq(2)
+    expect(unflagged.map(&:name)).to eq(%w[BaconModule baz])
+    expect(unflagged[0].name).to eq('BaconModule')
+    expect(unflagged[0].coverage_f).to eq(0.8333)
+    expect(unflagged[1].name).to eq('baz')
+    expect(unflagged[1].coverage_f).to eq(1.0)
   end
 
   it 'does not parse files outside of the lcov report' do

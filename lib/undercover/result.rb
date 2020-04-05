@@ -8,7 +8,7 @@ module Undercover
 
     attr_reader :node, :coverage, :file_path
 
-    def_delegators :node, :first_line, :last_line
+    def_delegators :node, :first_line, :last_line, :name
 
     def initialize(node, file_cov, file_path)
       @node = node
