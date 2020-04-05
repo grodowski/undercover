@@ -8,6 +8,10 @@ module BaconModule
   def bar
     puts 'Bacon#bar'
   end
+
+  def baz
+    puts "I'm covered!"
+  end
 end
 
 def lonely_method

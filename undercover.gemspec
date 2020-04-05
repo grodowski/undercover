@@ -25,13 +25,13 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'imagen', '>= 0.1.8'
   spec.add_dependency 'rainbow', '>= 2.1', '< 4.0'
-  spec.add_dependency 'rugged', '>= 0.27', '< 0.29'
+  spec.add_dependency 'rugged', '>= 0.27', '< 0.100'
 
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'pry'
   spec.add_development_dependency 'rake', '~> 13.0'
   spec.add_development_dependency 'rspec', '~> 3.0'
-  spec.add_development_dependency 'rubocop', '~> 0.79.0'
+  spec.add_development_dependency 'rubocop', '~> 0.80.0'
   spec.add_development_dependency 'simplecov'
   spec.add_development_dependency 'simplecov-html'
   spec.add_development_dependency 'simplecov-lcov'

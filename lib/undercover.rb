@@ -32,25 +32,12 @@ module Undercover
       @lcov = LcovParser.parse(File.open(opts.lcov))
       @code_dir = opts.path
       @changeset = changeset.update
+      @loaded_files = {}
       @results = {}
     end
 
-    def build
-      each_result_arg do |filename, coverage, imagen_node|
-        key = filename.gsub(/^\.\//, '')
-        results[key] ||= []
-        results[key] << Result.new(
-          imagen_node, coverage, filename
-        )
-      end
-      self
-    end
-
-    # TODO: this is experimental and might be incorrect!
     # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
-    def build_warnings
-      flagged_results = Set.new
-
+    def build
       changeset.each_changed_line do |filepath, line_no|
         dist_from_line_no = lambda do |res|
           return BigDecimal::INFINITY if line_no < res.first_line
@@ -63,17 +50,31 @@ module Undercover
         dist_from_line_no_sorter = lambda do |res1, res2|
           dist_from_line_no[res1] <=> dist_from_line_no[res2]
         end
-        next unless results[filepath]
+        load_and_parse_file(filepath)
 
-        res = results[filepath].min(&dist_from_line_no_sorter)
-        flagged_results << res if res&.uncovered?(line_no)
+        next unless loaded_files[filepath]
+
+        res = loaded_files[filepath].min(&dist_from_line_no_sorter)
+        res.flag if res&.uncovered?(line_no)
+        results[filepath] ||= Set.new
+        results[filepath] << res
       end
-      flagged_results
+      self
     end
     # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
 
+    def build_warnings
+      warn('Undercover::Report#build_warnings is deprecated! ' \
+           'Please use the #flagged_results accessor instead.')
+      all_results.select(&:flagged?)
+    end
+
     def all_results
-      results.values.flatten
+      results.values.map(&:to_a).flatten
+    end
+
+    def flagged_results
+      all_results.select(&:flagged?)
     end
 
     def inspect
@@ -83,20 +84,27 @@ module Undercover
 
     private
 
-    # TODO: should that start from changeset.file_paths?
-    # this way we could report things that weren't even loaded in any spec,
-    # so is this still good idea? (Rakefile, .gemspec etc)
-    def each_result_arg
-      match_all = ->(_) { true }
-      lcov.source_files.each do |relative_filename, coverage|
-        path = File.join(code_dir, relative_filename)
-        root_ast = Imagen::Node::Root.new.build_from_file(path)
-        next if root_ast.children.empty?
+    attr_reader :loaded_files
 
-        root_ast.children[0].find_all(match_all).each do |node|
-          yield(relative_filename, coverage, node)
-        end
+    # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+    def load_and_parse_file(filepath)
+      key = filepath.gsub(/^\.\//, '')
+      return if loaded_files[key]
+
+      coverage = lcov.coverage(filepath)
+      return if coverage.empty?
+
+      root_ast = Imagen::Node::Root.new.build_from_file(
+        File.join(code_dir, filepath)
+      )
+      return if root_ast.children.empty?
+
+      loaded_files[key] = []
+      # TODO: children[0] ignores the lonely_method (see spec fixtures)!
+      root_ast.children[0].find_all(->(_) { true }).each do |imagen_node|
+        loaded_files[key] << Result.new(imagen_node, coverage, filepath)
       end
     end
+    # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
   end
 end

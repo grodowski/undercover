@@ -22,6 +22,13 @@ module Undercover
       self
     end
 
+    def coverage(filepath)
+      _filename, coverage = source_files.find do |relative_path, _|
+        relative_path == filepath
+      end
+      coverage || []
+    end
+
     private
 
     # rubocop:disable Metrics/MethodLength, Style/SpecialGlobalVars

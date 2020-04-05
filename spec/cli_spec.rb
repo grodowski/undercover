@@ -102,7 +102,7 @@ describe Undercover::CLI do
     mock_report = instance_double(Undercover::Report, validate: nil)
     stub_build.and_return(mock_report)
 
-    expect(mock_report).to receive(:build_warnings) { [] }
+    expect(mock_report).to receive(:flagged_results) { [] }
     expect(subject.run([])).to eq(0)
   end
 
@@ -114,7 +114,7 @@ describe Undercover::CLI do
 
     allow(Undercover::Formatter).to receive(:new)
 
-    expect(mock_report).to receive(:build_warnings) { [double] }
+    expect(mock_report).to receive(:flagged_results) { [double] }
     expect(subject.run([])).to eq(1)
   end
 
@@ -125,7 +125,7 @@ describe Undercover::CLI do
     expected_output = Undercover::CLI::WARNINGS_TO_S[:stale_coverage] + "\n"
 
     allow(Undercover::Formatter).to receive(:new)
-    expect(mock_report).to receive(:build_warnings) { [] }
+    expect(mock_report).to receive(:flagged_results) { [] }
 
     expect do
       expect(subject.run([])).to eq(0)
@@ -145,24 +145,28 @@ describe Undercover::CLI do
 
   it 'sets ruby syntax version from options' do
     stub_stdout
-
-    v_default = Imagen.parser_version
     stub_build
 
-    subject.run(['-r ruby19'])
-    expect(Imagen.parser_version).to eq('ruby19')
+    v_default = Imagen.parser_version
 
-    subject.run(%w[--ruby-syntax ruby20])
-    expect(Imagen.parser_version).to eq('ruby20')
+    subject.run(['-r ruby23'])
+    expect(Imagen.parser_version).to eq('ruby23')
+
+    subject.run(%w[--ruby-syntax ruby26])
+    expect(Imagen.parser_version).to eq('ruby26')
 
     Imagen.parser_version = v_default
   end
 
+  # rubocop:disable Metrics/AbcSize
   def stub_build
     lcov = double
     allow(File).to receive(:open) { lcov }
-    allow(Undercover::LcovParser).to receive(:parse).with(lcov)
+    allow(Undercover::LcovParser).to receive(:parse).with(lcov) do
+      double(coverage: [])
+    end
     allow_any_instance_of(Undercover::Report).to receive(:validate) { nil }
     allow_any_instance_of(Undercover::Report).to receive(:build) { |rep| rep }
   end
+  # rubocop:enable Metrics/AbcSize
 end

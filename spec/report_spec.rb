@@ -22,8 +22,34 @@ describe Undercover::Report do
     report.build
 
     expect(report.results.size).to eq(2)
-    expect(report.all_results.first).to be_an(Undercover::Result)
-    expect(report.all_results.first.coverage_f).to eq(0.8333)
+    all = report.all_results
+    expect(all[0]).to be_an(Undercover::Result)
+    expect(all[0].coverage_f).to eq(0.8333)
+
+    # does not duplicate namespaces
+    expect(
+      all.select { |res| res.node.name == 'BaconClass' }.size
+    ).to eq(1)
+
+    module_results = report.results['module.rb']
+    # only includes changed methods
+    expect(module_results.map(&:name))
+      .to eq(%w[BaconModule bar baz])
+
+    # includes flagged blocks
+    module_flagged = module_results.select(&:flagged?)
+    expect(module_flagged.size).to eq(1)
+    expect(module_flagged[0].node.name).to eq('bar')
+    expect(module_flagged[0].coverage_f).to eq(0.0)
+
+    # includes unflagged blocks
+    unflagged = (module_results - report.flagged_results).to_a.sort_by(&:name)
+    expect(unflagged.size).to eq(2)
+    expect(unflagged.map(&:name)).to eq(%w[BaconModule baz])
+    expect(unflagged[0].name).to eq('BaconModule')
+    expect(unflagged[0].coverage_f).to eq(0.8333)
+    expect(unflagged[1].name).to eq('baz')
+    expect(unflagged[1].coverage_f).to eq(1.0)
   end
 
   it 'does not parse files outside of the lcov report' do
@@ -40,9 +66,8 @@ describe Undercover::Report do
     expect(report.results.keys.sort).to eq(%w[class.rb module.rb])
   end
 
-  it 'builds warnings does not mess up with result keys' do
+  it 'builds does not mess up with result keys' do
     report.build
-    report.build_warnings
 
     expect(report.results.keys.sort).to eq(%w[class.rb module.rb])
   end
@@ -58,7 +83,18 @@ describe Undercover::Report do
       mock_changeset
     end
 
-    it 'builds 2 warnings from two patches' do
+    it 'flags 2 two results' do
+      options.lcov = 'spec/fixtures/test_two_patches.lcov'
+      report.build
+      flagged = report.flagged_results
+      expect(flagged.size).to eq(2)
+      expect(flagged[0].file_path).to eq('test_two_patches.rb')
+      expect(flagged[0].first_line).to eq(3)
+      expect(flagged[1].file_path).to eq('test_two_patches.rb')
+      expect(flagged[1].first_line).to eq(15)
+    end
+
+    it 'deprecated build_warnings still works' do
       options.lcov = 'spec/fixtures/test_two_patches.lcov'
       report.build
       warnings = report.build_warnings.to_a
