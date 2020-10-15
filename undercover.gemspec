@@ -25,7 +25,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'imagen', '>= 0.1.8'
   spec.add_dependency 'rainbow', '>= 2.1', '< 4.0'
-  spec.add_dependency 'rugged', '>= 0.27', '< 1.1'
+  spec.add_dependency 'rugged', '>= 0.27', '< 1.2'
 
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'pry'
