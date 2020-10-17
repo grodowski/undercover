@@ -18,6 +18,18 @@ describe Undercover::LcovParser do
     expect(second).to eq([[3, 1], [5, 1], [7, 1], [27, 0], [28, 0], [29, 0]])
   end
 
+  it 'reports a structure of source files with branch coverage' do
+    parser = described_class.parse('spec/fixtures/imagen_rb.lcov')
+
+    expect(parser.source_files.count).to eq(7)
+    branchless = parser.source_files['lib/imagen/ast/builder.rb']
+    expected = [[3, 1], [4, 1], [6, 1], [7, 1], [9, 1], [12, 1], [13, 36]]
+    expect(branchless).to eq(expected)
+    branchful = parser.source_files['lib/imagen/visitor.rb']
+    expected = [[3, 1], [5, 1], [7, 1], [14, 1], [16, 1], [17, 4], [18, 4], [21, 1], [22, 187], [24, 102], [25, 285], [29, 1], [30, 102], [31, 16], [32, 16], [22, 0, 1, 102], [22, 0, 2, 85]]
+    expect(branchful).to eq(expected)
+  end
+
   it 'passes blank lines' do
     parser = described_class.new(StringIO.new("\n"))
 

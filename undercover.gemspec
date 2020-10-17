@@ -34,7 +34,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rubocop', '~> 0.85.1'
   spec.add_development_dependency 'simplecov'
   spec.add_development_dependency 'simplecov-html'
-  spec.add_development_dependency 'simplecov-lcov'
+  spec.add_development_dependency 'simplecov-lcov', '~> 0.8' # branch coverage
   spec.add_development_dependency 'timecop'
 end
 # rubocop:enable Metrics/BlockLength
