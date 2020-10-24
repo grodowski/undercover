@@ -29,7 +29,7 @@ module Undercover
 
     def uncovered?(line_no)
       coverage.each do |ln, _block, _branch, cov|
-        return true if ln == line_no && cov.is_a?(Numeric) && cov.zero?
+        return true if ln == line_no && cov && cov.zero?
       end
 
       line_cov = coverage.find { |ln, _cov| ln == line_no }
