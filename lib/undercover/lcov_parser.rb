@@ -41,10 +41,8 @@ module Undercover
         line_no = $~[1]
         covered = $~[2]
         source_files[@current_filename] << [line_no.to_i, covered.to_i]
-      when /^BRF:(\d+)/
-        # TODO: remember branches found
-      when /^BRH:(\d+)/
-        # TODO: remember branches hit
+      when /^(BRF|BRH):(\d+)/
+        # branches found/hit; no-op
       when /^BRDA:(\d+),(\d+),(\d+),(-|\d+)/
         line_no = $~[1]
         block_no = $~[2]
