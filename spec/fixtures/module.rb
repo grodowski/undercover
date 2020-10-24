@@ -12,6 +12,10 @@ module BaconModule
   def baz
     puts "I'm covered!"
   end
+
+  def branch_missed
+    @val.nil? ? "hit" : "miss"
+  end
 end
 
 def lonely_method
