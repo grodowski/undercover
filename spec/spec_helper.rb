@@ -33,7 +33,7 @@ RSpec::Matchers.define :undercover_options do |opts_hash|
 end
 
 def stub_stdout
-  allow(STDOUT).to receive(:puts)
+  allow($stdout).to receive(:puts)
 end
 
 # Matchers compatible with Imagen::Node::Base#find_all
