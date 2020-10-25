@@ -14,7 +14,6 @@ And like this, given that specs were added:
 
 [![Build Status](https://action-badges.now.sh/grodowski/undercover)](https://github.com/grodowski/undercover/actions)
 [![Maintainability](https://api.codeclimate.com/v1/badges/b403feed68a18c072ec5/maintainability)](https://codeclimate.com/github/grodowski/undercover/maintainability)
-[![codebeat badge](https://codebeat.co/badges/be548247-2421-4448-bdab-896d13eb02e9)](https://codebeat.co/projects/github-com-grodowski-undercover-master)
 
 ## Installation
 
@@ -82,6 +81,14 @@ Check out `docs/` for CI configuration examples:
 - [Codeship](docs/codeship.md)
 
 Merging coverage results ([sample gist](https://gist.github.com/grodowski/9744ff91034dce8df20c2a8210409fb0)) is required for parallel tests before processing with `undercover`.
+
+## Code review integrations
+
+A few options exist to provide automated comments from `undercover` in Pull Request reviews, which is the most streamlined way to add Undercover to your development workflow.
+
+- [UndercoverCI](https://undercover-ci.com) - `undercover` Pull Request feedback delivered natively with GitHub Checks
+- [pronto-undercover](https://github.com/grodowski/pronto-undercover)
+- [danger-undercover](https://github.com/nimblehq/danger-undercover)
 
 ## Configuration
 
