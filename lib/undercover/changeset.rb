@@ -12,6 +12,7 @@ module Undercover
     include Enumerable
 
     attr_reader :files
+
     def_delegators :files, :each, :'<=>'
 
     def initialize(dir, compare_base = nil)

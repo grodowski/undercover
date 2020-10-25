@@ -122,7 +122,7 @@ describe Undercover::CLI do
     mock_report = instance_double(Undercover::Report, validate: :stale_coverage)
     stub_build.and_return(mock_report)
 
-    expected_output = Undercover::CLI::WARNINGS_TO_S[:stale_coverage] + "\n"
+    expected_output = "#{Undercover::CLI::WARNINGS_TO_S[:stale_coverage]}\n"
 
     allow(Undercover::Formatter).to receive(:new)
     expect(mock_report).to receive(:flagged_results) { [] }
@@ -136,7 +136,7 @@ describe Undercover::CLI do
     mock_report = instance_double(Undercover::Report, validate: :no_changes)
     stub_build.and_return(mock_report)
 
-    expected_output = Undercover::CLI::WARNINGS_TO_S[:no_changes] + "\n"
+    expected_output = "#{Undercover::CLI::WARNINGS_TO_S[:no_changes]}\n"
 
     expect do
       expect(subject.run([])).to eq(0)
@@ -158,7 +158,6 @@ describe Undercover::CLI do
     Imagen.parser_version = v_default
   end
 
-  # rubocop:disable Metrics/AbcSize
   def stub_build
     lcov = double
     allow(File).to receive(:open) { lcov }
@@ -168,5 +167,4 @@ describe Undercover::CLI do
     allow_any_instance_of(Undercover::Report).to receive(:validate) { nil }
     allow_any_instance_of(Undercover::Report).to receive(:build) { |rep| rep }
   end
-  # rubocop:enable Metrics/AbcSize
 end
