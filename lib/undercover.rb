@@ -36,7 +36,7 @@ module Undercover
       @results = {}
     end
 
-    # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+    # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
     def build
       changeset.each_changed_line do |filepath, line_no|
         dist_from_line_no = lambda do |res|
@@ -61,7 +61,7 @@ module Undercover
       end
       self
     end
-    # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
+    # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
 
     def build_warnings
       warn('Undercover::Report#build_warnings is deprecated! ' \
