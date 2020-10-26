@@ -37,10 +37,16 @@ module Undercover
     end
 
     def coverage_f
-      covered = coverage.reduce(0) do |sum, (_, cov)|
-        sum + [[0, cov].max, 1].min
+      lines = {}
+      coverage.each do |ln, block_or_line_cov, _, branch_cov|
+        lines[ln] = 1 unless lines.key?(ln)
+        if branch_cov
+          lines[ln] = 0 if branch_cov.zero?
+        elsif block_or_line_cov.zero?
+          lines[ln] = 0
+        end
       end
-      (covered.to_f / coverage.size).round(4)
+      (lines.values.sum.to_f / lines.keys.size).round(4)
     end
 
     # TODO: create a formatter interface instead and add some tests.
