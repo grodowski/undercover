@@ -19,14 +19,14 @@ describe Undercover::LcovParser do
   end
 
   it 'reports a structure of source files with branch coverage' do
-    parser = described_class.parse('spec/fixtures/imagen_rb.lcov')
+    parser = described_class.parse('spec/fixtures/fixtures.lcov')
 
-    expect(parser.source_files.count).to eq(7)
-    branchless = parser.source_files['lib/imagen/ast/builder.rb']
-    expected = [[3, 1], [4, 1], [6, 1], [7, 1], [9, 1], [12, 1], [13, 36]]
+    expect(parser.source_files.count).to eq(2)
+    branchless = parser.source_files['class.rb']
+    expected = [[3, 1], [4, 12], [5, 4], [6, 54], [8, 1], [9, 0], [10, 1], [12, 1], [13, 44], [14, 0], [15, 7], [16, 2], [17, 1], [18, 1]]
     expect(branchless).to eq(expected)
-    branchful = parser.source_files['lib/imagen/visitor.rb']
-    expected = [[3, 1], [5, 1], [7, 1], [14, 1], [16, 1], [17, 4], [18, 4], [21, 1], [22, 187], [24, 102], [25, 285], [29, 1], [30, 102], [31, 16], [32, 16], [22, 0, 1, 102], [22, 0, 2, 85]]
+    branchful = parser.source_files['module.rb']
+    expected = [[3, 1], [4, 1], [5, 1], [8, 1], [9, 0], [12, 1], [13, 1], [16, 1], [17, 1], [17, 0, 2, 1], [17, 0, 1, 0], [21, 1], [22, 1]]
     expect(branchful).to eq(expected)
   end
 
