@@ -44,7 +44,6 @@ describe Undercover::Report do
 
     # includes flagged blocks with incomplete branch coverage
     expect(module_flagged[1].node.name).to eq('branch_missed')
-    pending 'coverage_f need to handle branch coverage data now present in Result'
     expect(module_flagged[1].coverage_f).to eq(0.0)
 
     # includes unflagged blocks
@@ -52,7 +51,7 @@ describe Undercover::Report do
     expect(unflagged.size).to eq(2)
     expect(unflagged.map(&:name)).to eq(%w[BaconModule baz])
     expect(unflagged[0].name).to eq('BaconModule')
-    expect(unflagged[0].coverage_f).to eq(0.8333)
+    expect(unflagged[0].coverage_f).to eq(0.75)
     expect(unflagged[1].name).to eq('baz')
     expect(unflagged[1].coverage_f).to eq(1.0)
   end
