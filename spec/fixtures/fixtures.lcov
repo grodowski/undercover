@@ -22,6 +22,12 @@ DA:8,1
 DA:9,0
 DA:12,1
 DA:13,1
+DA:16,1
 DA:17,1
-DA:18,1
+BRDA:17,0,2,1
+BRDA:17,0,1,-
+DA:21,1
+DA:22,1
+BRF:2
+BRH:1
 end_of_record

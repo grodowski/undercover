@@ -27,27 +27,26 @@ module Undercover
       @flagged
     end
 
-    # TODO: make DRY
-    def non_code?(line_no)
-      line_cov = coverage.find { |ln, _cov| ln == line_no }
-      !line_cov
-    end
-
-    def covered?(line_no)
-      line_cov = coverage.find { |ln, _cov| ln == line_no }
-      line_cov && line_cov[1].positive?
-    end
-
     def uncovered?(line_no)
+      coverage.each do |ln, _block, _branch, cov|
+        return true if ln == line_no && cov && cov.zero?
+      end
+
       line_cov = coverage.find { |ln, _cov| ln == line_no }
       line_cov && line_cov[1].zero?
     end
 
     def coverage_f
-      covered = coverage.reduce(0) do |sum, (_, cov)|
-        sum + [[0, cov].max, 1].min
+      lines = {}
+      coverage.each do |ln, block_or_line_cov, _, branch_cov|
+        lines[ln] = 1 unless lines.key?(ln)
+        if branch_cov
+          lines[ln] = 0 if branch_cov.zero?
+        elsif block_or_line_cov.zero?
+          lines[ln] = 0
+        end
       end
-      (covered.to_f / coverage.size).round(4)
+      (lines.values.sum.to_f / lines.keys.size).round(4)
     end
 
     # TODO: create a formatter interface instead and add some tests.

@@ -31,7 +31,7 @@ module Undercover
 
     private
 
-    # rubocop:disable Metrics/MethodLength, Style/SpecialGlobalVars
+    # rubocop:disable Metrics/MethodLength, Style/SpecialGlobalVars, Metrics/CyclomaticComplexity, Metrics/AbcSize
     def parse_line(line)
       case line
       when /^SF:(.+)/
@@ -41,12 +41,20 @@ module Undercover
         line_no = $~[1]
         covered = $~[2]
         source_files[@current_filename] << [line_no.to_i, covered.to_i]
+      when /^(BRF|BRH):(\d+)/
+        # branches found/hit; no-op
+      when /^BRDA:(\d+),(\d+),(\d+),(-|\d+)/
+        line_no = $~[1]
+        block_no = $~[2]
+        branch_no = $~[3]
+        covered = ($~[4] == '-' ? '0' : $~[4])
+        source_files[@current_filename] << [line_no.to_i, block_no.to_i, branch_no.to_i, covered.to_i]
       when /^end_of_record$/, /^$/
         @current_filename = nil
       else
         raise LcovParseError, "could not recognise '#{line}' as valid LCOV"
       end
     end
-    # rubocop:enable Metrics/MethodLength, Style/SpecialGlobalVars
+    # rubocop:enable Metrics/MethodLength, Style/SpecialGlobalVars, Metrics/CyclomaticComplexity, Metrics/AbcSize
   end
 end

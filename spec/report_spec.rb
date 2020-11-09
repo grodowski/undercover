@@ -34,20 +34,24 @@ describe Undercover::Report do
     module_results = report.results['module.rb']
     # only includes changed methods
     expect(module_results.map(&:name))
-      .to eq(%w[BaconModule bar baz])
+      .to eq(%w[BaconModule bar baz branch_missed])
 
     # includes flagged blocks
     module_flagged = module_results.select(&:flagged?)
-    expect(module_flagged.size).to eq(1)
+    expect(module_flagged.size).to eq(2)
     expect(module_flagged[0].node.name).to eq('bar')
     expect(module_flagged[0].coverage_f).to eq(0.0)
+
+    # includes flagged blocks with incomplete branch coverage
+    expect(module_flagged[1].node.name).to eq('branch_missed')
+    expect(module_flagged[1].coverage_f).to eq(0.0)
 
     # includes unflagged blocks
     unflagged = (module_results - report.flagged_results).to_a.sort_by(&:name)
     expect(unflagged.size).to eq(2)
     expect(unflagged.map(&:name)).to eq(%w[BaconModule baz])
     expect(unflagged[0].name).to eq('BaconModule')
-    expect(unflagged[0].coverage_f).to eq(0.8333)
+    expect(unflagged[0].coverage_f).to eq(0.75)
     expect(unflagged[1].name).to eq('baz')
     expect(unflagged[1].coverage_f).to eq(1.0)
   end
