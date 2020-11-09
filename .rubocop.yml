@@ -1,4 +1,5 @@
 AllCops:
+  NewCops: enable
   TargetRubyVersion: 2.5.0
   Exclude:
     - spec/fixtures/**/*

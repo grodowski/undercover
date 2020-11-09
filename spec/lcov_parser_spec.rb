@@ -23,10 +23,16 @@ describe Undercover::LcovParser do
 
     expect(parser.source_files.count).to eq(2)
     branchless = parser.source_files['class.rb']
-    expected = [[3, 1], [4, 12], [5, 4], [6, 54], [8, 1], [9, 0], [10, 1], [12, 1], [13, 44], [14, 0], [15, 7], [16, 2], [17, 1], [18, 1]]
+    expected = [
+      [3, 1], [4, 12], [5, 4], [6, 54], [8, 1], [9, 0], [10, 1],
+      [12, 1], [13, 44], [14, 0], [15, 7], [16, 2], [17, 1], [18, 1]
+    ]
     expect(branchless).to eq(expected)
     branchful = parser.source_files['module.rb']
-    expected = [[3, 1], [4, 1], [5, 1], [8, 1], [9, 0], [12, 1], [13, 1], [16, 1], [17, 1], [17, 0, 2, 1], [17, 0, 1, 0], [21, 1], [22, 1]]
+    expected = [
+      [3, 1], [4, 1], [5, 1], [8, 1], [9, 0], [12, 1], [13, 1],
+      [16, 1], [17, 1], [17, 0, 2, 1], [17, 0, 1, 0], [21, 1], [22, 1]
+    ]
     expect(branchful).to eq(expected)
   end
 

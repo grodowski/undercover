@@ -31,7 +31,7 @@ module Undercover
 
     private
 
-    # rubocop:disable Metrics/MethodLength, Style/SpecialGlobalVars, Metrics/CyclomaticComplexity, Metrics/AbcSize
+    # rubocop:disable Metrics/MethodLength, Style/SpecialGlobalVars, Metrics/AbcSize
     def parse_line(line)
       case line
       when /^SF:(.+)/
@@ -55,6 +55,6 @@ module Undercover
         raise LcovParseError, "could not recognise '#{line}' as valid LCOV"
       end
     end
-    # rubocop:enable Metrics/MethodLength, Style/SpecialGlobalVars, Metrics/CyclomaticComplexity, Metrics/AbcSize
+    # rubocop:enable Metrics/MethodLength, Style/SpecialGlobalVars, Metrics/AbcSize
   end
 end

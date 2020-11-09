@@ -36,6 +36,7 @@ module Undercover
       line_cov && line_cov[1].zero?
     end
 
+    # rubocop:disable Metrics/AbcSize
     def coverage_f
       lines = {}
       coverage.each do |ln, block_or_line_cov, _, branch_cov|
@@ -48,6 +49,7 @@ module Undercover
       end
       (lines.values.sum.to_f / lines.keys.size).round(4)
     end
+    # rubocop:enable Metrics/AbcSize
 
     # TODO: create a formatter interface instead and add some tests.
     # TODO: re-enable rubocops
