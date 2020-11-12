@@ -1,8 +1,9 @@
 # undercover 👮‍♂️
 
-**Like RuboCop but for code coverage**
+**Like RuboCop but for code coverage**. Inspects files in a git diff and warns on changed methods, classes and blocks which need to be tested.
 
-**Inspects files in a git diff and warns on methods, classes and blocks which need test coverage.** Use it locally or as part of an automated build to shorten your code coverage feedback loop!
+- Visit **[https://undercover-ci.com](https://undercover-ci.com)** to set up actionable GitHub code review checks, or use one of the [integrations](#code-review-integrations)
+- Learn how to find untested code changes locally with the [CLI](#usage)
 
 A sample output of `undercover` ran before a commit may look like this:
 
@@ -89,6 +90,7 @@ A few options exist to provide automated comments from `undercover` in Pull Requ
 - [UndercoverCI](https://undercover-ci.com) - `undercover` Pull Request feedback delivered natively with GitHub Checks
 - [pronto-undercover](https://github.com/grodowski/pronto-undercover)
 - [danger-undercover](https://github.com/nimblehq/danger-undercover)
+- [undercover-checkstyle](https://github.com/aki77/undercover-checkstyle)
 
 ## Configuration
 
