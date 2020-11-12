@@ -1,6 +1,6 @@
 # undercover 👮‍♂️
 
-**Like RuboCop but for code coverage**. Inspects files in a git diff and warns on changed methods, classes and blocks which need to be tested.
+**Like RuboCop but for code coverage**. Inspects files in a git diff and warns on changed methods, classes and blocks which need to be tested. Use it locally or as part of an automated build to shorten your code coverage feedback loop!
 
 - Visit **[https://undercover-ci.com](https://undercover-ci.com)** to set up actionable GitHub code review checks, or use one of the [integrations](#code-review-integrations)
 - Learn how to find untested code changes locally with the [CLI](#usage)
