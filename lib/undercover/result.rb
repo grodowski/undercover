@@ -36,6 +36,9 @@ module Undercover
       line_cov && line_cov[1].zero?
     end
 
+    # Method `coverage_f` returns the total coverage of this Undercover::Result
+    # as a % value, taking into account missing branches. Line coverage will be counted
+    # as 0 if any branch is untested.
     # rubocop:disable Metrics/AbcSize
     def coverage_f
       lines = {}
@@ -82,10 +85,12 @@ module Undercover
             Rainbow(' hits: n/a').italic.darkgray.dark
         elsif covered.positive?
           Rainbow(formatted_line).green + \
-            Rainbow(" hits: #{covered}").italic.darkgray.dark
+            Rainbow(" hits: #{covered}").italic.darkgray.dark + \
+            count_covered_branches(num)
         elsif covered.zero?
           Rainbow(formatted_line).red + \
-            Rainbow(" hits: #{covered}").italic.darkgray.dark
+            Rainbow(" hits: #{covered}").italic.darkgray.dark + \
+            count_covered_branches(num)
         end
       end.join("\n")
     end
@@ -100,5 +105,23 @@ module Undercover
         " name: #{node.name}, coverage: #{coverage_f}>"
     end
     alias to_s inspect
+
+    private
+
+    # rubocop:disable Metrics/AbcSize
+    def count_covered_branches(line_number)
+      branches = coverage.select { |cov| cov.size == 4 && cov[0] == line_number }
+      count_covered = branches.count { |cov| cov[3].positive? }
+
+      return '' if branches.size.zero?
+
+      if count_covered < branches.size
+        Rainbow(' branches: ').italic.darkgray.dark + \
+          Rainbow("#{count_covered}/#{branches.size}").italic.red
+      else
+        Rainbow(" branches: #{count_covered}/#{branches.size}").italic.darkgray.dark
+      end
+    end
+    # rubocop:enable Metrics/AbcSize
   end
 end
