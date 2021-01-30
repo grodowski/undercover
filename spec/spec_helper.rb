@@ -10,7 +10,8 @@ SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new(
   [SimpleCov::Formatter::LcovFormatter, SimpleCov::Formatter::HTMLFormatter]
 )
 SimpleCov.start do
-  enable_coverage(:branch)
+  # TODO: enable when 0.4.0 is available in CI
+  # enable_coverage(:branch)
   add_filter(/^\/spec\//)
 end
 
