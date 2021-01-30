@@ -16,6 +16,10 @@ module BaconModule
   def branch_missed
     @val.nil? ? "hit" : "miss"
   end
+
+  def branch_hit
+    @val.nil? ? "hit" : "hit"
+  end
 end
 
 def lonely_method
