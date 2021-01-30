@@ -29,9 +29,10 @@ describe Undercover::Formatter do
       expect(formatted).to include('some methods have no test coverage')
       expect(formatted).to include('node `BaconModule`')
       expect(formatted).to include('type: module')
-      expect(formatted).to include('loc: module.rb:3:19')
-      expect(formatted).to include('coverage: 75.0%')
+      expect(formatted).to include('loc: module.rb:3:23')
+      expect(formatted).to include('coverage: 80.0%')
       expect(formatted).to match(/branches:.*1\/2.*$/)
+      expect(formatted).to match(/branches:.*2\/2.*$/)
     end
   end
 
