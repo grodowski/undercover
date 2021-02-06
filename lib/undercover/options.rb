@@ -74,7 +74,7 @@ module Undercover
     def args_from_options_file(path)
       return [] unless File.exist?(path)
 
-      File.read(path).split('\n').flat_map { |line| line.split(' ') }
+      File.read(path).split('\n').flat_map(&:split)
     end
 
     def project_options_file
