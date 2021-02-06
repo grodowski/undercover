@@ -5,8 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+# [0.4.0] - 2021-02-06
 ### Added
 - [Minimal implementation of branch coverage in LCOV parser](https://github.com/grodowski/undercover/pull/112) by [@magneland](https://github.com/magneland)
+- Branch coverage output support in Undercover::Formatter
 ### Changed
 - Min Ruby requirement bumped to 2.5.0
 - Dependency updates: Rubocop 1.0 and Rugged 1.1.0
