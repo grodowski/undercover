@@ -33,7 +33,7 @@ module Undercover
       end
 
       line_cov = coverage.find { |ln, _cov| ln == line_no }
-      line_cov && line_cov[1].zero?
+      line_cov && line_cov.last.zero?
     end
 
     # Method `coverage_f` returns the total coverage of this Undercover::Result

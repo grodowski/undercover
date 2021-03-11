@@ -45,4 +45,19 @@ describe Undercover::Result do
       expect(result.coverage_f).to eq(1.0)
     end
   end
+
+  context 'for a branch without line coverage' do
+    let(:ast) { Imagen.from_local('spec/fixtures/module.rb') }
+    let(:lcov) do
+      Undercover::LcovParser.parse('spec/fixtures/fixtures.lcov')
+    end
+    let(:coverage) { lcov.source_files['module.rb'] }
+
+    it 'uncovered gives false' do
+      node = ast.find_all(with_name('foobar')).first
+      result = described_class.new(node, coverage, 'module.rb')
+
+      expect(result.uncovered?(27)).to be_falsy
+    end
+  end
 end
