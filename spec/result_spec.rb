@@ -30,4 +30,19 @@ describe Undercover::Result do
 
     expect(result.coverage_f).to eq(0.0)
   end
+
+  context 'for an empty module def' do
+    let(:ast) { Imagen.from_local('spec/fixtures/empty_class_def.rb') }
+    let(:lcov) do
+      Undercover::LcovParser.parse('spec/fixtures/empty_class_def.lcov')
+    end
+    let(:coverage) { lcov.source_files['empty_class_def.rb'] }
+
+    it 'is not NaN' do
+      node = ast.find_all(with_name('ApplicationJob')).first
+      result = described_class.new(node, coverage, 'empty_class_def.rb')
+
+      expect(result.coverage_f).to eq(1.0)
+    end
+  end
 end

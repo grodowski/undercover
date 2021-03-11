@@ -39,7 +39,7 @@ module Undercover
     # Method `coverage_f` returns the total coverage of this Undercover::Result
     # as a % value, taking into account missing branches. Line coverage will be counted
     # as 0 if any branch is untested.
-    # rubocop:disable Metrics/AbcSize
+    # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     def coverage_f
       lines = {}
       coverage.each do |ln, block_or_line_cov, _, branch_cov|
@@ -50,9 +50,11 @@ module Undercover
           lines[ln] = 0
         end
       end
+      return 1.0 if lines.keys.size.zero?
+
       (lines.values.sum.to_f / lines.keys.size).round(4)
     end
-    # rubocop:enable Metrics/AbcSize
+    # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
     # TODO: create a formatter interface instead and add some tests.
     # TODO: re-enable rubocops
