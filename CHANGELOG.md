@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+# [0.4.1] - 2021-03-11
+### Fixed
+- Fix zero-division edge case resulting in NaN from Result#coverage_f
+
 # [0.4.0] - 2021-02-06
 ### Added
 - [Minimal implementation of branch coverage in LCOV parser](https://github.com/grodowski/undercover/pull/112) by [@magneland](https://github.com/magneland)
@@ -96,6 +100,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - First release of `undercover` 🎉
 
 [Unreleased]: https://github.com/grodowski/undercover/compare/v0.3.4...HEAD
+[0.4.1]: https://github.com/grodowski/undercover/compare/v0.4.0...v0.4.1
+[0.4.0]: https://github.com/grodowski/undercover/compare/v0.3.4...v0.4.0
 [0.3.4]: https://github.com/grodowski/undercover/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/grodowski/undercover/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/grodowski/undercover/compare/v0.3.1...v0.3.2
