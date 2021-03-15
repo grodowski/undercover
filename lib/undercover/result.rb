@@ -28,12 +28,14 @@ module Undercover
     end
 
     def uncovered?(line_no)
+      # check branch coverage for line_no
       coverage.each do |ln, _block, _branch, cov|
         return true if ln == line_no && cov && cov.zero?
       end
 
-      line_cov = coverage.find { |ln, _cov| ln == line_no }
-      line_cov && line_cov.last.zero?
+      # check line coverage for line_no
+      line_cov = coverage.select { |cov| cov.size == 2 }.find { |ln, _cov| ln == line_no }
+      line_cov && line_cov[1].zero?
     end
 
     # Method `coverage_f` returns the total coverage of this Undercover::Result
