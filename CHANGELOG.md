@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-# [0.4.2] - 2021-03-16
+# [0.4.3] - 2021-03-16
 ### Fixed
 - Branch coverage without line coverage marked as uncovered - fix by @GCorbel
 
@@ -104,7 +104,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - First release of `undercover` 🎉
 
 [Unreleased]: https://github.com/grodowski/undercover/compare/v0.4.2...HEAD
-[0.4.1]: https://github.com/grodowski/undercover/compare/v0.4.1...v0.4.2
+[0.4.3]: https://github.com/grodowski/undercover/compare/v0.4.1...v0.4.3
 [0.4.1]: https://github.com/grodowski/undercover/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/grodowski/undercover/compare/v0.3.4...v0.4.0
 [0.3.4]: https://github.com/grodowski/undercover/compare/v0.3.3...v0.3.4
