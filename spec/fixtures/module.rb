@@ -20,6 +20,14 @@ module BaconModule
   def branch_hit
     @val.nil? ? "hit" : "hit"
   end
+
+  def foobar
+    if @val.nil?
+      'hit'
+    else
+      'hit'
+    end
+  end
 end
 
 def lonely_method
