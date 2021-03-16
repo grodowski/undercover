@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+# [0.4.2] - 2021-03-16
+### Fixed
+- Branch coverage without line coverage marked as uncovered - fix by @GCorbel
+
 # [0.4.1] - 2021-03-11
 ### Fixed
 - Fix zero-division edge case resulting in NaN from Result#coverage_f
@@ -99,7 +103,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - First release of `undercover` 🎉
 
-[Unreleased]: https://github.com/grodowski/undercover/compare/v0.3.4...HEAD
+[Unreleased]: https://github.com/grodowski/undercover/compare/v0.4.2...HEAD
+[0.4.1]: https://github.com/grodowski/undercover/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/grodowski/undercover/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/grodowski/undercover/compare/v0.3.4...v0.4.0
 [0.3.4]: https://github.com/grodowski/undercover/compare/v0.3.3...v0.3.4
