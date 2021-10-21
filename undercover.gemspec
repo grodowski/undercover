@@ -33,7 +33,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'pry'
   spec.add_development_dependency 'rake', '~> 13.0'
   spec.add_development_dependency 'rspec', '~> 3.0'
-  spec.add_development_dependency 'rubocop', '~> 1.11.0'
+  spec.add_development_dependency 'rubocop', '~> 1.22.1'
   spec.add_development_dependency 'simplecov'
   spec.add_development_dependency 'simplecov-html'
   spec.add_development_dependency 'simplecov-lcov', '~> 0.8'

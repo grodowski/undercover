@@ -10,8 +10,8 @@ module Undercover
 
     WARNINGS_TO_S = {
       stale_coverage: Rainbow('🚨 WARNING: Coverage data is older than your ' \
-        'latest changes and results might be incomplete. ' \
-        'Re-run tests to update').yellow,
+                              'latest changes and results might be incomplete. ' \
+                              'Re-run tests to update').yellow,
       no_changes: Rainbow('✅ No reportable changes').green
     }.freeze
     def self.run(args)
