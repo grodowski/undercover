@@ -15,8 +15,11 @@ Gem::Specification.new do |spec|
                        ' code blocks in recent changes'
   spec.homepage      = 'https://github.com/grodowski/undercover'
   spec.license       = 'MIT'
+  spec.metadata      = {
+    'rubygems_mfa_required' => 'true'
+  }
 
-  spec.files         = `git ls-files -z`.split("\x0").reject do |f|
+  spec.files = `git ls-files -z`.split("\x0").reject do |f|
     f.match(/^(test|spec|features)\//)
   end
   spec.bindir        = 'bin'
@@ -33,7 +36,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'pry'
   spec.add_development_dependency 'rake', '~> 13.0'
   spec.add_development_dependency 'rspec', '~> 3.0'
-  spec.add_development_dependency 'rubocop', '~> 1.22.1'
+  spec.add_development_dependency 'rubocop', '~> 1.25.1'
   spec.add_development_dependency 'simplecov'
   spec.add_development_dependency 'simplecov-html'
   spec.add_development_dependency 'simplecov-lcov', '~> 0.8'
