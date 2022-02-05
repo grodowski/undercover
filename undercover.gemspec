@@ -15,8 +15,11 @@ Gem::Specification.new do |spec|
                        ' code blocks in recent changes'
   spec.homepage      = 'https://github.com/grodowski/undercover'
   spec.license       = 'MIT'
+  spec.metadata      = {
+    'rubygems_mfa_required' => 'true'
+  }
 
-  spec.files         = `git ls-files -z`.split("\x0").reject do |f|
+  spec.files = `git ls-files -z`.split("\x0").reject do |f|
     f.match(/^(test|spec|features)\//)
   end
   spec.bindir        = 'bin'
