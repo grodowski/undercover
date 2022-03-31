@@ -124,6 +124,22 @@ The options set in the file can be overriden by passing arguments when invoking 
 
 Options assume that the program is run from the top level of the project directory.
 
+### Ignoring/skipping coverage
+
+Projects with low or nonexistent test coverage are likely to generate large numbers of warnings. While the default workflow would be to address them before the PR approval, your strategy might be different.
+
+In order to acknowledge an untested change and remove the UndercoverCI warning with the intention to improve later (or never), you can wrap the code block with the `:nocov:` syntax, e.g.
+
+```rb
+# :nocov:
+def skip_this_method
+    never_reached
+end
+# :nocov:
+```
+
+Read more about the `:nocov:` syntax in [SimpleCov's readme](https://github.com/simplecov-ruby/simplecov#ignoringskipping-code).
+
 ## Why?
 
 I wanted to create a tool to help others and myself ensure that tests are written for all the recent code changes. This should be useful for any ruby project, but especially those large or legacy codebases that lack testing (and we can't or don't want to invest in full test coverage).
