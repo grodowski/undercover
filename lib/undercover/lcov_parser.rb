@@ -29,6 +29,24 @@ module Undercover
       coverage || []
     end
 
+    def total_coverage
+      all_lines = source_files.values.flatten(1)
+      return 0 if all_lines.empty?
+
+      all_lines = all_lines.select { _1.size == 2 }
+      total_f = all_lines.select { |_line_no, hits| hits.positive? }.size.to_f / all_lines.size
+      total_f.round(3)
+    end
+
+    def total_branch_coverage
+      all_lines = source_files.values.flatten(1)
+      return 0 if all_lines.empty?
+
+      all_branches = all_lines.select { _1.size == 4 }
+      total_f = all_branches.select { |_l_no, _block_no, _br_no, hits| hits.positive? }.size.to_f / all_branches.size
+      total_f.round(3)
+    end
+
     private
 
     # rubocop:disable Metrics/MethodLength, Style/SpecialGlobalVars, Metrics/AbcSize

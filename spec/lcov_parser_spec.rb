@@ -48,4 +48,18 @@ describe Undercover::LcovParser do
 
     expect { parser.parse }.to raise_error(Undercover::LcovParseError)
   end
+
+  it 'includes total coverage data' do
+    parser = described_class.parse('spec/fixtures/fixtures.lcov')
+
+    expect(parser.total_coverage).to eq(0.9)
+    expect(parser.total_branch_coverage).to eq(0.833)
+  end
+
+  it 'returns 0 total coverage for empty files' do
+    empty_parser = described_class.parse(Tempfile.new.path)
+
+    expect(empty_parser.total_coverage).to eq(0)
+    expect(empty_parser.total_branch_coverage).to eq(0)
+  end
 end
