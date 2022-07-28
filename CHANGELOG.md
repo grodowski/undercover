@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+# [0.4.5] - 2022-07-28
+### Changed
+- Update `rugged` dependency to `< 1.6`
+
 # [0.4.4] - 2021-11-29
 ### Changed
 - Dependency updates
@@ -108,7 +112,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - First release of `undercover` 🎉
 
 [Unreleased]: https://github.com/grodowski/undercover/compare/v0.4.4...HEAD
-[0.4.3]: https://github.com/grodowski/undercover/compare/v0.4.3...v0.4.4
+[0.4.5]: https://github.com/grodowski/undercover/compare/v0.4.4...v0.4.5
+[0.4.4]: https://github.com/grodowski/undercover/compare/v0.4.3...v0.4.4
 [0.4.3]: https://github.com/grodowski/undercover/compare/v0.4.1...v0.4.3
 [0.4.1]: https://github.com/grodowski/undercover/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/grodowski/undercover/compare/v0.3.4...v0.4.0
