@@ -1,8 +1,13 @@
 # undercover 👮‍♂️
 
-**Like RuboCop but for code coverage**. Inspects files in a git diff and warns on changed methods, classes and blocks which need to be tested. Use it locally or as part of an automated build to shorten your code coverage feedback loop!
+[![Build Status](https://github.com/grodowski/undercover/actions/workflows/ruby.yml/badge.svg)](https://github.com/grodowski/undercover/actions)
+[![Maintainability](https://api.codeclimate.com/v1/badges/b403feed68a18c072ec5/maintainability)](https://codeclimate.com/github/grodowski/undercover/maintainability)
 
-- Visit **[https://undercover-ci.com](https://undercover-ci.com)** to set up actionable GitHub code review checks, or use one of the [integrations](#code-review-integrations)
+`undercover` examines git diffs and highligths Ruby methods, classes and blocks that **were changed without sufficient test coverage**. 
+
+Works with CI/CD and automated pull request review, as well as locally using the CLI to help you reduce the number of defects caused by untested code changes.
+
+- Visit **[https://undercover-ci.com](https://undercover-ci.com)** to set up code review checks with the GitHub App, or use one of the [CI integrations](#code-review-integrations)
 - Learn how to find untested code changes locally with the [CLI](#usage)
 
 A sample output of `undercover` ran before a commit may look like this:
@@ -12,9 +17,6 @@ A sample output of `undercover` ran before a commit may look like this:
 And like this, given that specs were added:
 
 ![screenshot success](docs/screenshot_success.png)
-
-[![Build Status](https://action-badges.now.sh/grodowski/undercover)](https://github.com/grodowski/undercover/actions)
-[![Maintainability](https://api.codeclimate.com/v1/badges/b403feed68a18c072ec5/maintainability)](https://codeclimate.com/github/grodowski/undercover/maintainability)
 
 ## Installation
 
