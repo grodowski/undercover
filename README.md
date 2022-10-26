@@ -3,7 +3,7 @@
 [![Build Status](https://github.com/grodowski/undercover/actions/workflows/ruby.yml/badge.svg)](https://github.com/grodowski/undercover/actions)
 [![Maintainability](https://api.codeclimate.com/v1/badges/b403feed68a18c072ec5/maintainability)](https://codeclimate.com/github/grodowski/undercover/maintainability)
 
-`undercover` examines git diffs and highligths Ruby methods, classes and blocks that **were changed without sufficient test coverage**. 
+`undercover` examines git diffs and warns about Ruby methods, classes and blocks that **were changed without sufficient test coverage**. 
 
 Works with CI/CD and automated pull request review, as well as locally using the CLI to help you reduce the number of defects caused by untested code changes.
 
