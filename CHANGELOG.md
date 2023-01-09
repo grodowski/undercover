@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Changed
+- Drop support for ruby < 2.7
+
 # [0.4.5] - 2022-07-28
 ### Changed
 - Update `rugged` dependency to `< 1.6`
