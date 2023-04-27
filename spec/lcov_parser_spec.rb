@@ -43,10 +43,10 @@ describe Undercover::LcovParser do
     expect { parser.parse }.not_to raise_error
   end
 
-  it 'raises an error with a malformed LCOV' do
+  it 'doesnt raise an error with a malformed LCOV' do
     parser = described_class.new(StringIO.new('baconium!'))
 
-    expect { parser.parse }.to raise_error(Undercover::LcovParseError)
+    expect { parser.parse }.not_to raise_error(Undercover::LcovParseError)
   end
 
   it 'includes total coverage data' do

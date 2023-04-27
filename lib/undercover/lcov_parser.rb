@@ -69,8 +69,6 @@ module Undercover
         source_files[@current_filename] << [line_no.to_i, block_no.to_i, branch_no.to_i, covered.to_i]
       when /^end_of_record$/, /^$/
         @current_filename = nil
-      else
-        raise LcovParseError, "could not recognise '#{line}' as valid LCOV"
       end
     end
     # rubocop:enable Metrics/MethodLength, Style/SpecialGlobalVars, Metrics/AbcSize
