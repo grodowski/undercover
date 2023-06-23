@@ -21,7 +21,7 @@ jobs:
           bundle exec rake
       - name: undercover (local)
         run: |
-          git fetch origin master:master
+          git fetch --update-head-ok origin master:master
           undercover --compare master
       - uses: actions/upload-artifact@v3
         with:
