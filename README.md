@@ -1,15 +1,16 @@
-![crop_github](https://github.com/grodowski/undercover/assets/4991698/f4acdea6-ee1e-4a89-b6b5-5b2ae5526f95)
+![logo](https://github.com/grodowski/undercover/assets/4991698/c4bf038b-4472-4406-8f1f-5ddc812908d6)
+
+`undercover` warns about methods, classes and blocks that **were changed without tests**, to help you easily find untested code and reduce the number of bugs. It does so by analysing data from git diffs, code structure and SimpleCov coverage reports. 
+
+Works with any Ruby CI pipeline as well as locally as a CLI.
+
+- Visit **[https://undercover-ci.com](https://undercover-ci.com)** to set up code review checks with the GitHub App, or use one of the [CI integrations](#code-review-integrations)
+- Learn how to find untested code changes locally with the [CLI](#usage)
+
 
 [![Build Status](https://github.com/grodowski/undercover/actions/workflows/ruby.yml/badge.svg)](https://github.com/grodowski/undercover/actions)
 [![Maintainability](https://api.codeclimate.com/v1/badges/b403feed68a18c072ec5/maintainability)](https://codeclimate.com/github/grodowski/undercover/maintainability)
 ![Downloads](https://img.shields.io/gem/dt/undercover)
-
-`undercover` examines git diffs and warns about Ruby methods, classes and blocks that **were changed without sufficient test coverage**. 
-
-Works with CI/CD and automated pull request review, as well as locally using the CLI to help you reduce the number of defects caused by untested code changes.
-
-- Visit **[https://undercover-ci.com](https://undercover-ci.com)** to set up code review checks with the GitHub App, or use one of the [CI integrations](#code-review-integrations)
-- Learn how to find untested code changes locally with the [CLI](#usage)
 
 A sample output of `undercover` ran before a commit may look like this:
 
