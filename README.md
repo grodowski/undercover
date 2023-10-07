@@ -1,5 +1,3 @@
-# undercover
-
 ![crop_github](https://github.com/grodowski/undercover/assets/4991698/f4acdea6-ee1e-4a89-b6b5-5b2ae5526f95)
 
 [![Build Status](https://github.com/grodowski/undercover/actions/workflows/ruby.yml/badge.svg)](https://github.com/grodowski/undercover/actions)
