@@ -1,6 +1,6 @@
 # undercover
 
-![logo_crop_github](https://github.com/grodowski/undercover/assets/4991698/c2f1d7c0-56c7-4f1c-95d6-846aaacfb907)
+![crop_github](https://github.com/grodowski/undercover/assets/4991698/f4acdea6-ee1e-4a89-b6b5-5b2ae5526f95)
 
 [![Build Status](https://github.com/grodowski/undercover/actions/workflows/ruby.yml/badge.svg)](https://github.com/grodowski/undercover/actions)
 [![Maintainability](https://api.codeclimate.com/v1/badges/b403feed68a18c072ec5/maintainability)](https://codeclimate.com/github/grodowski/undercover/maintainability)
