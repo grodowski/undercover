@@ -54,7 +54,7 @@ module Undercover
           lines[ln] = 0
         end
       end
-      return 1.0 if lines.keys.size.zero?
+      return 1.0 if lines.keys.empty?
 
       (lines.values.sum.to_f / lines.keys.size).round(4)
     end
@@ -84,7 +84,7 @@ module Undercover
       pad = node.last_line.to_s.length
       pretty_print_lines.map do |covered, (num, line)|
         formatted_line = "#{num.to_s.rjust(pad)}: #{line}"
-        if line.strip.length.zero?
+        if line.strip.empty?
           Rainbow(formatted_line).darkgray.dark
         elsif covered.nil?
           Rainbow(formatted_line).darkgray.dark + \
@@ -107,8 +107,8 @@ module Undercover
     end
 
     def inspect
-      "#<Undercover::Report::Result:#{object_id}" \
-        " name: #{node.name}, coverage: #{coverage_f}>"
+      "#<Undercover::Report::Result:#{object_id} " \
+        "name: #{node.name}, coverage: #{coverage_f}>"
     end
     alias to_s inspect
 
@@ -119,7 +119,7 @@ module Undercover
       branches = coverage.select { |cov| cov.size == 4 && cov[0] == line_number }
       count_covered = branches.count { |cov| cov[3].positive? }
 
-      return '' if branches.size.zero?
+      return '' if branches.empty?
 
       if count_covered < branches.size
         Rainbow(' branches: ').italic.darkgray.dark + \
