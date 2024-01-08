@@ -13,7 +13,7 @@ module Undercover
     def initialize(node, file_cov, file_path)
       @node = node
       @coverage = file_cov.select do |ln, _|
-        ln > first_line && ln < last_line
+        first_line == last_line ? ln == first_line : ln > first_line && ln < last_line
       end
       @file_path = file_path
       @flagged = false
