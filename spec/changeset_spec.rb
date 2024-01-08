@@ -47,4 +47,32 @@ describe Undercover::Changeset do
     changeset = Undercover::Changeset.new('spec/fixtures/test.git', 'master')
     expect(changeset.last_modified).to eq(Undercover::Changeset::T_ZERO)
   end
+
+  describe 'validate' do
+    let(:report_path) { 'spec/fixtures/sample.lcov' }
+
+    it 'returns :no_changes with empty files' do
+      changeset = Undercover::Changeset.new('spec/fixtures/test.git', 'master') # no update
+      expect(changeset.validate(report_path)).to eq(:no_changes)
+    end
+
+    it 'returns :stale_coverage if coverage report is older than last file change' do
+      changeset = Undercover::Changeset.new('spec/fixtures/test.git', 'master').update
+
+      Timecop.freeze do
+        file_paths = changeset.file_paths.map { |p| "spec/fixtures/#{p}" }
+        FileUtils.touch(file_paths, mtime: Time.now)
+        FileUtils.touch(report_path, mtime: Time.now - 60)
+      end
+
+      expect(changeset.validate(report_path)).to eq(:stale_coverage)
+    end
+
+    it 'returns nil with no validation errors' do
+      changeset = Undercover::Changeset.new('spec/fixtures/test.git', 'master').update
+      FileUtils.touch(report_path, mtime: Time.now)
+
+      expect(changeset.validate(report_path)).to be_nil
+    end
+  end
 end

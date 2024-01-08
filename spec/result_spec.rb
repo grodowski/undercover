@@ -31,6 +31,13 @@ describe Undercover::Result do
     expect(result.coverage_f).to eq(0.0)
   end
 
+  it 'has a fiendly #inspect' do
+    node = ast.find_all(with_name('foo')).first
+    result = described_class.new(node, coverage, 'class.rb')
+
+    expect(result.to_s).to match(/#<Undercover::Report::Result:\d+ name: foo, coverage: 0.0/)
+  end
+
   context 'for an empty module def' do
     let(:ast) { Imagen.from_local('spec/fixtures/empty_class_def.rb') }
     let(:lcov) do
