@@ -16,7 +16,8 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
       - name: Build and test with Rake
         run: |
-          gem install bundler undercover --no-doc
+          gem install bundler -v 2.4.22
+          gem install undercover --no-doc
           bundle install --jobs 4 --retry 3
           bundle exec rake
       - name: undercover (local)
