@@ -6,8 +6,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+# [0.4.7] - 2022-07-28
+### Fixed
+- [Update of one-line block is ignored](https://github.com/grodowski/undercover/pull/207) by [@lizhangyuh](https://github.com/lizhangyuh)
+
+# [0.4.6] - 2023-04-21
+### Added
+- #total_coverage and #total_branch_coverage in the LcovParser
+
 ### Changed
 - Drop support for ruby < 2.7
+- Test coverage with both local `undercover` and Undercover GitHub App for demo purposes
 
 # [0.4.5] - 2022-07-28
 ### Changed
@@ -114,7 +123,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - First release of `undercover` 🎉
 
-[Unreleased]: https://github.com/grodowski/undercover/compare/v0.4.4...HEAD
+[Unreleased]: https://github.com/grodowski/undercover/compare/v0.4.7...HEAD
+[0.4.7]: https://github.com/grodowski/undercover/compare/v0.4.6...v0.4.7
+[0.4.6]: https://github.com/grodowski/undercover/compare/v0.4.5...v0.4.6
 [0.4.5]: https://github.com/grodowski/undercover/compare/v0.4.4...v0.4.5
 [0.4.4]: https://github.com/grodowski/undercover/compare/v0.4.3...v0.4.4
 [0.4.3]: https://github.com/grodowski/undercover/compare/v0.4.1...v0.4.3
