@@ -56,10 +56,10 @@ module Undercover
     end
 
     # TODO: refactor to a standalone validator (depending on changeset AND lcov)
-    # TODO: add specs
     def validate(lcov_report_path)
       return :no_changes if files.empty?
-      return :stale_coverage if last_modified > File.mtime(lcov_report_path)
+
+      :stale_coverage if last_modified > File.mtime(lcov_report_path)
     end
 
     private

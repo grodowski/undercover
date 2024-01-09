@@ -17,21 +17,21 @@ module Undercover
     def formatted_warnings
       @results.map.with_index(1) do |res, idx|
         "🚨 #{idx}) node `#{res.node.name}` type: #{res.node.human_name},\n" +
-          (' ' * pad_size) + "loc: #{res.file_path_with_lines}," \
-                             " coverage: #{res.coverage_f * 100}%\n" +
+          (' ' * pad_size) + "loc: #{res.file_path_with_lines}, " \
+                             "coverage: #{res.coverage_f * 100}%\n" +
           res.pretty_print
       end
     end
 
     def success
-      "#{Rainbow('undercover').bold.green}: ✅ No coverage" \
-        ' is missing in latest changes'
+      "#{Rainbow('undercover').bold.green}: ✅ No coverage " \
+        'is missing in latest changes'
     end
 
     def warnings_header
       "#{Rainbow('undercover').bold.red}: " \
-        '👮‍♂️ some methods have no test coverage! Please add specs for' \
-        ' methods listed below'
+        '👮‍♂️ some methods have no test coverage! Please add specs for ' \
+        'methods listed below'
     end
 
     def pad_size
