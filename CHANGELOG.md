@@ -6,7 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-# [0.4.7] - 2022-07-28
+# [0.5.0] - 2024-01-09
+### Changed
+- Drop ruby 2.x support, require ruby 3.x in gemspec
+- Dev dependency updates
+
+# [0.4.7] - 2024-01-08
 ### Fixed
 - [Update of one-line block is ignored](https://github.com/grodowski/undercover/pull/207) by [@lizhangyuh](https://github.com/lizhangyuh)
 
@@ -123,7 +128,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - First release of `undercover` 🎉
 
-[Unreleased]: https://github.com/grodowski/undercover/compare/v0.4.7...HEAD
+[Unreleased]: https://github.com/grodowski/undercover/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/grodowski/undercover/compare/v0.4.7...v0.5.0
 [0.4.7]: https://github.com/grodowski/undercover/compare/v0.4.6...v0.4.7
 [0.4.6]: https://github.com/grodowski/undercover/compare/v0.4.5...v0.4.6
 [0.4.5]: https://github.com/grodowski/undercover/compare/v0.4.4...v0.4.5

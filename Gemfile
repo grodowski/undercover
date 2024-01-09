@@ -4,6 +4,7 @@ source 'https://rubygems.org'
 
 gemspec
 
+gem 'base64'
 gem 'bundler'
 gem 'pry'
 gem 'rake', '~> 13.0'
