@@ -23,7 +23,7 @@ jobs:
         run: |
           git fetch --update-head-ok origin master:master
           undercover --compare master
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: undercover.lcov
           path: coverage/lcov/undercover.lcov
