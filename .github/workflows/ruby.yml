@@ -7,7 +7,7 @@ jobs:
       matrix:
         ruby: ['3.3', '3.0']
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # fetch all since test fixtures depend on history
       - name: Set up Ruby ${{ matrix.ruby }}
