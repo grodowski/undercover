@@ -38,5 +38,5 @@ jobs:
         run: |
           ruby -e "$(curl -s https://undercover-ci.com/uploader.rb)" -- \
             --repo grodowski/undercover \
-            --commit $GITHUB_SHA \
+            --commit ${{ github.event.pull_request.head.sha || github.sha }} \
             --lcov /home/runner/work/undercover/undercover/undercover.lcov
