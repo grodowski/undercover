@@ -36,7 +36,7 @@ module Undercover
       @results = {}
     end
 
-    # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
+    # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
     def build
       changeset.each_changed_line do |filepath, line_no|
         dist_from_line_no = lambda do |res|
@@ -61,7 +61,7 @@ module Undercover
       end
       self
     end
-    # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
+    # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
 
     def build_warnings
       warn('Undercover::Report#build_warnings is deprecated! ' \
@@ -92,7 +92,6 @@ module Undercover
       return if loaded_files[key]
 
       coverage = lcov.coverage(filepath)
-      return if coverage.empty?
 
       root_ast = Imagen::Node::Root.new.build_from_file(
         File.join(code_dir, filepath)

@@ -27,8 +27,9 @@ module Undercover
       @flagged
     end
 
-    # rubocop:disable Metrics/CyclomaticComplexity
     def uncovered?(line_no)
+      return true if coverage.empty?
+
       # check branch coverage for line_no
       coverage.each do |ln, _block, _branch, cov|
         return true if ln == line_no && cov && cov.zero?
@@ -38,13 +39,16 @@ module Undercover
       line_cov = coverage.select { |cov| cov.size == 2 }.find { |ln, _cov| ln == line_no }
       line_cov && line_cov[1].zero?
     end
-    # rubocop:enable Metrics/CyclomaticComplexity
 
     # Method `coverage_f` returns the total coverage of this Undercover::Result
     # as a % value, taking into account missing branches. Line coverage will be counted
     # as 0 if any branch is untested.
     # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     def coverage_f
+      if coverage.empty?
+        return node.children.empty? ? 1.0 : 0.0
+      end
+
       lines = {}
       coverage.each do |ln, block_or_line_cov, _, branch_cov|
         lines[ln] = 1 unless lines.key?(ln)

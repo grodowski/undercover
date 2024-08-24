@@ -108,5 +108,17 @@ describe Undercover::Report do
       expect(warnings[1].file_path).to eq('test_two_patches.rb')
       expect(warnings[1].first_line).to eq(15)
     end
+
+    it 'reports changed files that were not in the lcov report' do
+      options.lcov = 'spec/fixtures/test_empty.lcov'
+      report.build
+      warnings = report.build_warnings.to_a
+      expect(warnings.size).to eq(2)
+
+      expect(warnings[0].file_path).to eq('test_two_patches.rb')
+      expect(warnings[0].first_line).to eq(3)
+      expect(warnings[1].file_path).to eq('test_two_patches.rb')
+      expect(warnings[1].first_line).to eq(15)
+    end
   end
 end
