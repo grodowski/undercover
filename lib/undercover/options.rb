@@ -129,13 +129,14 @@ module Undercover
     end
 
     def file_filters(parser)
-      desc = 'Include files matching specified glob patterns (comma separated)'
-      parser.on('-f', '--include-files comma_separated_globs', desc) do |comma_separated_globs|
+      desc = 'Include files matching specified glob patterns (comma separated). ' \
+             "Defaults to '#{DEFAULT_FILE_INCLUDE_GLOBS.join(',')}'"
+      parser.on('-f', '--include-files globs', desc) do |comma_separated_globs|
         self.glob_allow_filters = comma_separated_globs.strip.split(',')
       end
 
-      desc = 'Skip files matching specified glob patterns (comma separated)'
-      parser.on('-x', '--exclude-files comma_separated_globs', desc) do |comma_separated_globs|
+      desc = 'Skip files matching specified glob patterns (comma separated). Empty by default.'
+      parser.on('-x', '--exclude-files globs', desc) do |comma_separated_globs|
         self.glob_reject_filters = comma_separated_globs.strip.split(',')
       end
     end

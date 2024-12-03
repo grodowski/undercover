@@ -1,6 +1,6 @@
 ![logo](https://github.com/grodowski/undercover/assets/4991698/c4bf038b-4472-4406-8f1f-5ddc812908d6)
 
-`undercover` warns about methods, classes and blocks that **were changed without tests**, to help you easily find untested code and reduce the number of bugs. It does so by analysing data from git diffs, code structure and SimpleCov coverage reports. 
+`undercover` warns about methods, classes and blocks that **were changed without tests**, to help you easily find untested code and reduce the number of bugs. It does so by analysing data from git diffs, code structure and SimpleCov coverage reports.
 
 Works with any Ruby CI pipeline as well as locally as a CLI.
 
@@ -104,12 +104,14 @@ A few options exist to provide automated comments from `undercover` in Pull Requ
 Options can be passed when running the command from the command line:
 
 ```sh
-undercover -h
 Usage: undercover [options]
     -l, --lcov path                  LCOV report file path
     -p, --path path                  Project directory
     -g, --git-dir dir                Override `.git` with a custom directory
     -c, --compare ref                Generate coverage warnings for all changes after `ref`
+    -r, --ruby-syntax ver            Ruby syntax version, one of: current, ruby18, ruby19, ruby20, ruby21, ruby22, ruby23, ruby24, ruby25, ruby26, ruby30, ruby31, ruby32, ruby33
+    -f, --include-files globs        Include files matching specified glob patterns (comma separated). Defaults to '*.rb,*.rake,*.ru,Rakefile'
+    -x, --exclude-files globs        Skip files matching specified glob patterns (comma separated). Empty by default.
     -h, --help                       Prints this help
         --version                    Show version
 ```
