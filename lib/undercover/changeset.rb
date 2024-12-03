@@ -74,7 +74,9 @@ module Undercover
     def compare_base_obj
       return nil unless compare_base
 
-      repo.lookup(repo.merge_base(compare_base.to_s, head))
+      merge_base = repo.merge_base(compare_base.to_s, head)
+      # merge_base may be nil with --depth 1, compare two refs directly
+      merge_base ? repo.lookup(merge_base) : repo.rev_parse(compare_base)
     end
 
     def head
