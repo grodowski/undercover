@@ -12,7 +12,7 @@ describe Undercover::Changeset do
     ).update
 
     expect(changeset.files.keys).to match_array(
-      %w[file_one file_two staged_file class.rb module.rb]
+      %w[file_one file_two staged_file class.rb module.rb sinatra.rb]
     )
     expect(changeset.files['file_two']).to eq([7, 10, 11])
   end
@@ -24,7 +24,7 @@ describe Undercover::Changeset do
     ).update
 
     expect(changeset.file_paths).to match_array(
-      %w[file_one file_three file_two staged_file class.rb module.rb]
+      %w[file_one file_three file_two staged_file class.rb module.rb sinatra.rb]
     )
     expect(changeset.files['file_two']).to eq([7, 10, 11])
     expect(changeset.files['file_three']).to eq([1, 2, 3, 4, 5, 6])

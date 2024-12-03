@@ -21,7 +21,7 @@ describe Undercover::Report do
   it 'builds a report with coverage metrics' do
     report.build
 
-    expect(report.results.size).to eq(2)
+    expect(report.results.size).to eq(3)
     all = report.all_results
     expect(all[0]).to be_an(Undercover::Result)
     expect(all[0].coverage_f).to eq(0.8333)
@@ -54,6 +54,15 @@ describe Undercover::Report do
     expect(unflagged[0].coverage_f).to eq(0.875)
     expect(unflagged[1].name).to eq('baz')
     expect(unflagged[1].coverage_f).to eq(1.0)
+
+    # includes blocks at top-level (reproduce https://github.com/grodowski/undercover/issues/135)
+    top_level_results = report.results['sinatra.rb'].to_a
+    expect(top_level_results.size).to eq(1)
+    expect(top_level_results[0].name).to eq('block')
+    expect(top_level_results[0].coverage_f).to eq(0.0)
+    expect(top_level_results[0].flagged?).to eq(true)
+    expect(top_level_results[0].first_line).to eq(2)
+    expect(top_level_results[0].last_line).to eq(4)
   end
 
   it 'does not parse files outside of the lcov report' do
@@ -67,13 +76,13 @@ describe Undercover::Report do
   it 'builds pathnames relative to --path' do
     report.build
 
-    expect(report.results.keys.sort).to eq(%w[class.rb module.rb])
+    expect(report.results.keys.sort).to eq(%w[class.rb module.rb sinatra.rb])
   end
 
   it 'builds does not mess up with result keys' do
     report.build
 
-    expect(report.results.keys.sort).to eq(%w[class.rb module.rb])
+    expect(report.results.keys.sort).to eq(%w[class.rb module.rb sinatra.rb])
   end
 
   context 'with mock changeset' do

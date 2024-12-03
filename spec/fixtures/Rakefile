@@ -4,7 +4,7 @@ require 'bundler/gem_tasks'
 require 'rspec/core/rake_task'
 require 'rubocop/rake_task'
 
-def rakefile # TODO: fix known issue of not parsing top-level expressions!
+def rakefile
   desc 'Run RuboCop'
   RuboCop::RakeTask.new(:rubocop)
 
