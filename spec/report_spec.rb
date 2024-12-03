@@ -84,10 +84,13 @@ describe Undercover::Report do
         .to receive(:each_changed_line)
         .and_yield('test_two_patches.rb', 6)
         .and_yield('test_two_patches.rb', 21)
+        .and_yield('Rakefile', 1)
+        .and_yield('.undercover_config', 1) # unparsable, won't appear in the report
       mock_changeset
     end
 
-    it 'flags 2 two results' do
+    it 'flags 2 two results when Rakefile is ignored' do
+      options.glob_reject_filters = ['Rakefile']
       options.lcov = 'spec/fixtures/test_two_patches.lcov'
       report.build
       flagged = report.flagged_results
@@ -99,6 +102,7 @@ describe Undercover::Report do
     end
 
     it 'deprecated build_warnings still works' do
+      options.glob_allow_filters = ['*.rb']
       options.lcov = 'spec/fixtures/test_two_patches.lcov'
       report.build
       warnings = report.build_warnings.to_a
@@ -113,12 +117,17 @@ describe Undercover::Report do
       options.lcov = 'spec/fixtures/test_empty.lcov'
       report.build
       warnings = report.build_warnings.to_a
-      expect(warnings.size).to eq(2)
+      expect(warnings.size).to eq(3)
 
       expect(warnings[0].file_path).to eq('test_two_patches.rb')
       expect(warnings[0].first_line).to eq(3)
       expect(warnings[1].file_path).to eq('test_two_patches.rb')
       expect(warnings[1].first_line).to eq(15)
+      expect(warnings[2].file_path).to eq('Rakefile')
+      expect(warnings[2].first_line).to eq(7)
+
+      expect(warnings[0].coverage_f).to eq(0.0)
+      expect(warnings[1].coverage_f).to eq(0.0)
     end
   end
 end

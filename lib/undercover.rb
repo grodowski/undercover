@@ -22,7 +22,8 @@ module Undercover
     attr_reader :changeset,
                 :lcov,
                 :results,
-                :code_dir
+                :code_dir,
+                :glob_filters
 
     # Initializes a new Undercover::Report
     #
@@ -32,6 +33,10 @@ module Undercover
       @lcov = LcovParser.parse(File.open(opts.lcov))
       @code_dir = opts.path
       @changeset = changeset.update
+      @glob_filters = {
+        allow: opts.glob_allow_filters,
+        reject: opts.glob_reject_filters
+      }
       @loaded_files = {}
       @results = {}
     end
@@ -50,6 +55,7 @@ module Undercover
         dist_from_line_no_sorter = lambda do |res1, res2|
           dist_from_line_no[res1] <=> dist_from_line_no[res2]
         end
+
         load_and_parse_file(filepath)
 
         next unless loaded_files[filepath]
@@ -93,6 +99,8 @@ module Undercover
 
       coverage = lcov.coverage(filepath)
 
+      return unless include_file?(filepath)
+
       root_ast = Imagen::Node::Root.new.build_from_file(
         File.join(code_dir, filepath)
       )
@@ -105,5 +113,10 @@ module Undercover
       end
     end
     # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
+
+    def include_file?(filepath)
+      fnmatch = proc { |glob| File.fnmatch(glob, filepath) }
+      glob_filters[:allow].any?(fnmatch) && glob_filters[:reject].none?(fnmatch)
+    end
   end
 end

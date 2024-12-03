@@ -28,7 +28,7 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = '>= 3.0.0'
 
   spec.add_dependency 'bigdecimal'
-  spec.add_dependency 'imagen', '>= 0.1.8'
+  spec.add_dependency 'imagen', '>= 0.2.0'
   spec.add_dependency 'rainbow', '>= 2.1', '< 4.0'
   spec.add_dependency 'rugged', '>= 0.27', '< 1.8'
 end

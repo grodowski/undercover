@@ -4,7 +4,7 @@ require 'optparse'
 require 'pathname'
 
 module Undercover
-  class Options
+  class Options # rubocop:disable Metrics/ClassLength
     RUN_MODE = [
       RUN_MODE_DIFF_STRICT = :diff_strict, # warn for changed lines
       # RUN_MODE_DIFF_FILES  = :diff_files, # warn for changed whole files
@@ -17,7 +17,15 @@ module Undercover
       # OUTPUT_CIRCLEMATOR = :circlemator # posts warnings as review comments
     ].freeze
 
-    attr_accessor :lcov, :path, :git_dir, :compare, :syntax_version
+    DEFAULT_FILE_INCLUDE_GLOBS = %w[*.rb *.rake *.ru Rakefile].freeze
+
+    attr_accessor :lcov,
+                  :path,
+                  :git_dir,
+                  :compare,
+                  :syntax_version,
+                  :glob_allow_filters,
+                  :glob_reject_filters
 
     def initialize
       # TODO: use run modes
@@ -27,6 +35,8 @@ module Undercover
       # set defaults
       self.path = '.'
       self.git_dir = '.git'
+      self.glob_allow_filters = DEFAULT_FILE_INCLUDE_GLOBS
+      self.glob_reject_filters = []
     end
 
     # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
@@ -51,9 +61,7 @@ module Undercover
         git_dir_option(opts)
         compare_option(opts)
         ruby_syntax_option(opts)
-        # TODO: parse dem other options and assign to self
-        # --quiet (skip progress bar)
-        # --exit-status (do not print report, just exit)
+        file_filters(opts)
       end.parse(args)
 
       guess_lcov_path unless lcov
@@ -118,6 +126,18 @@ module Undercover
     def guess_lcov_path
       cwd = Pathname.new(File.expand_path(path))
       self.lcov = File.join(cwd, 'coverage', 'lcov', "#{cwd.split.last}.lcov")
+    end
+
+    def file_filters(parser)
+      desc = 'Include files matching specified glob patterns (comma separated)'
+      parser.on('-f', '--include-files comma_separated_globs', desc) do |comma_separated_globs|
+        self.glob_allow_filters = comma_separated_globs.strip.split(',')
+      end
+
+      desc = 'Skip files matching specified glob patterns (comma separated)'
+      parser.on('-x', '--exclude-files comma_separated_globs', desc) do |comma_separated_globs|
+        self.glob_reject_filters = comma_separated_globs.strip.split(',')
+      end
     end
   end
 end

@@ -96,6 +96,26 @@ describe Undercover::CLI do
     subject.run(%w[-cHEAD~1])
   end
 
+  it 'sets file globs from options' do
+    stub_stdout
+    stub_build
+    expect(Undercover::Report)
+      .to receive(:new)
+      .with(
+        instance_of(Undercover::Changeset),
+        undercover_options(
+          lcov: a_string_matching(/coverage\/lcov\/\w+\.lcov/),
+          path: '.',
+          git_dir: '.git',
+          compare: nil,
+          glob_allow_filters: ['*.rb', '*.rake'],
+          glob_reject_filters: ['Rakefile']
+        )
+      )
+      .and_call_original
+    subject.run(%w[-f *.rb,*.rake -x Rakefile])
+  end
+
   it 'returns 0 exit code on success' do
     stub_stdout
 

@@ -13,7 +13,7 @@ module Undercover
     def initialize(node, file_cov, file_path)
       @node = node
       @coverage = file_cov.select do |ln, _|
-        first_line == last_line ? ln == first_line : ln > first_line && ln < last_line
+        (node.empty_def? ? ln >= first_line : ln > first_line) && ln < last_line
       end
       @file_path = file_path
       @flagged = false
@@ -45,9 +45,7 @@ module Undercover
     # as 0 if any branch is untested.
     # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     def coverage_f
-      if coverage.empty?
-        return node.children.empty? ? 1.0 : 0.0
-      end
+      return 0.0 if coverage.empty?
 
       lines = {}
       coverage.each do |ln, block_or_line_cov, _, branch_cov|
@@ -58,7 +56,6 @@ module Undercover
           lines[ln] = 0
         end
       end
-      return 1.0 if lines.keys.empty?
 
       (lines.values.sum.to_f / lines.keys.size).round(4)
     end
