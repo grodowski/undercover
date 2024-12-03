@@ -88,14 +88,14 @@ module Undercover
         if line.strip.empty?
           Rainbow(formatted_line).darkgray.dark
         elsif covered.nil?
-          Rainbow(formatted_line).darkgray.dark + \
+          Rainbow(formatted_line).darkgray.dark +
             Rainbow(' hits: n/a').italic.darkgray.dark
         elsif covered.positive?
-          Rainbow(formatted_line).green + \
+          Rainbow(formatted_line).green +
             Rainbow(" hits: #{covered}").italic.darkgray.dark + \
             count_covered_branches(num)
         elsif covered.zero?
-          Rainbow(formatted_line).red + \
+          Rainbow(formatted_line).red +
             Rainbow(" hits: #{covered}").italic.darkgray.dark + \
             count_covered_branches(num)
         end
@@ -123,7 +123,7 @@ module Undercover
       return '' if branches.empty?
 
       if count_covered < branches.size
-        Rainbow(' branches: ').italic.darkgray.dark + \
+        Rainbow(' branches: ').italic.darkgray.dark +
           Rainbow("#{count_covered}/#{branches.size}").italic.red
       else
         Rainbow(" branches: #{count_covered}/#{branches.size}").italic.darkgray.dark
