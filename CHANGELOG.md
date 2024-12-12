@@ -5,12 +5,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+# [0.6.0] - 2024-12-12
 ### Added
 - Add support for including and exluding files by glob patterns, supplied through CLI args and the configuration file (#146)
 
 ### Fixed
 - Files that were changed but don't appear in the coverage report at all will now be reported as uncovered, as expected.
-- Fixed an issue where top-level methods were not being considered (#135). This was caused by a bug in the tree traversal logic.
+- Fixed an issue where top-level methods were not being considered [#135](https://github.com/grodowski/undercover/issues/135). This was caused by a bug in the tree traversal logic.
+- Fixed a bug where `--compare` didn't work with grafted commits as there was no merge base available ([#175](https://github.com/grodowski/undercover/issues/175)). Now it's possible to pass a graft commit as `--compare` which enables `undercover` to work with shallow clones.
 
 # [0.5.0] - 2024-01-09
 ### Changed
@@ -134,7 +137,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - First release of `undercover` 🎉
 
-[Unreleased]: https://github.com/grodowski/undercover/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/grodowski/undercover/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/grodowski/undercover/compare/v0.6.0...v0.5.0
 [0.5.0]: https://github.com/grodowski/undercover/compare/v0.4.7...v0.5.0
 [0.4.7]: https://github.com/grodowski/undercover/compare/v0.4.6...v0.4.7
 [0.4.6]: https://github.com/grodowski/undercover/compare/v0.4.5...v0.4.6
