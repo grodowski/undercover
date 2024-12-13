@@ -18,6 +18,7 @@ module Undercover
     ].freeze
 
     DEFAULT_FILE_INCLUDE_GLOBS = %w[*.rb *.rake *.ru Rakefile].freeze
+    DEFAULT_FILE_EXCLUDE_GLOBS = %w[test/* spec/* *_test.rb *_spec.rb].freeze
 
     attr_accessor :lcov,
                   :path,
@@ -36,7 +37,7 @@ module Undercover
       self.path = '.'
       self.git_dir = '.git'
       self.glob_allow_filters = DEFAULT_FILE_INCLUDE_GLOBS
-      self.glob_reject_filters = []
+      self.glob_reject_filters = DEFAULT_FILE_EXCLUDE_GLOBS
     end
 
     # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
