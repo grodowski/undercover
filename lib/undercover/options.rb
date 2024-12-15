@@ -18,7 +18,7 @@ module Undercover
     ].freeze
 
     DEFAULT_FILE_INCLUDE_GLOBS = %w[*.rb *.rake *.ru Rakefile].freeze
-    DEFAULT_FILE_EXCLUDE_GLOBS = %w[test/* spec/* *_test.rb *_spec.rb].freeze
+    DEFAULT_FILE_EXCLUDE_GLOBS = %w[test/* spec/* db/* *_test.rb *_spec.rb].freeze
 
     attr_accessor :lcov,
                   :path,
