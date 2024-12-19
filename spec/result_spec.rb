@@ -82,4 +82,19 @@ describe Undercover::Result do
       expect(result.uncovered?(7)).to be_truthy
     end
   end
+
+  context 'for single-line node covered' do
+    let(:ast) { Imagen.from_local('spec/fixtures/single_line.rb') }
+    let(:lcov) do
+      Undercover::LcovParser.parse('spec/fixtures/single_line.lcov')
+    end
+    let(:coverage) { lcov.source_files['single_line.rb'] }
+
+    it 'uncovered gives false' do
+      node = ast.children[0].find_all(->(_) { true }).last
+      result = described_class.new(node, coverage, 'single_line.rb')
+
+      expect(result.uncovered?(1)).to be_falsy
+    end
+  end
 end
