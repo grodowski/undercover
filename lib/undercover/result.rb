@@ -10,13 +10,12 @@ module Undercover
 
     def_delegators :node, :first_line, :last_line, :name
 
-    def initialize(node, file_cov, file_path)
+    def initialize(node, file_cov, file_path) # rubocop:disable Metrics/MethodLength
       @node = node
       @coverage = file_cov.select do |ln, _|
-        case
-        when first_line == last_line
+        if first_line == last_line
           ln == first_line
-        when node.empty_def?
+        elsif node.empty_def?
           ln >= first_line
         else
           ln > first_line && ln < last_line
