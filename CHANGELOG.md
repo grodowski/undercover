@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+# [0.6.3] - 2024-12-23
+
+### Fixed
+- Fix false positives with empty blocks/methods on a single line ([#216](https://github.com/grodowski/undercover/issues/216)) by [@splattael](https://github.com/splattael).
+- Updated list of default excluded directories (added `db/` and `config/`)
+
 # [0.6.0] - 2024-12-12
 ### Added
 - Add support for including and exluding files by glob patterns, supplied through CLI args and the configuration file (#146)
@@ -137,7 +143,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - First release of `undercover` 🎉
 
-[Unreleased]: https://github.com/grodowski/undercover/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/grodowski/undercover/compare/v0.6.3...HEAD
+[0.6.3]:https://github.com/grodowski/undercover/compare/v0.6.3...v0.6.0
 [0.6.0]: https://github.com/grodowski/undercover/compare/v0.6.0...v0.5.0
 [0.5.0]: https://github.com/grodowski/undercover/compare/v0.4.7...v0.5.0
 [0.4.7]: https://github.com/grodowski/undercover/compare/v0.4.6...v0.4.7
