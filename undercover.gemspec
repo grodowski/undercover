@@ -30,5 +30,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'bigdecimal'
   spec.add_dependency 'imagen', '>= 0.2.0'
   spec.add_dependency 'rainbow', '>= 2.1', '< 4.0'
-  spec.add_dependency 'rugged', '>= 0.27', '< 1.8'
+  spec.add_dependency 'rugged', '>= 0.27', '< 1.10'
 end
