@@ -98,11 +98,11 @@ module Undercover
             Rainbow(' hits: n/a').italic.darkgray.dark
         elsif covered.positive?
           Rainbow(formatted_line).green +
-            Rainbow(" hits: #{covered}").italic.darkgray.dark + \
+            Rainbow(" hits: #{covered}").italic.darkgray.dark +
             count_covered_branches(num)
         elsif covered.zero?
           Rainbow(formatted_line).red +
-            Rainbow(" hits: #{covered}").italic.darkgray.dark + \
+            Rainbow(" hits: #{covered}").italic.darkgray.dark +
             count_covered_branches(num)
         end
       end.join("\n")
