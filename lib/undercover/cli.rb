@@ -20,7 +20,6 @@ module Undercover
 
       run_report(opts)
     end
-    # rubocop:enable
 
     def self.run_report(opts)
       report = Undercover::Report.new(changeset(opts), opts).build
