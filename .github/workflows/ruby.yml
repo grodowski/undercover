@@ -33,7 +33,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: undercover-3.3.lcov
+          name: undercover-3.4.lcov
       - name: Upload coverage
         run: |
           ruby -e "$(curl -s https://undercover-ci.com/uploader.rb)" -- \
