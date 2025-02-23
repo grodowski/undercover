@@ -5,16 +5,29 @@ require 'pathname'
 
 module Undercover
   class Options # rubocop:disable Metrics/ClassLength
-    RUN_MODE = [
-      RUN_MODE_DIFF_STRICT = :diff_strict, # warn for changed lines
-      # RUN_MODE_DIFF_FILES  = :diff_files, # warn for changed whole files
-      # RUN_MODE_ALL         = :diff_all, # warn for allthethings
-      # RUN_MODE_FILES       = :files # warn for specific files (cli option)
+    DIFF_TRIGGER_MODE = [
+      # Default, analyse all code blocks with changed lines. Untested lines and branches will trigger warnings if they
+      # strictly belong to the diff.
+      DIFF_TRIGGER_LINE = :diff_trigger_line,
+      #
+      # Doesn't exist yet
+      # Analyse all code blocks with changed lines. Untested lines and branches always trigger warnings for code block.
+      # DIFF_TRIGGER_BLOCK = :diff_trigger_block,
+      # Analyse all code blocks in each changed file.
+      # DIFF_TRIGGER_FILE = :diff_trigger_file,
+      # Analyse all code blocks in all files, ignores current diff (use --include-files and --exclude-files for control)
+      # ALL = :all,
     ].freeze
 
-    OUTPUT_FORMATTERS = [
-      OUTPUT_STDOUT = :stdout, # outputs warnings to stdout with exit 1
-      # OUTPUT_CIRCLEMATOR = :circlemator # posts warnings as review comments
+    FILE_SCOPE = [
+      # Extended scope helps identify Ruby files that are not required in the test suite.
+      # Warning: currently doesn't respect :nocov: syntax in files not traced by SimpleCov.
+      # (use --include-files and --exclude-files for control)
+      FILE_SCOPE_EXTENDED = :scope_extended,
+      #
+      # Doesn't exist yet
+      # Analyse file that appear in coverage reports. Historically, the default undercover mode.
+      # FILE_SCOPE_COVERAGE = :scope_coverage,
     ].freeze
 
     DEFAULT_FILE_INCLUDE_GLOBS = %w[*.rb *.rake *.ru Rakefile].freeze
@@ -25,14 +38,14 @@ module Undercover
                   :git_dir,
                   :compare,
                   :syntax_version,
+                  :run_mode,
+                  :file_scope,
                   :glob_allow_filters,
                   :glob_reject_filters
 
     def initialize
-      # TODO: use run modes
-      # TODO: use formatters
-      @run_mode = RUN_MODE_DIFF_STRICT
-      @enabled_formatters = [OUTPUT_STDOUT]
+      @run_mode = DIFF_TRIGGER_LINE
+      @file_scope = FILE_SCOPE_EXTENDED
       # set defaults
       self.path = '.'
       self.git_dir = '.git'
