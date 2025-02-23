@@ -34,7 +34,7 @@ describe Undercover::Report do
     module_results = report.results['module.rb']
     # only includes changed methods
     expect(module_results.map(&:name))
-      .to eq(%w[BaconModule bar baz branch_missed branch_hit foobar])
+      .to eq(%w[BaconModule bar baz branch_missed branch_hit foobar]) # TODO: misses top-level methods
 
     # includes flagged blocks
     module_flagged = module_results.select(&:flagged?)
@@ -57,7 +57,7 @@ describe Undercover::Report do
 
     # includes blocks at top-level (reproduce https://github.com/grodowski/undercover/issues/135)
     top_level_results = report.results['sinatra.rb'].to_a
-    expect(top_level_results.size).to eq(1)
+    expect(top_level_results.size).to eq(1) # TODO: misses top-level methods
     expect(top_level_results[0].name).to eq('block')
     expect(top_level_results[0].coverage_f).to eq(0.0)
     expect(top_level_results[0].flagged?).to eq(true)
