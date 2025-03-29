@@ -10,13 +10,13 @@ module Undercover
 
     def_delegators :node, :first_line, :last_line, :name
 
-    def initialize(node, file_cov, file_path) # rubocop:disable Metrics/MethodLength
+    def initialize(node, file_cov, file_path) # rubocop:disable Metrics/MethodLength,Metrics/AbcSize
       @node = node
       @coverage = file_cov.select do |ln, _|
         if first_line == last_line
           ln == first_line
-        elsif node.empty_def?
-          ln >= first_line
+        elsif node.empty_def? || node.is_a?(Imagen::Node::Block)
+          ln >= first_line && ln <= last_line # rubocop:disable Style/ComparableBetween
         else
           ln > first_line && ln < last_line
         end

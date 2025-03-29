@@ -31,8 +31,8 @@ describe Undercover::LcovParser do
     branchful = parser.source_files['module.rb']
     expected = [
       [3, 1], [4, 1], [5, 1], [8, 1], [9, 0], [12, 1], [13, 1], [16, 1], [17, 1],
-      [20, 1], [21, 1], [24, 1], [25, 1], [26, 1], [28, 1], [29, 1], [17, 0, 2, 1],
-      [17, 0, 1, 0], [21, 0, 2, 1], [21, 0, 1, 1], [25, 0, 1, 1], [27, 0, 2, 1]
+      [20, 1], [21, 1], [24, 1], [25, 1], [26, 1], [28, 1], [29, 1], [33, 1], [34, 0],
+      [17, 0, 2, 1], [17, 0, 1, 0], [21, 0, 2, 1], [21, 0, 1, 1], [25, 0, 1, 1], [27, 0, 2, 1]
     ]
     expect(branchful).to eq(expected)
   end
@@ -52,7 +52,7 @@ describe Undercover::LcovParser do
   it 'includes total coverage data' do
     parser = described_class.parse('spec/fixtures/fixtures.lcov')
 
-    expect(parser.total_coverage).to eq(0.9)
+    expect(parser.total_coverage).to eq(0.875)
     expect(parser.total_branch_coverage).to eq(0.833)
   end
 

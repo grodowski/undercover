@@ -107,8 +107,7 @@ module Undercover
       return if root_ast.children.empty?
 
       loaded_files[key] = []
-      # TODO: children[0] ignores the lonely_method (see spec fixtures)!
-      root_ast.children[0].find_all(->(_) { true }).each do |imagen_node|
+      root_ast.find_all(->(node) { !node.is_a?(Imagen::Node::Root) }).each do |imagen_node|
         loaded_files[key] << Result.new(imagen_node, coverage, filepath)
       end
     end
