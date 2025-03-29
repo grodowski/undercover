@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+# [0.6.4] - 2025-03-29
+
+### Fixed
+- Fix more false positives due to source file / coverage locator issues ([#222](https://github.com/grodowski/undercover/issues/222))
+
 # [0.6.3] - 2024-12-23
 
 ### Fixed
