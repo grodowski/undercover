@@ -1,0 +1,23 @@
+{
+  "RSpec": {
+    "coverage": {
+      "/Users/mrgrodo/dev/undercover/spec/fixtures/nocov.rb": {
+        "lines": [
+            null,
+            1,
+            0,
+            null,
+            null,
+            null,
+            1,
+            0,
+            0,
+            null,
+            null
+        ],
+        "branches": {}
+      }
+    },
+    "timestamp": 1743371180
+  }
+}

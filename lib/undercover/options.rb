@@ -34,6 +34,7 @@ module Undercover
     DEFAULT_FILE_EXCLUDE_GLOBS = %w[test/* spec/* db/* config/* *_test.rb *_spec.rb].freeze
 
     attr_accessor :lcov,
+                  :simplecov_resultset,
                   :path,
                   :git_dir,
                   :compare,
@@ -73,6 +74,7 @@ module Undercover
         end
 
         lcov_path_option(opts)
+        resultset_path_option(opts)
         project_path_option(opts)
         git_dir_option(opts)
         compare_option(opts)
@@ -81,6 +83,7 @@ module Undercover
         file_filters(opts)
       end.parse(args)
 
+      guess_resultset_path unless simplecov_resultset
       guess_lcov_path unless lcov
       self
     end
@@ -109,6 +112,12 @@ module Undercover
     def lcov_path_option(parser)
       parser.on('-l', '--lcov path', 'LCOV report file path') do |path|
         self.lcov = path
+      end
+    end
+
+    def resultset_path_option(parser)
+      parser.on('-s', '--simplecov path', 'SimpleCov resultset file path') do |path|
+        self.simplecov_resultset = path
       end
     end
 
@@ -145,6 +154,12 @@ module Undercover
       parser.on('-w', '--max-warnings limit', Integer, desc) do |limit|
         self.max_warnings_limit = limit
       end
+    end
+
+    def guess_resultset_path
+      cwd = Pathname.new(File.expand_path(path))
+      try_path = File.join(cwd, 'coverage', '.resultset.json')
+      self.simplecov_resultset = try_path if File.exist?(try_path)
     end
 
     def guess_lcov_path

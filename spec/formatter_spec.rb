@@ -20,7 +20,7 @@ describe Undercover::Formatter do
 
   context 'with warnings from module.rb' do
     let(:ast) { Imagen.from_local('spec/fixtures/module.rb') }
-    let(:coverage) { lcov.source_files['module.rb'] }
+    let(:coverage) { lcov }
     let(:node) { ast.find_all(with_name('BaconModule')).first }
     let(:result) { Undercover::Result.new(node, coverage, 'module.rb') }
 
@@ -38,7 +38,7 @@ describe Undercover::Formatter do
 
   context 'with warnings from class.rb' do
     let(:ast) { Imagen.from_local('spec/fixtures/class.rb') }
-    let(:coverage) { lcov.source_files['class.rb'] }
+    let(:coverage) { lcov }
     let(:node) { ast.find_all(with_name('BaconClass')).first }
     let(:result) { Undercover::Result.new(node, coverage, 'class.rb') }
 
