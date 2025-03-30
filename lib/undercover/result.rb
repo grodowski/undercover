@@ -3,15 +3,18 @@
 require 'forwardable'
 
 module Undercover
-  class Result
+  class Result # rubocop:disable Metrics/ClassLength
     extend Forwardable
 
-    attr_reader :node, :coverage, :file_path
+    attr_reader :node, :coverage, :coverage_adapter, :file_path
 
     def_delegators :node, :first_line, :last_line, :name
+    def_delegators :coverage_adapter, :skipped?
 
-    def initialize(node, file_cov, file_path) # rubocop:disable Metrics/MethodLength,Metrics/AbcSize
+    def initialize(node, coverage_adapter, file_path) # rubocop:disable Metrics/MethodLength,Metrics/AbcSize
       @node = node
+      @coverage_adapter = coverage_adapter
+      file_cov = coverage_adapter.coverage(file_path)
       @coverage = file_cov.select do |ln, _|
         if first_line == last_line
           ln == first_line
@@ -21,6 +24,7 @@ module Undercover
           ln > first_line && ln < last_line
         end
       end
+
       @file_path = file_path
       @flagged = false
     end
@@ -33,7 +37,8 @@ module Undercover
       @flagged
     end
 
-    def uncovered?(line_no)
+    def uncovered?(line_no) # rubocop:disable Metrics/AbcSize
+      return false if skipped?(file_path, line_no)
       return true if coverage.empty?
 
       # check branch coverage for line_no
@@ -55,6 +60,11 @@ module Undercover
 
       lines = {}
       coverage.each do |ln, block_or_line_cov, _, branch_cov|
+        if skipped?(file_path, ln)
+          lines[ln] = 1
+          next
+        end
+
         lines[ln] = 1 unless lines.key?(ln)
         if branch_cov
           lines[ln] = 0 if branch_cov.zero?
@@ -93,6 +103,9 @@ module Undercover
         formatted_line = "#{num.to_s.rjust(pad)}: #{line}"
         if line.strip.empty?
           Rainbow(formatted_line).darkgray.dark
+        elsif skipped?(file_path, num)
+          Rainbow(formatted_line).darkgray.dark +
+            Rainbow(' skipped with :nocov:').italic.darkgray.dark
         elsif covered.nil?
           Rainbow(formatted_line).darkgray.dark +
             Rainbow(' hits: n/a').italic.darkgray.dark

@@ -8,7 +8,7 @@ describe Undercover::Result do
   let(:lcov) do
     Undercover::LcovParser.parse('spec/fixtures/fixtures.lcov')
   end
-  let(:coverage) { lcov.source_files['class.rb'] }
+  let(:coverage) { lcov }
 
   it 'computes class coverage as float' do
     node = ast.find_all(with_name('BaconClass')).first
@@ -43,7 +43,7 @@ describe Undercover::Result do
     let(:lcov) do
       Undercover::LcovParser.parse('spec/fixtures/empty_class_def.lcov')
     end
-    let(:coverage) { lcov.source_files['empty_class_def.rb'] }
+    let(:coverage) { lcov }
 
     it 'is not NaN' do
       node = ast.find_all(with_name('ApplicationJob')).first
@@ -58,7 +58,7 @@ describe Undercover::Result do
     let(:lcov) do
       Undercover::LcovParser.parse('spec/fixtures/fixtures.lcov')
     end
-    let(:coverage) { lcov.source_files['module.rb'] }
+    let(:coverage) { lcov }
 
     it 'uncovered gives false' do
       node = ast.find_all(with_name('foobar')).first
@@ -73,7 +73,7 @@ describe Undercover::Result do
     let(:lcov) do
       Undercover::LcovParser.parse('spec/fixtures/one_line_block.lcov')
     end
-    let(:coverage) { lcov.source_files['one_line_block.rb'] }
+    let(:coverage) { lcov }
 
     it 'uncovered gives true' do
       node = ast.children[0].find_all(->(_) { true }).last
@@ -88,7 +88,7 @@ describe Undercover::Result do
     let(:lcov) do
       Undercover::LcovParser.parse('spec/fixtures/single_line.lcov')
     end
-    let(:coverage) { lcov.source_files['single_line.rb'] }
+    let(:coverage) { lcov }
 
     it 'uncovered gives false' do
       node = ast.children[0].find_all(->(_) { true }).last
@@ -118,7 +118,7 @@ describe Undercover::Result do
       file.flush
       Undercover::LcovParser.parse(file).tap { file.close }
     end
-    let(:coverage) { lcov.source_files['method_block_multi.rb'] }
+    let(:coverage) { lcov }
 
     it "doesn't report false positive on block" do
       node = ast.children[0].find_all(->(_) { true }).last
@@ -152,7 +152,7 @@ describe Undercover::Result do
       file.flush
       Undercover::LcovParser.parse(file).tap { file.close }
     end
-    let(:coverage) { lcov.source_files['method_block_multi.rb'] }
+    let(:coverage) { lcov }
 
     it "doesn't report false positive on block" do
       node = ast.children[0].find_all(->(_) { true }).last
@@ -182,15 +182,45 @@ describe Undercover::Result do
       file.flush
       Undercover::LcovParser.parse(file).tap { file.close }
     end
-    let(:coverage) { lcov.source_files['def_single_line.rb'] }
+    let(:coverage) { lcov }
 
     it "doesn't report false positive on block" do
       nodes = ast.find_all(->(node) { !node.is_a?(Imagen::Node::Root) })
       nodes.each do |node|
-        result = described_class.new(node, coverage, 'method_block_multi.rb')
+        result = described_class.new(node, coverage, 'def_single_line.rb')
         expect(result.uncovered?(1)).to be_falsy
         expect(result.coverage_f).to eq(1.0)
       end
+    end
+  end
+
+  context ':nocov: with a SimpleCov report' do
+    let(:ast) { Imagen.from_local('spec/fixtures/nocov.rb') }
+    let(:simplecov) do
+      # effect of nocov_token - files ignored entirely or partially in the coverage file
+      simplecov_coverage_fixture 'spec/fixtures/nocov.json'
+    end
+    let(:coverage) { simplecov }
+
+    it 'respects lines skipped by simplecov' do
+      nodes = ast.find_all(->(node) { !node.is_a?(Imagen::Node::Root) })
+
+      skipped_result = described_class.new(nodes[0], coverage, 'nocov.rb')
+      flagged_result = described_class.new(nodes[1], coverage, 'nocov.rb')
+
+      expect(skipped_result.uncovered?(1)).to be_falsy
+      expect(skipped_result.uncovered?(2)).to be_falsy
+      expect(skipped_result.uncovered?(3)).to be_falsy
+      expect(flagged_result.uncovered?(8)).to be_truthy
+      expect(flagged_result.uncovered?(9)).to be_truthy
+    end
+  end
+
+  def simplecov_coverage_fixture(path)
+    allow_any_instance_of(SimpleCov::Result).to receive(:filter!)
+    result_h = JSON.parse(File.read(path))
+    SimplecovResultAdapter.new(SimpleCov::Result.from_hash(result_h).first).tap do
+      allow_any_instance_of(SimpleCov::Result).to receive(:filter!).and_call_original
     end
   end
 end
