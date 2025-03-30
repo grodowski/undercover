@@ -47,6 +47,11 @@ module Undercover
       total_f.round(3)
     end
 
+    def skipped?(_filepath, _line_no)
+      # this is why lcov parser will be deprecated
+      false
+    end
+
     private
 
     # rubocop:disable Metrics/MethodLength, Style/SpecialGlobalVars, Metrics/AbcSize

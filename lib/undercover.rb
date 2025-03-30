@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
 $LOAD_PATH << 'lib'
+require 'json'
 require 'imagen'
 require 'rainbow'
 require 'bigdecimal'
 require 'forwardable'
+require 'simplecov'
 
 require 'undercover/lcov_parser'
 require 'undercover/result'
@@ -12,6 +14,7 @@ require 'undercover/cli'
 require 'undercover/changeset'
 require 'undercover/formatter'
 require 'undercover/options'
+require 'undercover/simplecov_result_adapter'
 require 'undercover/version'
 
 module Undercover
@@ -21,6 +24,7 @@ module Undercover
 
     attr_reader :changeset,
                 :lcov,
+                :simplecov_resultset,
                 :results,
                 :code_dir,
                 :glob_filters
@@ -30,7 +34,9 @@ module Undercover
     # @param changeset [Undercover::Changeset]
     # @param opts [Undercover::Options]
     def initialize(changeset, opts)
+      @simplecov_resultset = load_simplecov_result(opts.simplecov_resultset) if opts.simplecov_resultset
       @lcov = LcovParser.parse(File.open(opts.lcov))
+
       @code_dir = opts.path
       @changeset = changeset.update
       @glob_filters = {
@@ -96,15 +102,15 @@ module Undercover
     def load_and_parse_file(filepath)
       key = filepath.gsub(/^\.\//, '')
       return if loaded_files[key]
-
-      coverage = lcov.coverage(filepath)
-
       return unless include_file?(filepath)
 
       root_ast = Imagen::Node::Root.new.build_from_file(
         File.join(code_dir, filepath)
       )
       return if root_ast.children.empty?
+
+      # lcov will be deprecated at some point and we'll be able to refactor harder
+      coverage = simplecov_resultset || lcov
 
       loaded_files[key] = []
       root_ast.find_all(->(node) { !node.is_a?(Imagen::Node::Root) }).each do |imagen_node|
@@ -116,6 +122,16 @@ module Undercover
     def include_file?(filepath)
       fnmatch = proc { |glob| File.fnmatch(glob, filepath) }
       glob_filters[:allow].any?(fnmatch) && glob_filters[:reject].none?(fnmatch)
+    end
+
+    def load_simplecov_result(path)
+      result_h = JSON.parse(File.read(path))
+      raise ArgumentError, 'empty SimpleCov' if result_h.empty?
+      if result_h.size > 1
+        raise ArgumentError, "too many SimpleCov test suites in resultset: got #{result_h.size}, expected 1"
+      end
+
+      SimplecovResultAdapter.new(SimpleCov::Result.from_hash(result_h).first)
     end
   end
 end
