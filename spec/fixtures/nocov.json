@@ -6,6 +6,11 @@
             null,
             1,
             0,
+            0,
+            0,
+            0,
+            0,
+            null,
             null,
             null,
             null,
@@ -15,7 +20,12 @@
             null,
             null
         ],
-        "branches": {}
+        "branches": {
+          "[:if, 0, 4, 8, 4, 0]": {
+            "[:then, 1, 4, 8, 4, 0]": 0,
+            "[:else, 2, 7, 8, 4, 0]": 1
+          }
+        }
       }
     },
     "timestamp": 1743371180

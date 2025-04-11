@@ -216,8 +216,9 @@ describe Undercover::CLI do
     subject.run(%w[--max-warnings 10])
   end
 
-  def stub_build
+  def stub_build # rubocop:disable Metrics/AbcSize
     lcov = double
+    allow_any_instance_of(Undercover::Options).to receive(:guess_resultset_path)
     allow(File).to receive(:open) { lcov }
     allow(Undercover::LcovParser).to receive(:parse).with(lcov) do
       double(coverage: [])

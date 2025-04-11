@@ -35,8 +35,10 @@ module Undercover
     #
     # @param changeset [Undercover::Changeset]
     # @param opts [Undercover::Options]
-    def initialize(changeset, opts)
-      @simplecov_resultset = load_simplecov_result(opts.simplecov_resultset) if opts.simplecov_resultset
+    def initialize(changeset, opts) # rubocop:disable Metrics/MethodLength
+      if opts.simplecov_resultset
+        @simplecov_resultset = SimplecovResultAdapter.parse(File.open(opts.simplecov_resultset))
+      end
       @lcov = LcovParser.parse(File.open(opts.lcov))
 
       @code_dir = opts.path
@@ -127,16 +129,6 @@ module Undercover
 
     def include_file?(filepath)
       filter_set.include?(filepath)
-    end
-
-    def load_simplecov_result(path)
-      result_h = JSON.parse(File.read(path))
-      raise ArgumentError, 'empty SimpleCov' if result_h.empty?
-      if result_h.size > 1
-        raise ArgumentError, "too many SimpleCov test suites in resultset: got #{result_h.size}, expected 1"
-      end
-
-      SimplecovResultAdapter.new(SimpleCov::Result.from_hash(result_h).first)
     end
   end
 end

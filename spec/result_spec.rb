@@ -208,19 +208,13 @@ describe Undercover::Result do
       skipped_result = described_class.new(nodes[0], coverage, 'nocov.rb')
       flagged_result = described_class.new(nodes[1], coverage, 'nocov.rb')
 
-      expect(skipped_result.uncovered?(1)).to be_falsy
-      expect(skipped_result.uncovered?(2)).to be_falsy
-      expect(skipped_result.uncovered?(3)).to be_falsy
-      expect(flagged_result.uncovered?(8)).to be_truthy
-      expect(flagged_result.uncovered?(9)).to be_truthy
-    end
-  end
-
-  def simplecov_coverage_fixture(path)
-    allow_any_instance_of(SimpleCov::Result).to receive(:filter!)
-    result_h = JSON.parse(File.read(path))
-    SimplecovResultAdapter.new(SimpleCov::Result.from_hash(result_h).first).tap do
-      allow_any_instance_of(SimpleCov::Result).to receive(:filter!).and_call_original
+      1.upto(8).each do |line_no|
+        expect(skipped_result.uncovered?(line_no)).to be_falsy
+        expect(coverage.skipped?('spec/fixtures/nocov.rb', line_no)).to be_truthy
+      end
+      expect(flagged_result.uncovered?(12)).to be_falsy
+      expect(flagged_result.uncovered?(13)).to be_truthy
+      expect(flagged_result.uncovered?(14)).to be_truthy
     end
   end
 end

@@ -69,8 +69,10 @@ module Undercover
         end
 
         opts.on_tail('--version', 'Show version') do
+          # :nocov:
           puts VERSION
           exit
+          # :nocov:
         end
 
         lcov_path_option(opts)
