@@ -4,18 +4,14 @@ module Undercover
   class SimplecovResultAdapter
     attr_reader :simplecov_result
 
-    # TODO: re-do and not rely on .resultset.json, but a properly formatted file
-    # - needed: relative paths for portability (e.g. CI artifact file from a build _somewhere_)
-    # - no reliance on SimpleCov internals changing (github issue)
-    # @param file[File] .resultset.json file supplied by SimpleCov
+    # @param file[File] JSON file supplied by SimpleCov::Formatter::Undercover
     # @return SimplecovResultAdapter
     def self.parse(file)
       # :nocov:
       result_h = JSON.parse(file.read)
       raise ArgumentError, 'empty SimpleCov' if result_h.empty?
-      raise ArgumentError, "too many test suites in resultset: got #{result_h.size}, expected 1" if result_h.size > 1
 
-      new(SimpleCov::Result.from_hash(result_h).first)
+      new(result_h)
       # :nocov:
     end
 
@@ -27,37 +23,30 @@ module Undercover
     # @param filepath[String]
     # @return Array tuples (lines) and quadruples (branches) compatible with LcovParser
     def coverage(filepath) # rubocop:disable Metrics/MethodLength
-      source_file = find_file(filepath)
+      source_file = simplecov_result['coverage']["/#{filepath}"]
 
       return [] unless source_file
 
-      lines = source_file.lines.map do |line|
-        [line.line_number, line.coverage] if line.coverage
+      lines = source_file['lines'].map.with_index do |line_coverage, idx|
+        [idx + 1, line_coverage] if line_coverage
       end.compact
       branch_idx = 0
-      branches = source_file.branches.map do |branch|
+      branches = source_file['branches'].map do |branch|
         branch_idx += 1
-        [branch.report_line, 0, branch_idx, branch.coverage]
+        [branch['start_line'], 0, branch_idx, branch['coverage']]
       end
       lines + branches
     end
 
     def skipped?(filepath, line_no)
-      source_file = find_file(filepath)
+      source_file = simplecov_result['coverage']["/#{filepath}"]
       return false unless source_file
 
-      source_file.skipped_lines.map(&:number).include?(line_no)
+      source_file['lines'][line_no - 1] == 'ignored'
     end
 
-    # TODO: unimplemented and unused for now
+    # unused for now
     def total_coverage; end
     def total_branch_coverage; end
-
-    private
-
-    def find_file(filepath)
-      # TODO: dirty, configure SimpleCov.root from --project-path?
-      simplecov_result.files.find { _1.filename.end_with? filepath }
-    end
   end
 end

@@ -205,8 +205,8 @@ describe Undercover::Result do
     it 'respects lines skipped by simplecov' do
       nodes = ast.find_all(->(node) { !node.is_a?(Imagen::Node::Root) })
 
-      skipped_result = described_class.new(nodes[0], coverage, 'nocov.rb')
-      flagged_result = described_class.new(nodes[1], coverage, 'nocov.rb')
+      skipped_result = described_class.new(nodes[0], coverage, 'spec/fixtures/nocov.rb')
+      flagged_result = described_class.new(nodes[1], coverage, 'spec/fixtures/nocov.rb')
 
       1.upto(8).each do |line_no|
         expect(skipped_result.uncovered?(line_no)).to be_falsy

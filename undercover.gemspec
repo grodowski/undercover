@@ -33,4 +33,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'rainbow', '>= 2.1', '< 4.0'
   spec.add_dependency 'rugged', '>= 0.27', '< 1.10'
   spec.add_dependency 'simplecov'
+  spec.add_dependency 'simplecov_json_formatter'
 end

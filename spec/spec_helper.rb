@@ -4,10 +4,10 @@ require 'timecop'
 require 'pry'
 
 require 'simplecov'
-require 'simplecov-lcov'
-SimpleCov::Formatter::LcovFormatter.config.report_with_single_file = true
+require 'undercover/simplecov_formatter'
+
 SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new(
-  [SimpleCov::Formatter::LcovFormatter, SimpleCov::Formatter::HTMLFormatter]
+  [SimpleCov::Formatter::HTMLFormatter, SimpleCov::Formatter::Undercover]
 )
 SimpleCov.start do
   enable_coverage(:branch)
@@ -48,11 +48,5 @@ def with_name(name)
 end
 
 def simplecov_coverage_fixture(path)
-  allow_any_instance_of(SimpleCov::Result).to receive(:filter!)
-  allow_any_instance_of(SimpleCov::Result).to receive(:root) { '/Users/mrgrodo/dev/undercover/' }
-
-  Undercover::SimplecovResultAdapter.parse(File.open(path)).tap do
-    allow_any_instance_of(SimpleCov::Result).to receive(:filter!).and_call_original
-    allow_any_instance_of(SimpleCov::Result).to receive(:root).and_call_original
-  end
+  Undercover::SimplecovResultAdapter.parse(File.open(path))
 end

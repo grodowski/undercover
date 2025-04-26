@@ -1,33 +1,42 @@
 {
-  "RSpec": {
-    "coverage": {
-      "/Users/mrgrodo/dev/undercover/spec/fixtures/nocov.rb": {
-        "lines": [
-            null,
-            1,
-            0,
-            0,
-            0,
-            0,
-            0,
-            null,
-            null,
-            null,
-            null,
-            1,
-            0,
-            0,
-            null,
-            null
-        ],
-        "branches": {
-          "[:if, 0, 4, 8, 4, 0]": {
-            "[:then, 1, 4, 8, 4, 0]": 0,
-            "[:else, 2, 7, 8, 4, 0]": 1
-          }
+  "meta": {
+    "simplecov_version": "0.22.0",
+    "simplecov_root": "/Users/mrgrodo/dev/undercover"
+  },
+  "coverage": {
+    "/spec/fixtures/nocov.rb": {
+      "lines": [
+          "ignored",
+          "ignored",
+          "ignored",
+          "ignored",
+          "ignored",
+          "ignored",
+          "ignored",
+          "ignored",
+          "ignored",
+          "ignored",
+          null,
+          1,
+          0,
+          0,
+          null,
+          null
+      ],
+      "branches": [
+        {
+          "type": "then",
+          "start_line": 4,
+          "end_line": 5,
+          "coverage": 0
+        },
+        {
+          "type": "else",
+          "start_line": 6,
+          "end_line": 7,
+          "coverage": 1
         }
-      }
-    },
-    "timestamp": 1743371180
+      ]
+    }
   }
 }
