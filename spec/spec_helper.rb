@@ -4,10 +4,12 @@ require 'timecop'
 require 'pry'
 
 require 'simplecov'
+require 'simplecov-lcov'
 require 'undercover/simplecov_formatter'
 
+SimpleCov::Formatter::LcovFormatter.report_with_single_file = true
 SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new(
-  [SimpleCov::Formatter::HTMLFormatter, SimpleCov::Formatter::Undercover]
+  [SimpleCov::Formatter::HTMLFormatter, SimpleCov::Formatter::Undercover, SimpleCov::Formatter::LcovFormatter]
 )
 SimpleCov.start do
   enable_coverage(:branch)
