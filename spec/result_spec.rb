@@ -6,7 +6,7 @@ require 'undercover'
 describe Undercover::Result do
   let(:ast) { Imagen.from_local('spec/fixtures/class.rb') }
   let(:lcov) do
-    Undercover::LcovParser.parse('spec/fixtures/fixtures.lcov')
+    Undercover::LcovParser.parse('spec/fixtures/fixtures.lcov', nil)
   end
   let(:coverage) { lcov }
 

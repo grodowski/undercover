@@ -38,13 +38,13 @@ describe Undercover::LcovParser do
   end
 
   it 'passes blank lines' do
-    parser = described_class.new(StringIO.new("\n"))
+    parser = described_class.new(StringIO.new("\n"), nil)
 
     expect { parser.parse }.not_to raise_error
   end
 
   it 'raises an error with a malformed LCOV' do
-    parser = described_class.new(StringIO.new('baconium!'))
+    parser = described_class.new(StringIO.new('baconium!'), nil)
 
     expect { parser.parse }.to raise_error(Undercover::LcovParseError)
   end

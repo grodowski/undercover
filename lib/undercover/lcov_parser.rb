@@ -1,19 +1,24 @@
 # frozen_string_literal: true
 
+require 'undercover/root_to_relative_paths'
+
 module Undercover
   LcovParseError = Class.new(StandardError)
 
   class LcovParser
+    include RootToRelativePaths
+
     attr_reader :io, :source_files
 
-    def initialize(lcov_io)
+    def initialize(lcov_io, opts)
       @io = lcov_io
       @source_files = {}
+      @code_dir = opts&.path
     end
 
-    def self.parse(lcov_report_path)
+    def self.parse(lcov_report_path, opts = nil)
       lcov_io = File.open(lcov_report_path)
-      new(lcov_io).parse
+      new(lcov_io, opts).parse
     end
 
     def parse
@@ -24,7 +29,7 @@ module Undercover
 
     def coverage(filepath)
       _filename, coverage = source_files.find do |relative_path, _|
-        relative_path == filepath
+        relative_path == fix_relative_filepath(filepath)
       end
       coverage || []
     end

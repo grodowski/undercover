@@ -37,9 +37,9 @@ module Undercover
     # @param opts [Undercover::Options]
     def initialize(changeset, opts) # rubocop:disable Metrics/MethodLength
       if opts.simplecov_resultset
-        @simplecov_resultset = SimplecovResultAdapter.parse(File.open(opts.simplecov_resultset))
+        @simplecov_resultset = SimplecovResultAdapter.parse(File.open(opts.simplecov_resultset), opts)
       end
-      @lcov = LcovParser.parse(File.open(opts.lcov))
+      @lcov = LcovParser.parse(File.open(opts.lcov), opts)
 
       @code_dir = opts.path
       @changeset = changeset

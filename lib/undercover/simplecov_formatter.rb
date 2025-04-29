@@ -21,8 +21,8 @@ module Undercover
     # format_files uses relative path as keys, as opposed to the superclass method
     def format_files
       @result.files.each do |source_file|
-        formatted_result[:coverage][source_file.project_filename] =
-          format_source_file(source_file)
+        formatted_result[:coverage][path] = source_file.project_filename.delete_prefix('/')
+        format_source_file(source_file)
       end
     end
   end
@@ -35,6 +35,7 @@ module Undercover
   end
 end
 
+# TODO: make output filename configurable
 module SimpleCov
   module Formatter
     Undercover = ::Undercover::UndercoverSimplecovFormatter

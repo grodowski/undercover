@@ -220,7 +220,7 @@ describe Undercover::CLI do
     lcov = double
     allow_any_instance_of(Undercover::Options).to receive(:guess_resultset_path)
     allow(File).to receive(:open) { lcov }
-    allow(Undercover::LcovParser).to receive(:parse).with(lcov) do
+    allow(Undercover::LcovParser).to receive(:parse).with(lcov, instance_of(Undercover::Options)) do
       double(coverage: [])
     end
     allow_any_instance_of(Undercover::Report).to receive(:validate) { nil }

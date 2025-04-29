@@ -43,7 +43,6 @@ module Undercover
       end
     end
 
-    # TODO: refactor to a standalone validator (depending on changeset AND lcov)
     def validate(lcov_report_path)
       return :no_changes if full_diff.deltas.empty?
 

@@ -118,7 +118,8 @@ module Undercover
     end
 
     def resultset_path_option(parser)
-      parser.on('-s', '--simplecov path', 'SimpleCov resultset file path') do |path|
+      desc = 'SimpleCov::Formatter::Undercover output file path (alternative to LCOV that will become default)'
+      parser.on('-s', '--simplecov path', desc) do |path|
         self.simplecov_resultset = path
       end
     end
@@ -160,7 +161,7 @@ module Undercover
 
     def guess_resultset_path
       cwd = Pathname.new(File.expand_path(path))
-      try_path = File.join(cwd, 'coverage', '.resultset.json')
+      try_path = File.join(cwd, 'coverage', 'coverage.json')
       self.simplecov_resultset = try_path if File.exist?(try_path)
     end
 

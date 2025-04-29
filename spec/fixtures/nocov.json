@@ -4,7 +4,7 @@
     "simplecov_root": "/Users/mrgrodo/dev/undercover"
   },
   "coverage": {
-    "/spec/fixtures/nocov.rb": {
+    "spec/fixtures/nocov.rb": {
       "lines": [
           "ignored",
           "ignored",

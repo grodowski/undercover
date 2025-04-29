@@ -50,5 +50,6 @@ def with_name(name)
 end
 
 def simplecov_coverage_fixture(path)
-  Undercover::SimplecovResultAdapter.parse(File.open(path))
+  opts = Undercover::Options.new.tap { _1.path = Dir.pwd }
+  Undercover::SimplecovResultAdapter.parse(File.open(path), opts)
 end
