@@ -179,4 +179,43 @@ describe Undercover::Report do
       expect(warnings[1].coverage_f).to eq(0.0)
     end
   end
+
+  context 'with monorepo-like fixtures' do
+    let(:options) do
+      Undercover::Options.new.tap do |opt|
+        opt.lcov = 'spec/fixtures/monorepo/app/coverage/app.lcov'
+        opt.path = 'spec/fixtures/monorepo'
+        opt.git_dir = 'monorepo.git'
+      end
+    end
+
+    let(:changeset) do
+      git_dir = File.join(options.path, options.git_dir)
+      Undercover::Changeset.new(git_dir, options.compare)
+    end
+    subject(:report) { described_class.new(changeset, options) }
+
+    it 'matches the paths relative to where undercover runs' do
+      # simulate running undercover in the subdirectory
+      allow(Dir).to receive(:pwd).and_return('/users/john/spec/fixtures/monorepo/app')
+      allow(File).to receive(:expand_path).and_call_original
+      allow(File).to receive(:expand_path).with("spec/fixtures/monorepo") { |path| "/users/john/#{path}" }
+
+      report.build
+
+      expect(report.results.keys.sort).to eq(
+        %w[app/lib/foo_lib.rb app/main.rb]
+      )
+      warnings = report.build_warnings.to_a
+      expect(warnings.size).to eq(1)
+      expect(warnings[0].file_path).to eq('app/lib/foo_lib.rb')
+      expect(warnings[0].first_line).to eq(10)
+      expect(warnings[0].coverage_f).to eq(0.6)
+    end
+
+    # TODO: allow specifying a SimpleCov.root in the options instead?
+    it 'matches the paths relative to --simplecov-root' do
+      skip
+    end
+  end
 end

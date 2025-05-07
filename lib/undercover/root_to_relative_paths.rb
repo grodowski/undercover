@@ -10,10 +10,13 @@ module Undercover
     # @return String
     def fix_relative_filepath(filepath)
       return filepath unless @code_dir
+      code_dir_abs = File.expand_path(@code_dir)
 
-      prefix_to_skip = Pathname.new(Dir.pwd).relative_path_from(@code_dir).to_s
-      filepath.delete_prefix(prefix_to_skip)
-    rescue ArgumentError
+      if Pathname.new(Dir.pwd).ascend.any? { |p| p.to_s == code_dir_abs }
+        prefix_to_skip = Pathname.new(Dir.pwd).relative_path_from(code_dir_abs).to_s
+        return filepath.delete_prefix(prefix_to_skip).gsub(/\A\//, '')
+      end
+
       filepath
     end
   end
