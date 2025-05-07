@@ -199,7 +199,7 @@ describe Undercover::Report do
       # simulate running undercover in the subdirectory
       allow(Dir).to receive(:pwd).and_return('/users/john/spec/fixtures/monorepo/app')
       allow(File).to receive(:expand_path).and_call_original
-      allow(File).to receive(:expand_path).with("spec/fixtures/monorepo") { |path| "/users/john/#{path}" }
+      allow(File).to receive(:expand_path).with('spec/fixtures/monorepo') { |path| "/users/john/#{path}" }
 
       report.build
 

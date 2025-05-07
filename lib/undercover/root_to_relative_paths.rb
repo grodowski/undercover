@@ -10,6 +10,7 @@ module Undercover
     # @return String
     def fix_relative_filepath(filepath)
       return filepath unless @code_dir
+
       code_dir_abs = File.expand_path(@code_dir)
 
       if Pathname.new(Dir.pwd).ascend.any? { |p| p.to_s == code_dir_abs }
