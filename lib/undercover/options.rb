@@ -41,7 +41,8 @@ module Undercover
                   :run_mode,
                   :file_scope,
                   :glob_allow_filters,
-                  :glob_reject_filters
+                  :glob_reject_filters,
+                  :coverage_threshold
 
     def initialize
       @run_mode = DIFF_TRIGGER_LINE
@@ -76,6 +77,7 @@ module Undercover
         compare_option(opts)
         ruby_syntax_option(opts)
         file_filters(opts)
+        coverage_threshold_option(opts)
       end.parse(args)
 
       guess_lcov_path unless lcov
@@ -152,6 +154,12 @@ module Undercover
       desc = 'Skip files matching specified glob patterns (comma separated). Empty by default.'
       parser.on('-x', '--exclude-files globs', desc) do |comma_separated_globs|
         self.glob_reject_filters = comma_separated_globs.strip.split(',')
+      end
+    end
+
+    def coverage_threshold_option(parser)
+      parser.on('-t', '--coverage-threshold threshold', 'Required coverage threshold (0.0 - 1.0). 1.0 by default.') do |threshold|
+        self.coverage_threshold = threshold.to_f
       end
     end
   end

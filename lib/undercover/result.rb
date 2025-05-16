@@ -6,11 +6,11 @@ module Undercover
   class Result
     extend Forwardable
 
-    attr_reader :node, :coverage, :file_path
+    attr_reader :node, :coverage, :file_path, :coverage_threshold
 
     def_delegators :node, :first_line, :last_line, :name
 
-    def initialize(node, file_cov, file_path) # rubocop:disable Metrics/MethodLength,Metrics/AbcSize
+    def initialize(node, file_cov, file_path, coverage_threshold) # rubocop:disable Metrics/MethodLength,Metrics/AbcSize
       @node = node
       @coverage = file_cov.select do |ln, _|
         if first_line == last_line
@@ -23,6 +23,7 @@ module Undercover
       end
       @file_path = file_path
       @flagged = false
+      @coverage_threshold = coverage_threshold
     end
 
     def flag
@@ -30,7 +31,7 @@ module Undercover
     end
 
     def flagged?
-      @flagged
+      @flagged && (coverage_f < coverage_threshold)
     end
 
     def uncovered?(line_no)
