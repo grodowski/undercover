@@ -5,9 +5,10 @@ require 'simplecov_json_formatter'
 module Undercover
   class ResultHashFormatterWithRoot < SimpleCovJSONFormatter::ResultHashFormatter
     def format
-      super
-
+      formatted_result[:meta] = { timestamp: @result.created_at.to_i }
+      format_files
       add_undercover_meta_fields
+      formatted_result
     end
 
     private
@@ -20,9 +21,10 @@ module Undercover
 
     # format_files uses relative path as keys, as opposed to the superclass method
     def format_files
+      formatted_result[:coverage] ||= {}
       @result.files.each do |source_file|
-        formatted_result[:coverage][path] = source_file.project_filename.delete_prefix('/')
-        format_source_file(source_file)
+        path = source_file.project_filename.delete_prefix('/')
+        formatted_result[:coverage][path] = format_source_file(source_file)
       end
     end
   end

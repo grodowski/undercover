@@ -24,7 +24,7 @@ module Undercover
     def self.run_report(opts)
       report = Undercover::Report.new(changeset(opts), opts).build
 
-      error = report.validate(opts.lcov)
+      error = report.validate(opts.simplecov_resultset || opts.lcov)
       if error
         puts(WARNINGS_TO_S[error])
         return 0 if error == :no_changes
