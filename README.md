@@ -9,7 +9,6 @@ Works with any Ruby CI pipeline as well as locally as a CLI.
 
 
 [![Build Status](https://github.com/grodowski/undercover/actions/workflows/ruby.yml/badge.svg)](https://github.com/grodowski/undercover/actions)
-[![Maintainability](https://api.codeclimate.com/v1/badges/b403feed68a18c072ec5/maintainability)](https://codeclimate.com/github/grodowski/undercover/maintainability)
 ![Downloads](https://img.shields.io/gem/dt/undercover)
 
 A sample output of `undercover` ran before a commit may look like this:
