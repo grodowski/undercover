@@ -17,12 +17,13 @@ describe Undercover::Formatter do
     Undercover::LcovParser.parse('spec/fixtures/fixtures.lcov')
   end
   let(:results) { [result] }
+  let(:coverage_threshold) { 1.0 }
 
   context 'with warnings from module.rb' do
     let(:ast) { Imagen.from_local('spec/fixtures/module.rb') }
     let(:coverage) { lcov.source_files['module.rb'] }
     let(:node) { ast.find_all(with_name('BaconModule')).first }
-    let(:result) { Undercover::Result.new(node, coverage, 'module.rb') }
+    let(:result) { Undercover::Result.new(node, coverage, 'module.rb', coverage_threshold) }
 
     it 'returns a useful message with branch coverage for module.rb' do
       formatted = described_class.new(results).to_s
@@ -40,7 +41,7 @@ describe Undercover::Formatter do
     let(:ast) { Imagen.from_local('spec/fixtures/class.rb') }
     let(:coverage) { lcov.source_files['class.rb'] }
     let(:node) { ast.find_all(with_name('BaconClass')).first }
-    let(:result) { Undercover::Result.new(node, coverage, 'class.rb') }
+    let(:result) { Undercover::Result.new(node, coverage, 'class.rb', coverage_threshold) }
 
     it 'returns a useful message with branch coverage for class.rb' do
       formatted = described_class.new(results).to_s

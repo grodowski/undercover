@@ -23,7 +23,8 @@ module Undercover
                 :lcov,
                 :results,
                 :code_dir,
-                :glob_filters
+                :glob_filters,
+                :coverage_threshold
 
     # Initializes a new Undercover::Report
     #
@@ -32,6 +33,7 @@ module Undercover
     def initialize(changeset, opts)
       @lcov = LcovParser.parse(File.open(opts.lcov))
       @code_dir = opts.path
+      @coverage_threshold = opts.coverage_threshold || 1.0
       @changeset = changeset.update
       @glob_filters = {
         allow: opts.glob_allow_filters,
@@ -108,7 +110,7 @@ module Undercover
 
       loaded_files[key] = []
       root_ast.find_all(->(node) { !node.is_a?(Imagen::Node::Root) }).each do |imagen_node|
-        loaded_files[key] << Result.new(imagen_node, coverage, filepath)
+        loaded_files[key] << Result.new(imagen_node, coverage, filepath, coverage_threshold)
       end
     end
     # rubocop:enable Metrics/MethodLength, Metrics/AbcSize

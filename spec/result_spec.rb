@@ -9,31 +9,32 @@ describe Undercover::Result do
     Undercover::LcovParser.parse('spec/fixtures/fixtures.lcov')
   end
   let(:coverage) { lcov.source_files['class.rb'] }
+  let(:coverage_threshold) { 1.0 }
 
   it 'computes class coverage as float' do
     node = ast.find_all(with_name('BaconClass')).first
-    result = described_class.new(node, coverage, 'class.rb')
+    result = described_class.new(node, coverage, 'class.rb', coverage_threshold)
 
     expect(result.coverage_f).to eq(0.8333)
   end
 
   it 'computes method coverage as float' do
     node = ast.find_all(with_name('bar')).first
-    result = described_class.new(node, coverage, 'class.rb')
+    result = described_class.new(node, coverage, 'class.rb', coverage_threshold)
 
     expect(result.coverage_f).to eq(1.0)
   end
 
   it 'computes coverage for a not covered method' do
     node = ast.find_all(with_name('foo')).first
-    result = described_class.new(node, coverage, 'class.rb')
+    result = described_class.new(node, coverage, 'class.rb', coverage_threshold)
 
     expect(result.coverage_f).to eq(0.0)
   end
 
   it 'has a fiendly #inspect' do
     node = ast.find_all(with_name('foo')).first
-    result = described_class.new(node, coverage, 'class.rb')
+    result = described_class.new(node, coverage, 'class.rb', coverage_threshold)
 
     expect(result.to_s).to match(/#<Undercover::Report::Result:\d+ name: foo, coverage: 0.0/)
   end
@@ -47,7 +48,7 @@ describe Undercover::Result do
 
     it 'is not NaN' do
       node = ast.find_all(with_name('ApplicationJob')).first
-      result = described_class.new(node, coverage, 'empty_class_def.rb')
+      result = described_class.new(node, coverage, 'empty_class_def.rb', coverage_threshold)
 
       expect(result.coverage_f).to eq(1.0)
     end
@@ -62,7 +63,7 @@ describe Undercover::Result do
 
     it 'uncovered gives false' do
       node = ast.find_all(with_name('foobar')).first
-      result = described_class.new(node, coverage, 'module.rb')
+      result = described_class.new(node, coverage, 'module.rb', coverage_threshold)
 
       expect(result.uncovered?(27)).to be_falsy
     end
@@ -77,7 +78,7 @@ describe Undercover::Result do
 
     it 'uncovered gives true' do
       node = ast.children[0].find_all(->(_) { true }).last
-      result = described_class.new(node, coverage, 'one_line_block.rb')
+      result = described_class.new(node, coverage, 'one_line_block.rb', coverage_threshold)
 
       expect(result.uncovered?(7)).to be_truthy
     end
@@ -92,7 +93,7 @@ describe Undercover::Result do
 
     it 'uncovered gives false' do
       node = ast.children[0].find_all(->(_) { true }).last
-      result = described_class.new(node, coverage, 'single_line.rb')
+      result = described_class.new(node, coverage, 'single_line.rb', coverage_threshold)
 
       expect(result.uncovered?(1)).to be_falsy
     end
@@ -122,7 +123,7 @@ describe Undercover::Result do
 
     it "doesn't report false positive on block" do
       node = ast.children[0].find_all(->(_) { true }).last
-      result = described_class.new(node, coverage, 'method_block_multi.rb')
+      result = described_class.new(node, coverage, 'method_block_multi.rb', coverage_threshold)
 
       expect(result.uncovered?(1)).to be_falsy
     end
@@ -156,7 +157,7 @@ describe Undercover::Result do
 
     it "doesn't report false positive on block" do
       node = ast.children[0].find_all(->(_) { true }).last
-      result = described_class.new(node, coverage, 'method_block_multi.rb')
+      result = described_class.new(node, coverage, 'method_block_multi.rb', coverage_threshold)
 
       expect(result.uncovered?(1)).to be_falsy
     end
@@ -187,10 +188,37 @@ describe Undercover::Result do
     it "doesn't report false positive on block" do
       nodes = ast.find_all(->(node) { !node.is_a?(Imagen::Node::Root) })
       nodes.each do |node|
-        result = described_class.new(node, coverage, 'method_block_multi.rb')
+        result = described_class.new(node, coverage, 'method_block_multi.rb', coverage_threshold)
         expect(result.uncovered?(1)).to be_falsy
         expect(result.coverage_f).to eq(1.0)
       end
     end
+  end
+
+  context 'for a node with test coverage threshold' do
+    let(:ast) { Imagen.from_local('spec/fixtures/class.rb') }
+    let(:lcov) do
+      Undercover::LcovParser.parse('spec/fixtures/fixtures.lcov')
+    end
+    let(:coverage) { lcov.source_files['class.rb'] }
+
+    it 'is not flagged (above threshold)' do
+      node = ast.find_all(with_name('BaconClass')).first
+      coverage_threshold = 0.8
+      result = described_class.new(node, coverage, 'class.rb', coverage_threshold)
+      result.flag
+
+      expect(result.flagged?).to be_falsey
+    end
+
+    it 'is flagged (below threshold)' do
+      node = ast.find_all(with_name('BaconClass')).first
+      coverage_threshold = 0.9
+      result = described_class.new(node, coverage, 'class.rb', coverage_threshold)
+      result.flag
+
+      expect(result.flagged?).to be_truthy
+    end
+
   end
 end
