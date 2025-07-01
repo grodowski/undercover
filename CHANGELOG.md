@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+# [0.6.6] - 2025-07-01
+
+- Bugfix in `max_warnings_limit` following ([#229](https://github.com/grodowski/undercover/pull/229))
+
 # [0.6.5] - 2025-07-01
 
 ### Fixed
@@ -153,7 +157,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - First release of `undercover` 🎉
 
-[Unreleased]: https://github.com/grodowski/undercover/compare/v0.6.5...HEAD
+[Unreleased]: https://github.com/grodowski/undercover/compare/v0.6.6...HEAD
+[0.6.6]: https://github.com/grodowski/undercover/compare/v0.6.5...0.6.6
 [0.6.5]: https://github.com/grodowski/undercover/compare/v0.6.4...0.6.5
 [0.6.4]: https://github.com/grodowski/undercover/compare/v0.6.3...v0.6.4
 [0.6.3]: https://github.com/grodowski/undercover/compare/v0.6.0...v0.6.3
