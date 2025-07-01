@@ -8,31 +8,11 @@ module Undercover
   class Changeset
     T_ZERO = Time.strptime('0', '%s').freeze
 
-    extend Forwardable
-    include Enumerable
-
-    attr_reader :files
-
-    def_delegators :files, :each, :<=>
-
     def initialize(dir, compare_base = nil)
       @dir = dir
       @repo = Rugged::Repository.new(dir)
       @repo.workdir = Pathname.new(dir).dirname.to_s # TODO: can replace?
       @compare_base = compare_base
-      @files = {}
-    end
-
-    def update
-      full_diff.each_patch do |patch|
-        filepath = patch.delta.new_file[:path]
-        line_nums = patch.each_hunk.map do |hunk|
-          # TODO: optimise this to use line ranges!
-          hunk.lines.select(&:addition?).map(&:new_lineno)
-        end.flatten
-        @files[filepath] = line_nums if line_nums.any?
-      end
-      self
     end
 
     def last_modified
@@ -46,18 +26,23 @@ module Undercover
     end
 
     def file_paths
-      files.keys.sort
+      full_diff.deltas.map { |d| d.new_file[:path] }.sort
     end
 
     def each_changed_line
-      files.each do |filepath, line_numbers|
-        line_numbers.each { |ln| yield filepath, ln }
+      full_diff.each_patch do |patch|
+        filepath = patch.delta.new_file[:path]
+        patch.each_hunk do |hunk|
+          hunk.lines.select(&:addition?).each do |line|
+            yield filepath, line.new_lineno
+          end
+        end
       end
     end
 
     # TODO: refactor to a standalone validator (depending on changeset AND lcov)
     def validate(lcov_report_path)
-      return :no_changes if files.empty?
+      return :no_changes if full_diff.deltas.empty?
 
       :stale_coverage if last_modified > File.mtime(lcov_report_path)
     end
@@ -68,7 +53,7 @@ module Undercover
     # as it makes sense to run Undercover with the most recent file versions
     def full_diff
       base = compare_base_obj || head
-      base.diff(repo.index).merge!(repo.diff_workdir(head))
+      @full_diff ||= base.diff(repo.index).merge!(repo.diff_workdir(head))
     end
 
     def compare_base_obj

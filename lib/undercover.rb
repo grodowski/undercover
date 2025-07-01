@@ -23,7 +23,8 @@ module Undercover
                 :lcov,
                 :results,
                 :code_dir,
-                :glob_filters
+                :glob_filters,
+                :max_warnings_limit
 
     # Initializes a new Undercover::Report
     #
@@ -32,18 +33,22 @@ module Undercover
     def initialize(changeset, opts)
       @lcov = LcovParser.parse(File.open(opts.lcov))
       @code_dir = opts.path
-      @changeset = changeset.update
+      @changeset = changeset
       @glob_filters = {
         allow: opts.glob_allow_filters,
         reject: opts.glob_reject_filters
       }
+      @max_warnings_limit = opts.max_warnings_limit
       @loaded_files = {}
       @results = {}
     end
 
     # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
     def build
+      flag_count = 0
       changeset.each_changed_line do |filepath, line_no|
+        break if max_warnings_limit && flag_count >= max_warnings_limit
+
         dist_from_line_no = lambda do |res|
           return BigDecimal::INFINITY if line_no < res.first_line
 
@@ -61,7 +66,10 @@ module Undercover
         next unless loaded_files[filepath]
 
         res = loaded_files[filepath].min(&dist_from_line_no_sorter)
-        res.flag if res&.uncovered?(line_no)
+        if res&.uncovered?(line_no)
+          res.flag
+          flag_count += 1
+        end
         results[filepath] ||= Set.new
         results[filepath] << res
       end

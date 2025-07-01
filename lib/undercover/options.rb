@@ -41,7 +41,8 @@ module Undercover
                   :run_mode,
                   :file_scope,
                   :glob_allow_filters,
-                  :glob_reject_filters
+                  :glob_reject_filters,
+                  :max_warnings_limit
 
     def initialize
       @run_mode = DIFF_TRIGGER_LINE
@@ -51,6 +52,7 @@ module Undercover
       self.git_dir = '.git'
       self.glob_allow_filters = DEFAULT_FILE_INCLUDE_GLOBS
       self.glob_reject_filters = DEFAULT_FILE_EXCLUDE_GLOBS
+      self.max_warnings_limit = nil
     end
 
     # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
@@ -75,6 +77,7 @@ module Undercover
         git_dir_option(opts)
         compare_option(opts)
         ruby_syntax_option(opts)
+        max_warnings_limit_option(opts)
         file_filters(opts)
       end.parse(args)
 
@@ -134,6 +137,13 @@ module Undercover
       desc = "Ruby syntax version, one of: #{versions}"
       parser.on('-r', '--ruby-syntax ver', desc) do |version|
         self.syntax_version = version.strip
+      end
+    end
+
+    def max_warnings_limit_option(parser)
+      desc = 'Maximum number of warnings to generate before stopping analysis'
+      parser.on('-w', '--max-warnings limit', Integer, desc) do |limit|
+        self.max_warnings_limit = limit
       end
     end
 
