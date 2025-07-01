@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+# [0.6.5] - 2025-07-01
+
+### Fixed
+- Improved performance for large PRs with lazy diff enumeration ([#229](https://github.com/grodowski/undercover/pull/229))
+
 # [0.6.4] - 2025-03-29
 
 ### Fixed
@@ -148,9 +153,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - First release of `undercover` 🎉
 
-[Unreleased]: https://github.com/grodowski/undercover/compare/v0.6.3...HEAD
-[0.6.3]:https://github.com/grodowski/undercover/compare/v0.6.3...v0.6.0
-[0.6.0]: https://github.com/grodowski/undercover/compare/v0.6.0...v0.5.0
+[Unreleased]: https://github.com/grodowski/undercover/compare/v0.6.5...HEAD
+[0.6.5]: https://github.com/grodowski/undercover/compare/v0.6.4...0.6.5
+[0.6.4]: https://github.com/grodowski/undercover/compare/v0.6.3...v0.6.4
+[0.6.3]: https://github.com/grodowski/undercover/compare/v0.6.0...v0.6.3
+[0.6.0]: https://github.com/grodowski/undercover/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/grodowski/undercover/compare/v0.4.7...v0.5.0
 [0.4.7]: https://github.com/grodowski/undercover/compare/v0.4.6...v0.4.7
 [0.4.6]: https://github.com/grodowski/undercover/compare/v0.4.5...v0.4.6
