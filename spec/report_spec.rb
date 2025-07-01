@@ -136,6 +136,32 @@ describe Undercover::Report do
       expect(flagged[0].first_line).to eq(3)
     end
 
+    it 'stops processing when max_warnings_limit is reached' do
+      # Use a changeset that would yield more than 1 flaggable result
+      options.glob_allow_filters = ['*.rb']
+      options.lcov = 'spec/fixtures/test_two_patches.lcov'
+      options.max_warnings_limit = 1
+
+      # Track how many times each_changed_line yields by counting calls
+      call_count = 0
+      allow(changeset).to receive(:each_changed_line) do |&block|
+        [
+          ['test_two_patches.rb', 6],
+          ['test_two_patches.rb', 21],
+          ['test_two_patches.rb', 25], # This should not be processed due to limit
+        ].each do |filepath, line_no|
+          call_count += 1
+          block.call(filepath, line_no)
+          # The break should happen after first flag, so this shouldn't reach 3
+        end
+      end
+
+      report.build
+      flagged = report.flagged_results
+      expect(flagged.size).to eq(1)
+      expect(call_count).to be <= 2 # Should stop early due to max_warnings_limit
+    end
+
     it 'reports changed files that were not in the lcov report' do
       options.lcov = 'spec/fixtures/test_empty.lcov'
       report.build

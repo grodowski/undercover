@@ -64,7 +64,7 @@ module Undercover
         next unless loaded_files[filepath]
 
         res = loaded_files[filepath].min(&dist_from_line_no_sorter)
-        if res&.uncovered?(line_no)
+        if res.uncovered?(line_no)
           res.flag
           flag_count += 1
         end
