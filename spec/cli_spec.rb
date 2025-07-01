@@ -216,6 +216,38 @@ describe Undercover::CLI do
     subject.run(%w[--max-warnings 10])
   end
 
+  it 'exits with help text when --help is used' do
+    expect { subject.run(['--help']) }.to raise_error(SystemExit) do |error|
+      expect(error.status).to eq(0)
+    end
+  end
+
+  it 'exits with version when --version is used' do
+    expect { subject.run(['--version']) }.to raise_error(SystemExit) do |error|
+      expect(error.status).to eq(0)
+    end
+  end
+
+  it 'uses simplecov resultset when provided' do
+    stub_stdout
+    allow_any_instance_of(Undercover::Options).to receive(:guess_resultset_path)
+
+    lcov = double
+    json_file = StringIO.new('{"coverage": {}}')
+    allow(File).to receive(:open).with('test.lcov') { lcov }
+    allow(File).to receive(:open).with('test.json') { json_file }
+    allow(Undercover::LcovParser).to receive(:parse).with(lcov, instance_of(Undercover::Options)) do
+      double(coverage: [])
+    end
+    allow_any_instance_of(Undercover::Report).to receive(:validate) { nil }
+    allow_any_instance_of(Undercover::Report).to receive(:build) { |rep| rep }
+    allow_any_instance_of(Undercover::Report).to receive(:flagged_results) { [] }
+
+    expect(Undercover::SimplecovResultAdapter).to receive(:parse).with(json_file, instance_of(Undercover::Options))
+
+    subject.run(['-l', 'test.lcov', '-s', 'test.json'])
+  end
+
   def stub_build # rubocop:disable Metrics/AbcSize
     lcov = double
     allow_any_instance_of(Undercover::Options).to receive(:guess_resultset_path)

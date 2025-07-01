@@ -5,18 +5,22 @@ require 'pry'
 
 require 'simplecov'
 require 'simplecov-lcov'
-require 'undercover/simplecov_formatter'
 
 SimpleCov::Formatter::LcovFormatter.report_with_single_file = true
-SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new(
-  [SimpleCov::Formatter::HTMLFormatter, SimpleCov::Formatter::Undercover, SimpleCov::Formatter::LcovFormatter]
-)
 SimpleCov.start do
   enable_coverage(:branch)
   add_filter(/^\/spec\//)
 end
 
+# Load undercover files AFTER SimpleCov starts
+require 'undercover/simplecov_formatter'
+require 'undercover/simplecov_result_adapter'
 require 'undercover'
+
+# Now configure SimpleCov formatter to include our formatter
+SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new(
+  [SimpleCov::Formatter::HTMLFormatter, SimpleCov::Formatter::Undercover, SimpleCov::Formatter::LcovFormatter]
+)
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

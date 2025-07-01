@@ -18,6 +18,28 @@ describe Undercover::Report do
   end
   subject(:report) { described_class.new(changeset, options) }
 
+  context 'with SimpleCov resultset' do
+    let(:options_with_simplecov) do
+      Undercover::Options.new.tap do |opt|
+        opt.lcov = 'spec/fixtures/fixtures.lcov'
+        opt.path = 'spec/fixtures'
+        opt.git_dir = 'test.git'
+        opt.simplecov_resultset = 'spec/fixtures/nocov.json'
+      end
+    end
+
+    it 'initializes with SimpleCov resultset adapter' do
+      json_file = StringIO.new('{"coverage": {}}')
+      lcov_file = double
+      expect(File).to receive(:open).with('spec/fixtures/nocov.json').and_return(json_file)
+      expect(File).to receive(:open).with('spec/fixtures/fixtures.lcov').and_return(lcov_file)
+      expect(Undercover::SimplecovResultAdapter).to receive(:parse).with(json_file, options_with_simplecov)
+      expect(Undercover::LcovParser).to receive(:parse).with(lcov_file, options_with_simplecov)
+
+      described_class.new(changeset, options_with_simplecov)
+    end
+  end
+
   it 'builds a report with coverage metrics' do
     report.build
 

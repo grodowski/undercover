@@ -217,4 +217,102 @@ describe Undercover::Result do
       expect(flagged_result.uncovered?(14)).to be_truthy
     end
   end
+
+  context 'with skipped lines in coverage' do
+    let(:file_path) { 'test.rb' }
+    let(:source_file) do
+      "def foo\n  " \
+        "puts 'bar'\n" \
+        "end\n"
+    end
+    let(:ast) do
+      root = Imagen::Node::Root.new
+      Imagen::Visitor.traverse(Imagen::AST::Parser.parse(source_file, file_path), root)
+    end
+    let(:mock_coverage) do
+      coverage_data = [
+        [1, 1], [2, 0], [3, 1]
+      ]
+      double('coverage', coverage: coverage_data, skipped?: true)
+    end
+
+    it 'handles skipped lines correctly' do
+      node = ast.find_all(->(n) { n.name == 'foo' }).first
+      result = described_class.new(node, mock_coverage, file_path)
+
+      # This should trigger the skipped line handling in the coverage block
+      expect(result.coverage_f).to be > 0
+    end
+  end
+
+  context 'with actually skipped lines that trigger the early return' do
+    let(:file_path) { 'skipped_test.rb' }
+    let(:source_file) do
+      "def skipped_method\n  " \
+        "puts 'this is skipped'\n" \
+        "end\n"
+    end
+    let(:ast) do
+      root = Imagen::Node::Root.new
+      Imagen::Visitor.traverse(Imagen::AST::Parser.parse(source_file, file_path), root)
+    end
+    let(:mock_coverage_with_skipped) do
+      coverage_data = [
+        [2, 0], [3, 1] # Only lines that are inside the method body
+      ]
+      coverage_mock = double('coverage')
+      allow(coverage_mock).to receive(:coverage).with(file_path).and_return(coverage_data)
+      allow(coverage_mock).to receive(:skipped?).with(file_path, 2).and_return(true)
+      allow(coverage_mock).to receive(:skipped?).with(file_path, 3).and_return(false)
+      coverage_mock
+    end
+
+    it 'marks skipped lines as covered and skips to next iteration' do
+      node = ast.find_all(->(n) { n.name == 'skipped_method' }).first
+      result = described_class.new(node, mock_coverage_with_skipped, file_path)
+
+      # Line 2 should be marked as covered (1) due to being skipped
+      # Line 3 should be marked as covered (1) normally
+      # This should result in 2/2 = 1.0 coverage
+      expect(result.coverage_f).to eq(1.0)
+    end
+  end
+
+  context 'with pretty print formatting' do
+    let(:ast) { Imagen.from_local('spec/fixtures/class.rb') }
+    let(:coverage) { lcov }
+
+    it 'handles different line types in pretty_print' do
+      node = ast.find_all(with_name('BaconClass')).first
+      result = described_class.new(node, coverage, 'class.rb')
+
+      # Test the pretty_print method that has uncovered branches
+      pretty_output = result.pretty_print
+      expect(pretty_output).to be_a(String)
+      expect(pretty_output).to include('BaconClass')
+    end
+
+    it 'handles skipped lines in pretty_print output' do
+      # Create a result with a line that will be skipped
+      file_path = 'skipped_test.rb'
+      source_file = "def test_method\n  puts 'skipped line'\n  puts 'normal line'\nend\n"
+
+      ast = Imagen::Node::Root.new
+      Imagen::Visitor.traverse(Imagen::AST::Parser.parse(source_file, file_path), ast)
+      node = ast.find_all(->(n) { n.name == 'test_method' }).first
+
+      # Create mock coverage that will return true for skipped? on line 2
+      mock_coverage = double('coverage')
+      coverage_data = [[2, 0], [3, 1]] # Lines within the method
+      allow(mock_coverage).to receive(:coverage).with(file_path).and_return(coverage_data)
+      allow(mock_coverage).to receive(:skipped?).and_return(false) # Default to false
+      allow(mock_coverage).to receive(:skipped?).with(file_path, 2).and_return(true)
+
+      result = described_class.new(node, mock_coverage, file_path)
+
+      # This should trigger the skipped line formatting (lines 106-108)
+      pretty_output = result.pretty_print
+      expect(pretty_output).to include('skipped with :nocov:')
+    end
+  end
 end
