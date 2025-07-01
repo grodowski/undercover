@@ -5,7 +5,7 @@ require 'simplecov_json_formatter'
 module Undercover
   class ResultHashFormatterWithRoot < SimpleCovJSONFormatter::ResultHashFormatter
     def format
-      formatted_result[:meta] = { timestamp: @result.created_at.to_i }
+      formatted_result[:meta] = {timestamp: @result.created_at.to_i}
       format_files
       add_undercover_meta_fields
       formatted_result
