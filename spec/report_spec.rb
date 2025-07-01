@@ -159,7 +159,7 @@ describe Undercover::Report do
       report.build
       flagged = report.flagged_results
       expect(flagged.size).to eq(1)
-      expect(call_count).to be <= 2 # Should stop early due to max_warnings_limit
+      expect(call_count).to eq(2)
     end
 
     it 'reports changed files that were not in the lcov report' do
