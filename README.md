@@ -109,6 +109,7 @@ Usage: undercover [options]
     -g, --git-dir dir                Override `.git` with a custom directory
     -c, --compare ref                Generate coverage warnings for all changes after `ref`
     -r, --ruby-syntax ver            Ruby syntax version, one of: current, ruby18, ruby19, ruby20, ruby21, ruby22, ruby23, ruby24, ruby25, ruby26, ruby30, ruby31, ruby32, ruby33
+    -w, --max-warnings limit         Maximum number of warnings to generate before stopping analysis. Useful as a performance improvement for large diffs.
     -f, --include-files globs        Include files matching specified glob patterns (comma separated). Defaults to '*.rb,*.rake,*.ru,Rakefile'
     -x, --exclude-files globs        Skip files matching specified glob patterns (comma separated). Empty by default.
     -h, --help                       Prints this help
