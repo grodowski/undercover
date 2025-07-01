@@ -60,6 +60,21 @@ describe Undercover::Changeset do
     expect(changeset.last_modified).to eq(Undercover::Changeset::T_ZERO)
   end
 
+  describe 'filtering' do
+    it 'filters files using FilterSet in each_changed_line' do
+      filter_set = Undercover::FilterSet.new(['*.rb'], ['*_spec.rb'])
+      changeset = Undercover::Changeset.new('spec/fixtures/test.git', 'master', filter_set)
+
+      yielded_files = []
+      changeset.each_changed_line do |filepath, _line_no|
+        yielded_files << filepath
+      end
+
+      expect(yielded_files.uniq).to match_array(['class.rb', 'module.rb', 'sinatra.rb'])
+      expect(yielded_files.uniq).not_to include('file_one', 'file_two', 'file_three', 'staged_file')
+    end
+  end
+
   describe 'validate' do
     let(:report_path) { 'spec/fixtures/sample.lcov' }
 

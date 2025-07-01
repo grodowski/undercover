@@ -8,11 +8,12 @@ module Undercover
   class Changeset
     T_ZERO = Time.strptime('0', '%s').freeze
 
-    def initialize(dir, compare_base = nil)
+    def initialize(dir, compare_base = nil, filter_set = nil)
       @dir = dir
       @repo = Rugged::Repository.new(dir)
       @repo.workdir = Pathname.new(dir).dirname.to_s # TODO: can replace?
       @compare_base = compare_base
+      @filter_set = filter_set
     end
 
     def last_modified
@@ -32,6 +33,8 @@ module Undercover
     def each_changed_line
       full_diff.each_patch do |patch|
         filepath = patch.delta.new_file[:path]
+        next if filter_set && !filter_set.include?(filepath)
+
         patch.each_hunk do |hunk|
           hunk.lines.select(&:addition?).each do |line|
             yield filepath, line.new_lineno
@@ -68,6 +71,6 @@ module Undercover
       repo.head.target
     end
 
-    attr_reader :repo, :compare_base
+    attr_reader :repo, :compare_base, :filter_set
   end
 end

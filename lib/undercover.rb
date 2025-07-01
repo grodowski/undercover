@@ -12,6 +12,7 @@ require 'undercover/cli'
 require 'undercover/changeset'
 require 'undercover/formatter'
 require 'undercover/options'
+require 'undercover/filter_set'
 require 'undercover/version'
 
 module Undercover
@@ -23,7 +24,7 @@ module Undercover
                 :lcov,
                 :results,
                 :code_dir,
-                :glob_filters,
+                :filter_set,
                 :max_warnings_limit
 
     # Initializes a new Undercover::Report
@@ -34,10 +35,7 @@ module Undercover
       @lcov = LcovParser.parse(File.open(opts.lcov))
       @code_dir = opts.path
       @changeset = changeset
-      @glob_filters = {
-        allow: opts.glob_allow_filters,
-        reject: opts.glob_reject_filters
-      }
+      @filter_set = FilterSet.new(opts.glob_allow_filters, opts.glob_reject_filters)
       @max_warnings_limit = opts.max_warnings_limit
       @loaded_files = {}
       @results = {}
@@ -122,8 +120,7 @@ module Undercover
     # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
 
     def include_file?(filepath)
-      fnmatch = proc { |glob| File.fnmatch(glob, filepath) }
-      glob_filters[:allow].any?(fnmatch) && glob_filters[:reject].none?(fnmatch)
+      filter_set.include?(filepath)
     end
   end
 end
