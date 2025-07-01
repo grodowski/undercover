@@ -92,7 +92,6 @@ describe Undercover::Report do
   context 'with mock changeset' do
     let(:changeset) do
       mock_changeset = instance_double(Undercover::Changeset)
-      allow(mock_changeset).to receive(:update) { mock_changeset }
       allow(mock_changeset)
         .to receive(:each_changed_line)
         .and_yield('test_two_patches.rb', 6)
@@ -124,6 +123,43 @@ describe Undercover::Report do
       expect(warnings[0].first_line).to eq(3)
       expect(warnings[1].file_path).to eq('test_two_patches.rb')
       expect(warnings[1].first_line).to eq(15)
+    end
+
+    it 'respects max_warnings_limit' do
+      options.glob_reject_filters = ['Rakefile']
+      options.lcov = 'spec/fixtures/test_two_patches.lcov'
+      options.max_warnings_limit = 1
+      report.build
+      flagged = report.flagged_results
+      expect(flagged.size).to eq(1)
+      expect(flagged[0].file_path).to eq('test_two_patches.rb')
+      expect(flagged[0].first_line).to eq(3)
+    end
+
+    it 'stops processing when max_warnings_limit is reached' do
+      # Use a changeset that would yield more than 1 flaggable result
+      options.glob_allow_filters = ['*.rb']
+      options.lcov = 'spec/fixtures/test_two_patches.lcov'
+      options.max_warnings_limit = 1
+
+      # Track how many times each_changed_line yields by counting calls
+      call_count = 0
+      allow(changeset).to receive(:each_changed_line) do |&block|
+        [
+          ['test_two_patches.rb', 6],
+          ['test_two_patches.rb', 21],
+          ['test_two_patches.rb', 25], # This should not be processed due to limit
+        ].each do |filepath, line_no|
+          call_count += 1
+          block.call(filepath, line_no)
+          # The break should happen after first flag, so this shouldn't reach 3
+        end
+      end
+
+      report.build
+      flagged = report.flagged_results
+      expect(flagged.size).to eq(1)
+      expect(call_count).to be <= 2 # Should stop early due to max_warnings_limit
     end
 
     it 'reports changed files that were not in the lcov report' do

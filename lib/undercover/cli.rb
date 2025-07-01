@@ -43,7 +43,8 @@ module Undercover
 
     def self.changeset(opts)
       git_dir = File.join(opts.path, opts.git_dir)
-      Undercover::Changeset.new(git_dir, opts.compare)
+      filter_set = Undercover::FilterSet.new(opts.glob_allow_filters, opts.glob_reject_filters)
+      Undercover::Changeset.new(git_dir, opts.compare, filter_set)
     end
   end
 end

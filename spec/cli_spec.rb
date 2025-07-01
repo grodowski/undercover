@@ -178,6 +178,44 @@ describe Undercover::CLI do
     Imagen.parser_version = v_default
   end
 
+  it 'sets max_warnings_limit from options' do
+    stub_stdout
+    stub_build
+    expect(Undercover::Report)
+      .to receive(:new)
+      .with(
+        instance_of(Undercover::Changeset),
+        undercover_options(
+          lcov: a_string_matching(/coverage\/lcov\/\w+\.lcov/),
+          path: '.',
+          git_dir: '.git',
+          compare: nil,
+          max_warnings_limit: 5
+        )
+      )
+      .and_call_original
+    subject.run(%w[-w 5])
+  end
+
+  it 'sets max_warnings_limit from long option' do
+    stub_stdout
+    stub_build
+    expect(Undercover::Report)
+      .to receive(:new)
+      .with(
+        instance_of(Undercover::Changeset),
+        undercover_options(
+          lcov: a_string_matching(/coverage\/lcov\/\w+\.lcov/),
+          path: '.',
+          git_dir: '.git',
+          compare: nil,
+          max_warnings_limit: 10
+        )
+      )
+      .and_call_original
+    subject.run(%w[--max-warnings 10])
+  end
+
   def stub_build
     lcov = double
     allow(File).to receive(:open) { lcov }
