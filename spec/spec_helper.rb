@@ -18,6 +18,7 @@ require 'undercover/simplecov_result_adapter'
 require 'undercover'
 
 # Now configure SimpleCov formatter to include our formatter
+SimpleCov::Formatter::Undercover.output_filename = 'undercover_coverage.json'
 SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new(
   [SimpleCov::Formatter::HTMLFormatter, SimpleCov::Formatter::Undercover, SimpleCov::Formatter::LcovFormatter]
 )

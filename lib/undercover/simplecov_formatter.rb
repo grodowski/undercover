@@ -2,6 +2,17 @@
 
 require 'simplecov_json_formatter'
 
+# Patch ResultExporter to allow setting a custom export_path
+module SimpleCovJSONFormatter
+  class ResultExporter
+    def export_path
+      # :nocov:
+      File.join(SimpleCov.coverage_path, SimpleCov::Formatter::Undercover.output_filename || FILENAME)
+      # :nocov:
+    end
+  end
+end
+
 module Undercover
   class ResultHashFormatterWithRoot < SimpleCovJSONFormatter::ResultHashFormatter
     def format
@@ -30,6 +41,10 @@ module Undercover
   end
 
   class UndercoverSimplecovFormatter < SimpleCov::Formatter::JSONFormatter
+    class << self
+      attr_accessor :output_filename
+    end
+
     def format_result(result)
       result_hash_formater = ResultHashFormatterWithRoot.new(result)
       result_hash_formater.format
@@ -37,7 +52,6 @@ module Undercover
   end
 end
 
-# TODO: make output filename configurable
 module SimpleCov
   module Formatter
     Undercover = ::Undercover::UndercoverSimplecovFormatter

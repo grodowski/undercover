@@ -141,4 +141,24 @@ RSpec.describe 'Undercover::UndercoverSimplecovFormatter' do
       expect(formatted).to have_key(:coverage)
     end
   end
+
+  describe '.output_filename' do
+    it 'allows setting and getting custom output filename' do
+      original = Undercover::UndercoverSimplecovFormatter.output_filename
+
+      Undercover::UndercoverSimplecovFormatter.output_filename = 'custom_coverage.json'
+      expect(Undercover::UndercoverSimplecovFormatter.output_filename).to eq('custom_coverage.json')
+
+      Undercover::UndercoverSimplecovFormatter.output_filename = original
+    end
+
+    it 'defaults to nil when not set' do
+      original = Undercover::UndercoverSimplecovFormatter.output_filename
+      Undercover::UndercoverSimplecovFormatter.output_filename = nil
+
+      expect(Undercover::UndercoverSimplecovFormatter.output_filename).to be_nil
+
+      Undercover::UndercoverSimplecovFormatter.output_filename = original
+    end
+  end
 end
