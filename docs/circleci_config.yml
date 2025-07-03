@@ -1,5 +1,5 @@
 # Simple CircleCI config.yml example.
-# See workflow_config.yml for a more advanced example,
+# See circleci_advanced.yml for a more advanced example,
 # that includes sharing data between containers.
 
 version: 2
