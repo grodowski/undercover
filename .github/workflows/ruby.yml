@@ -26,7 +26,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: undercover-${{ matrix.ruby }}-coverage
-          path: coverage/coverage.json
+          path: coverage/undercover_coverage.json
   coverage:
     runs-on: ubuntu-latest
     needs: build
@@ -39,4 +39,4 @@ jobs:
           ruby -e "$(curl -s https://undercover-ci.com/uploader.rb)" -- \
             --repo grodowski/undercover \
             --commit ${{ github.event.pull_request.head.sha || github.sha }} \
-            --simplecov /home/runner/work/undercover/undercover/coverage.json
+            --simplecov /home/runner/work/undercover/undercover/undercover_coverage.json
