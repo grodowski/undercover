@@ -35,34 +35,58 @@ Or install it yourself as:
 
     $ gem install undercover
 
-## Setting up required LCOV reporting
+## Setting up coverage reporting
 
-To make your specs or tests compatible with `undercover` by providing an LCOV report, please add `simplecov` and `simplecov-lcov` to your test setup.
+To make your specs or tests compatible with `undercover`, please add `undercover` to your gemfile to use the undercover formatter the test helper.
 
 ```ruby
 # Gemfile
 group :test do
-  gem 'simplecov'
-  gem 'simplecov-lcov'
+  gem 'undercover'
 end
 
 # the very top of spec_helper.rb
 require 'simplecov'
-require 'simplecov-lcov'
-SimpleCov::Formatter::LcovFormatter.config.report_with_single_file = true
-SimpleCov.formatter = SimpleCov::Formatter::LcovFormatter
+require 'undercover/simplecov_formatter'
+
+# optional, will default to coverage.json
+SimpleCov::Formatter::Undercover.output_filename = 'my_project_coverage.json'
+SimpleCov.formatter = SimpleCov::Formatter::Undercover
+
 SimpleCov.start do
   add_filter(/^\/spec\//) # For RSpec
   add_filter(/^\/test\//) # For Minitest
   enable_coverage(:branch) # Report branch coverage to trigger branch-level undercover warnings
 end
-
-require 'undercover'
-
 # ...
 ```
 
-Then run your test suite once through to generate the initial `coverage/lcov/*.lcov` file before you can run the `undercover` command
+Then run your test suite once through to generate the initial coverage file before you can run the `undercover` command.
+
+## Upgrading from pre-0.7.0
+
+If you're upgrading from an older version of undercover that used LCOV, you can migrate to the new SimpleCov formatter:
+
+1. Add `gem 'undercover'` to your test group
+2. Replace the LCOV formatter setup with the new SimpleCov formatter
+
+```ruby
+# Gemfile
+group :test do
+  gem 'simplecov'
+  gem 'simplecov_json_formatter'
+  gem 'undercover'
+end
+
+# spec_helper.rb
+require 'simplecov'
+require 'undercover/simplecov_formatter'
+SimpleCov.formatter = SimpleCov::Formatter::Undercover
+```
+
+3. Update CLI usage: Use `--simplecov` flag instead of `--lcov`, or rely on auto-detection of `coverage/coverage.json`
+
+Note: LCOV support will be deprecated in a future release, but remains fully functional for existing projects.
 
 ## Usage
 
@@ -79,11 +103,10 @@ undercover --compare origin/master
 ```
 
 Check out `docs/` for CI configuration examples:
-- [Travis CI](docs/travis.yml)
+- [GitHub Actions](docs/actions.yml)
 - [CircleCI - simple](docs/circleci_config.yml)
 - [CircleCI - advanced](docs/circleci_advanced.yml)
 - [Semaphore](docs/semaphore.yml)
-- [Codeship](docs/codeship.md)
 
 Merging coverage results ([sample gist](https://gist.github.com/grodowski/9744ff91034dce8df20c2a8210409fb0)) is required for parallel tests before processing with `undercover`.
 
@@ -104,7 +127,8 @@ Options can be passed when running the command from the command line:
 
 ```sh
 Usage: undercover [options]
-    -l, --lcov path                  LCOV report file path
+    -s, --simplecov path             SimpleCov JSON report file
+    -l, --lcov path                  LCOV report file path (to be deprecated)
     -p, --path path                  Project directory
     -g, --git-dir dir                Override `.git` with a custom directory
     -c, --compare ref                Generate coverage warnings for all changes after `ref`

@@ -5,16 +5,23 @@ require 'pry'
 
 require 'simplecov'
 require 'simplecov-lcov'
-SimpleCov::Formatter::LcovFormatter.config.report_with_single_file = true
-SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new(
-  [SimpleCov::Formatter::LcovFormatter, SimpleCov::Formatter::HTMLFormatter]
-)
+
+SimpleCov::Formatter::LcovFormatter.report_with_single_file = true
 SimpleCov.start do
   enable_coverage(:branch)
   add_filter(/^\/spec\//)
 end
 
+# Load undercover files AFTER SimpleCov starts
+require 'undercover/simplecov_formatter'
+require 'undercover/simplecov_result_adapter'
 require 'undercover'
+
+# Now configure SimpleCov formatter to include our formatter
+SimpleCov::Formatter::Undercover.output_filename = 'undercover_coverage.json'
+SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new(
+  [SimpleCov::Formatter::HTMLFormatter, SimpleCov::Formatter::Undercover, SimpleCov::Formatter::LcovFormatter]
+)
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
@@ -45,4 +52,9 @@ end
 
 def with_name(name)
   ->(node) { node.name == name }
+end
+
+def simplecov_coverage_fixture(path)
+  opts = Undercover::Options.new.tap { _1.path = Dir.pwd }
+  Undercover::SimplecovResultAdapter.parse(File.open(path), opts)
 end

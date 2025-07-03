@@ -1,19 +1,24 @@
 # frozen_string_literal: true
 
+require 'undercover/root_to_relative_paths'
+
 module Undercover
   LcovParseError = Class.new(StandardError)
 
   class LcovParser
+    include RootToRelativePaths
+
     attr_reader :io, :source_files
 
-    def initialize(lcov_io)
+    def initialize(lcov_io, opts)
       @io = lcov_io
       @source_files = {}
+      @code_dir = opts&.path
     end
 
-    def self.parse(lcov_report_path)
+    def self.parse(lcov_report_path, opts = nil)
       lcov_io = File.open(lcov_report_path)
-      new(lcov_io).parse
+      new(lcov_io, opts).parse
     end
 
     def parse
@@ -24,7 +29,7 @@ module Undercover
 
     def coverage(filepath)
       _filename, coverage = source_files.find do |relative_path, _|
-        relative_path == filepath
+        relative_path == fix_relative_filepath(filepath)
       end
       coverage || []
     end
@@ -45,6 +50,11 @@ module Undercover
       all_branches = all_lines.select { _1.size == 4 }
       total_f = all_branches.select { |_l_no, _block_no, _br_no, hits| hits.positive? }.size.to_f / all_branches.size
       total_f.round(3)
+    end
+
+    def skipped?(_filepath, _line_no)
+      # this is why lcov parser will be deprecated
+      false
     end
 
     private

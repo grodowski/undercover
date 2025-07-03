@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
 $LOAD_PATH << 'lib'
+require 'json'
 require 'imagen'
 require 'rainbow'
 require 'bigdecimal'
 require 'forwardable'
+require 'simplecov'
 
 require 'undercover/lcov_parser'
 require 'undercover/result'
@@ -13,6 +15,7 @@ require 'undercover/changeset'
 require 'undercover/formatter'
 require 'undercover/options'
 require 'undercover/filter_set'
+require 'undercover/simplecov_result_adapter'
 require 'undercover/version'
 
 module Undercover
@@ -22,6 +25,7 @@ module Undercover
 
     attr_reader :changeset,
                 :lcov,
+                :simplecov_resultset,
                 :results,
                 :code_dir,
                 :filter_set,
@@ -32,7 +36,11 @@ module Undercover
     # @param changeset [Undercover::Changeset]
     # @param opts [Undercover::Options]
     def initialize(changeset, opts)
-      @lcov = LcovParser.parse(File.open(opts.lcov))
+      if opts.simplecov_resultset
+        @simplecov_resultset = SimplecovResultAdapter.parse(File.open(opts.simplecov_resultset), opts)
+      end
+      @lcov = LcovParser.parse(File.open(opts.lcov), opts)
+
       @code_dir = opts.path
       @changeset = changeset
       @filter_set = FilterSet.new(opts.glob_allow_filters, opts.glob_reject_filters)
@@ -102,15 +110,15 @@ module Undercover
     def load_and_parse_file(filepath)
       key = filepath.gsub(/^\.\//, '')
       return if loaded_files[key]
-
-      coverage = lcov.coverage(filepath)
-
       return unless include_file?(filepath)
 
       root_ast = Imagen::Node::Root.new.build_from_file(
         File.join(code_dir, filepath)
       )
       return if root_ast.children.empty?
+
+      # lcov will be deprecated at some point and we'll be able to refactor harder
+      coverage = simplecov_resultset || lcov
 
       loaded_files[key] = []
       root_ast.find_all(->(node) { !node.is_a?(Imagen::Node::Root) }).each do |imagen_node|

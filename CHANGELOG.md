@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+# [0.7.0] - 2025-07-03
+
+### Added
+- New native SimpleCov formatter that generates coverage data directly without requiring LCOV conversion ([#223](https://github.com/grodowski/undercover/pull/223))
+- `--simplecov -s` CLI option to specify coverage JSON file path as an alternative to LCOV and future default ([#223](https://github.com/grodowski/undercover/pull/223))
+- Improved path handling for projects running in nested subdirectories or monorepo setups ([#223](https://github.com/grodowski/undercover/pull/223))
+
+### Fixed
+- `:nocov:` support to skip coverage analysis for specific code blocks works again after a regression in `0.6+` ([#223](https://github.com/grodowski/undercover/pull/223))
+
 # [0.6.6] - 2025-07-01
 
 - Bugfix in `max_warnings_limit` following ([#229](https://github.com/grodowski/undercover/pull/229))
@@ -157,7 +167,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - First release of `undercover` 🎉
 
-[Unreleased]: https://github.com/grodowski/undercover/compare/v0.6.6...HEAD
+[Unreleased]: https://github.com/grodowski/undercover/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/grodowski/undercover/compare/v0.6.6...v0.7.0
 [0.6.6]: https://github.com/grodowski/undercover/compare/v0.6.5...0.6.6
 [0.6.5]: https://github.com/grodowski/undercover/compare/v0.6.4...0.6.5
 [0.6.4]: https://github.com/grodowski/undercover/compare/v0.6.3...v0.6.4
