@@ -10,6 +10,11 @@ end
 # :nocov:
 
 def method_with_cov
-  puts 'do not ignore'
-  puts 'please'
+  if @ivar
+    uncovered_method
+  else
+    # :nocov:
+    exit 1
+    # :nocov:
+  end
 end

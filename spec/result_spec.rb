@@ -215,6 +215,8 @@ describe Undercover::Result do
       expect(flagged_result.uncovered?(12)).to be_falsy
       expect(flagged_result.uncovered?(13)).to be_truthy
       expect(flagged_result.uncovered?(14)).to be_truthy
+
+      expect(flagged_result.coverage_f).to eq(0.6667)
     end
   end
 

@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+- Fix Result#coverage_f to support ignored branches
+
 # [0.7.2] - 2025-07-07
 
 ### Fixed

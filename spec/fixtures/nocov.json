@@ -20,6 +20,10 @@
           1,
           0,
           0,
+          1,
+          "ignored",
+          "ignored",
+          "ignored",
           null,
           null
       ],
@@ -35,6 +39,18 @@
           "start_line": 6,
           "end_line": 7,
           "coverage": 1
+        },
+        {
+          "type": "then",
+          "start_line": 13,
+          "end_line": 14,
+          "coverage": 0
+        },
+        {
+          "type": "else",
+          "start_line": 15,
+          "end_line": 19,
+          "coverage": "ignored"
         }
       ]
     }

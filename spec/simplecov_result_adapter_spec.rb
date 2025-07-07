@@ -10,23 +10,27 @@ describe Undercover::SimplecovResultAdapter do
 
     expect(adapter.simplecov_result['coverage'].count).to eq(1)
     branchful = adapter.coverage('spec/fixtures/nocov.rb')
-    expected = [
-      [1, 'ignored'],
-      [2, 'ignored'],
-      [3, 'ignored'],
-      [4, 'ignored'],
-      [5, 'ignored'],
-      [6, 'ignored'],
-      [7, 'ignored'],
-      [8, 'ignored'],
-      [9, 'ignored'],
-      [10, 'ignored'],
-      [12, 1],
-      [13, 0],
-      [14, 0],
-      [4, 0, 1, 0],
-      [6, 0, 2, 1],
-    ]
+    expected = [[1, 'ignored'],
+                [2, 'ignored'],
+                [3, 'ignored'],
+                [4, 'ignored'],
+                [5, 'ignored'],
+                [6, 'ignored'],
+                [7, 'ignored'],
+                [8, 'ignored'],
+                [9, 'ignored'],
+                [10, 'ignored'],
+                [12, 1],
+                [13, 0],
+                [14, 0],
+                [15, 1],
+                [16, 'ignored'],
+                [17, 'ignored'],
+                [18, 'ignored'],
+                [4, 0, 1, 0],
+                [6, 0, 2, 1],
+                [13, 0, 3, 0],
+                [15, 0, 4, 'ignored']]
     expect(branchful).to eq(expected)
   end
 

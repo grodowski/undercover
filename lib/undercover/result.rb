@@ -67,7 +67,7 @@ module Undercover
 
         lines[ln] = 1 unless lines.key?(ln)
         if branch_cov
-          lines[ln] = 0 if branch_cov.zero?
+          lines[ln] = 0 if branch_cov != 'ignored' && branch_cov.zero?
         elsif block_or_line_cov.zero?
           lines[ln] = 0
         end
