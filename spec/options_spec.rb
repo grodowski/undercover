@@ -18,6 +18,19 @@ describe Undercover::Options do
       end
     end
 
+    it 'guesses lcov path' do
+      default_path = 'coverage/lcov/undercover.lcov'
+      options.parse([])
+      expect(options.lcov).to be_nil
+
+      FileUtils.mkdir_p('coverage/lcov')
+      File.write(default_path, nil)
+      options.parse([])
+      expect(options.lcov).to end_with(default_path)
+    ensure
+      FileUtils.rm(default_path)
+    end
+
     it 'sets simplecov_resultset from -s option' do
       options.parse(['-s', 'test.json'])
       expect(options.simplecov_resultset).to eq('test.json')

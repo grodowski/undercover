@@ -167,7 +167,8 @@ module Undercover
 
     def guess_lcov_path
       cwd = Pathname.new(File.expand_path(path))
-      self.lcov = File.join(cwd, 'coverage', 'lcov', "#{cwd.split.last}.lcov")
+      try_path = File.join(cwd, 'coverage', 'lcov', "#{cwd.split.last}.lcov")
+      self.lcov = try_path if File.exist?(try_path)
     end
 
     def file_filters(parser)

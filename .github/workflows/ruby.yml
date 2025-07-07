@@ -22,7 +22,7 @@ jobs:
       - name: undercover (local)
         run: |
           git fetch --update-head-ok origin master:master
-          undercover --compare master
+          undercover --simplecov coverage/undercover_coverage.json --compare master
       - uses: actions/upload-artifact@v4
         with:
           name: undercover-${{ matrix.ruby }}-coverage

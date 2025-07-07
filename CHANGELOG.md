@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+# [0.7.2] - 2025-07-07
+
+### Fixed
+- Resolved errors when .lcov files doesn't exist using `--lcov` CLI flag and `guess_lcov_path`
+
 # [0.7.0] - 2025-07-03
 
 ### Added
@@ -167,7 +172,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - First release of `undercover` 🎉
 
-[Unreleased]: https://github.com/grodowski/undercover/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/grodowski/undercover/compare/v0.7.2...HEAD
+[0.7.2]: https://github.com/grodowski/undercover/compare/v0.7.1...v0.7.2
+[0.7.1]: https://github.com/grodowski/undercover/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/grodowski/undercover/compare/v0.6.6...v0.7.0
 [0.6.6]: https://github.com/grodowski/undercover/compare/v0.6.5...0.6.6
 [0.6.5]: https://github.com/grodowski/undercover/compare/v0.6.4...0.6.5

@@ -12,7 +12,7 @@ describe Undercover::CLI do
       .with(
         instance_of(Undercover::Changeset),
         undercover_options(
-          lcov: a_string_matching(/coverage\/lcov\/\w+\.lcov/),
+          lcov: nil,
           path: '.',
           git_dir: '.git',
           compare: nil
@@ -86,7 +86,7 @@ describe Undercover::CLI do
       .with(
         instance_of(Undercover::Changeset),
         undercover_options(
-          lcov: a_string_matching(/coverage\/lcov\/\w+\.lcov/),
+          lcov: nil,
           path: '.',
           git_dir: '.git',
           compare: 'HEAD~1'
@@ -104,7 +104,7 @@ describe Undercover::CLI do
       .with(
         instance_of(Undercover::Changeset),
         undercover_options(
-          lcov: a_string_matching(/coverage\/lcov\/\w+\.lcov/),
+          lcov: nil,
           path: '.',
           git_dir: '.git',
           compare: nil,
@@ -186,7 +186,7 @@ describe Undercover::CLI do
       .with(
         instance_of(Undercover::Changeset),
         undercover_options(
-          lcov: a_string_matching(/coverage\/lcov\/\w+\.lcov/),
+          lcov: nil,
           path: '.',
           git_dir: '.git',
           compare: nil,
@@ -205,7 +205,7 @@ describe Undercover::CLI do
       .with(
         instance_of(Undercover::Changeset),
         undercover_options(
-          lcov: a_string_matching(/coverage\/lcov\/\w+\.lcov/),
+          lcov: nil,
           path: '.',
           git_dir: '.git',
           compare: nil,

@@ -4,9 +4,7 @@ require 'timecop'
 require 'pry'
 
 require 'simplecov'
-require 'simplecov-lcov'
 
-SimpleCov::Formatter::LcovFormatter.report_with_single_file = true
 SimpleCov.start do
   enable_coverage(:branch)
   add_filter(/^\/spec\//)
@@ -20,7 +18,7 @@ require 'undercover'
 # Now configure SimpleCov formatter to include our formatter
 SimpleCov::Formatter::Undercover.output_filename = 'undercover_coverage.json'
 SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new(
-  [SimpleCov::Formatter::HTMLFormatter, SimpleCov::Formatter::Undercover, SimpleCov::Formatter::LcovFormatter]
+  [SimpleCov::Formatter::HTMLFormatter, SimpleCov::Formatter::Undercover]
 )
 
 RSpec.configure do |config|
