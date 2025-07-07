@@ -86,7 +86,7 @@ module Undercover
       end.parse(args)
 
       guess_resultset_path unless simplecov_resultset
-      guess_lcov_path unless lcov
+      guess_lcov_path unless simplecov_resultset || lcov
       self
     end
     # rubocop:enable Metrics/MethodLength, Metrics/AbcSize

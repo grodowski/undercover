@@ -27,6 +27,13 @@ describe Undercover::Options do
       expect(options).to receive(:guess_resultset_path)
       options.parse([])
     end
+
+    it 'does not call guess_lcov_path when simplecov_resultset is set' do
+      options.simplecov_resultset = 'test.json'
+      expect(options).not_to receive(:guess_lcov_path)
+      options.parse([])
+      expect(options.lcov).to be_nil
+    end
   end
 
   describe '#guess_resultset_path' do
