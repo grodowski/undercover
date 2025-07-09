@@ -35,6 +35,8 @@ module Undercover
       lines = source_file['lines'].map.with_index do |line_coverage, idx|
         [idx + 1, line_coverage] if line_coverage
       end.compact
+      return lines unless source_file['branches']
+
       branch_idx = 0
       branches = source_file['branches'].map do |branch|
         branch_idx += 1

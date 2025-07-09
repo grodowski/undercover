@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 
 - Fix Result#coverage_f to support ignored branches
+- Fix error parsing JSON coverage with branch coverage disabled ([#231](https://github.com/grodowski/undercover/issues/231))
 
 # [0.7.2] - 2025-07-07
 

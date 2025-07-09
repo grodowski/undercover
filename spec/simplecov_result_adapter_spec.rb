@@ -154,6 +154,25 @@ describe Undercover::SimplecovResultAdapter do
       ]
       expect(coverage).to eq(expected)
     end
+
+    it 'returns only line coverage when branches are not present' do
+      result = {
+        'coverage' => {
+          'test_no_branches.rb' => {
+            'lines' => [1, 0, 'ignored', 1]
+          }
+        }
+      }
+      adapter = described_class.new(result, nil)
+      coverage = adapter.coverage('test_no_branches.rb')
+      expected = [
+        [1, 1],
+        [2, 0],
+        [3, 'ignored'],
+        [4, 1],
+      ]
+      expect(coverage).to eq(expected)
+    end
   end
 
   describe '#skipped?' do
