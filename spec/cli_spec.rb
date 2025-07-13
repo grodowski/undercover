@@ -217,15 +217,19 @@ describe Undercover::CLI do
   end
 
   it 'exits with help text when --help is used' do
-    expect { subject.run(['--help']) }.to raise_error(SystemExit) do |error|
-      expect(error.status).to eq(0)
-    end
+    expect do
+      expect { subject.run(['--help']) }.to raise_error(SystemExit) do |error|
+        expect(error.status).to eq(0)
+      end
+    end.to output(a_string_including('Usage:')).to_stdout
   end
 
   it 'exits with version when --version is used' do
-    expect { subject.run(['--version']) }.to raise_error(SystemExit) do |error|
-      expect(error.status).to eq(0)
-    end
+    expect do
+      expect { subject.run(['--version']) }.to raise_error(SystemExit) do |error|
+        expect(error.status).to eq(0)
+      end
+    end.to output(a_string_including(Undercover::VERSION)).to_stdout
   end
 
   it 'uses simplecov resultset when provided' do
