@@ -2,6 +2,7 @@
 
 require 'optparse'
 require 'pathname'
+require 'shellwords'
 
 module Undercover
   class Options # rubocop:disable Metrics/ClassLength
@@ -104,11 +105,24 @@ module Undercover
     def args_from_options_file(path)
       return [] unless File.exist?(path)
 
-      File.read(path).split('\n').flat_map(&:split)
+      File.read(path).split("\n").flat_map { parse_line(_1) }
     end
 
     def project_options_file
       './.undercover'
+    end
+
+    def parse_line(line)
+      line = line.strip
+      return [] if line.empty? || line.start_with?('#')
+
+      Shellwords.split(line)
+    end
+
+    def split_comma_separated_with_braces(input)
+      return [] if input.empty?
+
+      input.split(/,(?![^{]*})/).map(&:strip) # split on commas that are not inside braces
     end
 
     def lcov_path_option(parser)
@@ -175,12 +189,12 @@ module Undercover
       desc = 'Include files matching specified glob patterns (comma separated). ' \
              "Defaults to '#{DEFAULT_FILE_INCLUDE_GLOBS.join(',')}'"
       parser.on('-f', '--include-files globs', desc) do |comma_separated_globs|
-        self.glob_allow_filters = comma_separated_globs.strip.split(',')
+        self.glob_allow_filters = split_comma_separated_with_braces(comma_separated_globs)
       end
 
       desc = 'Skip files matching specified glob patterns (comma separated). Empty by default.'
       parser.on('-x', '--exclude-files globs', desc) do |comma_separated_globs|
-        self.glob_reject_filters = comma_separated_globs.strip.split(',')
+        self.glob_reject_filters = split_comma_separated_with_braces(comma_separated_globs)
       end
     end
   end
