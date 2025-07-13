@@ -234,6 +234,9 @@ describe Undercover::CLI do
 
     lcov = double
     json_file = StringIO.new('{"coverage": {}}')
+    allow(File).to receive(:exist?).and_call_original
+    allow(File).to receive(:exist?).with('test.json').and_return(true)
+    allow(File).to receive(:exist?).with('./.undercover').and_return(false)
     allow(File).to receive(:open).with('test.lcov') { lcov }
     allow(File).to receive(:open).with('test.json') { json_file }
     allow(Undercover::LcovParser).to receive(:parse).with(lcov, instance_of(Undercover::Options)) do
@@ -248,11 +251,56 @@ describe Undercover::CLI do
     subject.run(['-l', 'test.lcov', '-s', 'test.json'])
   end
 
-  def stub_build # rubocop:disable Metrics/AbcSize
-    lcov = double
+  it 'returns 1 exit code when no coverage report found' do
     allow_any_instance_of(Undercover::Options).to receive(:guess_resultset_path)
-    allow(File).to receive(:open) { lcov }
-    allow(Undercover::LcovParser).to receive(:parse).with(lcov, instance_of(Undercover::Options)) do
+    allow_any_instance_of(Undercover::Options).to receive(:guess_lcov_path)
+    allow(File).to receive(:exist?).with('./.undercover').and_return(false)
+
+    expected_output = a_string_matching(/❌ ERROR: No coverage report found/)
+
+    expect do
+      expect(subject.run([])).to eq(1)
+    end.to output(expected_output).to_stdout
+  end
+
+  it 'returns 1 exit code when coverage file does not exist' do
+    allow(File).to receive(:exist?).and_call_original
+    allow(File).to receive(:exist?).with('./.undercover').and_return(false)
+    allow(File).to receive(:exist?).with('nonexistent.lcov').and_return(false)
+    allow(File).to receive(:exist?).with('/Users/mrgrodo/dev/undercover/coverage/coverage.json').and_return(false)
+
+    expected_output = a_string_matching(/❌ ERROR: Coverage report not found at: nonexistent.lcov/)
+
+    expect do
+      expect(subject.run(['-l', 'nonexistent.lcov'])).to eq(1)
+    end.to output(expected_output).to_stdout
+  end
+
+  it 'shows default paths when no coverage report found' do
+    allow_any_instance_of(Undercover::Options).to receive(:guess_resultset_path)
+    allow_any_instance_of(Undercover::Options).to receive(:guess_lcov_path)
+    allow(File).to receive(:exist?).with('./.undercover').and_return(false)
+
+    expected_output = a_string_matching(/Checked default paths:.*coverage\/coverage\.json.*coverage\/lcov/m)
+
+    expect do
+      expect(subject.run([])).to eq(1)
+    end.to output(expected_output).to_stdout
+  end
+
+  def stub_build # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+    file_stub = double('file', read: '{"coverage": {}}', each: nil)
+    allow_any_instance_of(Undercover::Options).to receive(:guess_resultset_path) do |opts|
+      opts.simplecov_resultset = 'coverage/coverage.json'
+    end
+    allow(File).to receive(:exist?).and_call_original
+    allow(File).to receive(:exist?).with('coverage/coverage.json').and_return(true)
+    allow(File).to receive(:exist?).with('./.undercover').and_return(false)
+    allow(File).to receive(:open) { file_stub }
+    allow(Undercover::SimplecovResultAdapter).to receive(:parse).with(file_stub, instance_of(Undercover::Options)) do
+      double(coverage: [])
+    end
+    allow(Undercover::LcovParser).to receive(:parse).with(file_stub, instance_of(Undercover::Options)) do
       double(coverage: [])
     end
     allow_any_instance_of(Undercover::Report).to receive(:validate) { nil }

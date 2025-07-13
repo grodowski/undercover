@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Improve Options#parse with glob braces support, strip quotes properly from .undercover config files
 - Fix Result#coverage_f to support ignored branches
 - Fix error parsing JSON coverage with branch coverage disabled ([#231](https://github.com/grodowski/undercover/issues/231))
+- Fixed NoMethodError and Errno::ENOENT that were occurring when coverage report doesn't exist ([#232](https://github.com/grodowski/undercover/issues/232))
 
 # [0.7.2] - 2025-07-07
 

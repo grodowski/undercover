@@ -22,9 +22,29 @@ module Undercover
     end
 
     def self.run_report(opts)
-      report = Undercover::Report.new(changeset(opts), opts).build
+      coverage_path = opts.simplecov_resultset || opts.lcov
+      return handle_missing_coverage_path(opts) if coverage_path.nil?
+      return handle_missing_file(coverage_path) unless File.exist?(coverage_path)
 
-      error = report.validate(opts.simplecov_resultset || opts.lcov)
+      report = Undercover::Report.new(changeset(opts), opts).build
+      handle_report_validation(report, coverage_path)
+    end
+
+    def self.handle_missing_coverage_path(opts)
+      puts Rainbow('❌ ERROR: No coverage report found. Checked default paths:').red
+      puts Rainbow('  - ./coverage/coverage.json (SimpleCov)').red
+      puts Rainbow("  - ./coverage/lcov/#{Pathname.new(File.expand_path(opts.path)).split.last}.lcov (LCOV)").red
+      puts Rainbow('Set a custom path with --lcov or --simplecov option').red
+      1
+    end
+
+    def self.handle_missing_file(coverage_path)
+      puts Rainbow("❌ ERROR: Coverage report not found at: #{coverage_path}").red
+      1
+    end
+
+    def self.handle_report_validation(report, coverage_path)
+      error = report.validate(coverage_path)
       if error
         puts(WARNINGS_TO_S[error])
         return 0 if error == :no_changes
