@@ -18,7 +18,7 @@ jobs:
         run: |
           gem install bundler undercover --no-doc
           bundle install --jobs 4 --retry 3
-          bundle exec rake
+          rake
       - name: undercover (local)
         run: |
           git fetch --update-head-ok origin master:master
