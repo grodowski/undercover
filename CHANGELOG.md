@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+# [0.7.4] - 2025-07-13
+
+### Fixed
+- Fix `fnmatch` for `FilterSet` to support glob braces (sets) in `--include-files` and `--exclude-files`
+
 # [0.7.3] - 2025-07-13
 
 ### Fixed
@@ -180,7 +185,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - First release of `undercover` 🎉
 
-[Unreleased]: https://github.com/grodowski/undercover/compare/v0.7.3...HEAD
+[Unreleased]: https://github.com/grodowski/undercover/compare/v0.7.4...HEAD
+[0.7.4]: https://github.com/grodowski/undercover/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/grodowski/undercover/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/grodowski/undercover/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/grodowski/undercover/compare/v0.7.0...v0.7.1
