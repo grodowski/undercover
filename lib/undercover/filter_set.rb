@@ -10,7 +10,7 @@ module Undercover
     end
 
     def include?(filepath)
-      fnmatch = proc { |glob| File.fnmatch(glob, filepath) }
+      fnmatch = proc { |glob| File.fnmatch(glob, filepath, File::FNM_EXTGLOB) }
       allow_filters.any?(fnmatch) && reject_filters.none?(fnmatch)
     end
   end

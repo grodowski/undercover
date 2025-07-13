@@ -73,6 +73,19 @@ describe Undercover::Changeset do
       expect(yielded_files.uniq).to match_array(['class.rb', 'module.rb', 'sinatra.rb'])
       expect(yielded_files.uniq).not_to include('file_one', 'file_two', 'file_three', 'staged_file')
     end
+
+    it 'filters files using FilterSet with brace expansion' do
+      filter_set = Undercover::FilterSet.new(['*.{rb,js}'], ['*_spec.rb'])
+      changeset = Undercover::Changeset.new('spec/fixtures/test.git', 'master', filter_set)
+
+      yielded_files = []
+      changeset.each_changed_line do |filepath, _line_no|
+        yielded_files << filepath
+      end
+
+      expect(yielded_files.uniq).to match_array(['class.rb', 'module.rb', 'sinatra.rb'])
+      expect(yielded_files.uniq).not_to include('file_one', 'file_two', 'file_three', 'staged_file')
+    end
   end
 
   describe 'validate' do
