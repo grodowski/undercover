@@ -49,8 +49,8 @@ end
 require 'simplecov'
 require 'undercover/simplecov_formatter'
 
-# optional, will default to coverage.json
-SimpleCov::Formatter::Undercover.output_filename = 'my_project_coverage.json'
+# optional, the filename defaults to `coverage.json` and is automatically recognised by the gem
+# SimpleCov::Formatter::Undercover.output_filename = 'my_project_coverage.json'
 SimpleCov.formatter = SimpleCov::Formatter::Undercover
 
 SimpleCov.start do
