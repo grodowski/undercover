@@ -73,8 +73,6 @@ If you're upgrading from an older version of undercover that used LCOV, you can 
 ```ruby
 # Gemfile
 group :test do
-  gem 'simplecov'
-  gem 'simplecov_json_formatter'
   gem 'undercover'
 end
 
