@@ -62,7 +62,7 @@ describe Undercover::Changeset do
 
   describe 'filtering' do
     it 'filters files using FilterSet in each_changed_line' do
-      filter_set = Undercover::FilterSet.new(['*.rb'], ['*_spec.rb'])
+      filter_set = Undercover::FilterSet.new(['*.rb'], ['*_spec.rb'], [])
       changeset = Undercover::Changeset.new('spec/fixtures/test.git', 'master', filter_set)
 
       yielded_files = []
@@ -75,7 +75,7 @@ describe Undercover::Changeset do
     end
 
     it 'filters files using FilterSet with brace expansion' do
-      filter_set = Undercover::FilterSet.new(['*.{rb,js}'], ['*_spec.rb'])
+      filter_set = Undercover::FilterSet.new(['*.{rb,js}'], ['*_spec.rb'], [])
       changeset = Undercover::Changeset.new('spec/fixtures/test.git', 'master', filter_set)
 
       yielded_files = []

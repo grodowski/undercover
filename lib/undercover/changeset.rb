@@ -49,6 +49,10 @@ module Undercover
       :stale_coverage if last_modified > File.mtime(lcov_report_path)
     end
 
+    def filter_with(filter_set)
+      @filter_set = filter_set
+    end
+
     private
 
     # Diffs `head` or `head` + `compare_base` (if exists),

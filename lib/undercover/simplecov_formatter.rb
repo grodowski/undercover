@@ -13,12 +13,29 @@ module SimpleCovJSONFormatter
   end
 end
 
+module SimpleCov
+  class << self
+    attr_accessor :filtered_files
+
+    alias filtered_uncached filtered
+
+    def filtered(files)
+      @filtered_files ||= Set.new
+      original_files = files.dup
+      filtered_uncached(files).tap do |filtered_files|
+        @filtered_files += (original_files.map(&:filename) - filtered_files.map(&:filename))
+      end
+    end
+  end
+end
+
 module Undercover
   class ResultHashFormatterWithRoot < SimpleCovJSONFormatter::ResultHashFormatter
     def format
       formatted_result[:meta] = {timestamp: @result.created_at.to_i}
       format_files
       add_undercover_meta_fields
+      add_ignored_files
       formatted_result
     end
 
@@ -28,6 +45,14 @@ module Undercover
       formatted_result.tap do |result|
         result[:meta].merge!(simplecov_root: SimpleCov.root)
       end
+    end
+
+    def add_ignored_files
+      ignored_files = SimpleCov.filtered_files&.map do |file|
+        file.delete_prefix("#{SimpleCov.root}/")
+      end || []
+
+      formatted_result[:meta][:ignored_files] = ignored_files
     end
 
     # format_files uses relative path as keys, as opposed to the superclass method

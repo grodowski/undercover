@@ -200,4 +200,32 @@ describe Undercover::SimplecovResultAdapter do
       expect(adapter.skipped?('test.rb', 3)).to be false
     end
   end
+
+  describe '#ignored_files' do
+    it 'returns ignored files from meta section' do
+      adapter = simplecov_coverage_fixture('spec/fixtures/simplecov_with_ignored_files.json')
+      expected_ignored = [
+        'app/lib/temp/temp_file.rb',
+        'db/migrate/20230101_create_users.rb',
+        'test/factories/user_factory.rb',
+      ]
+
+      expect(adapter.ignored_files).to eq(expected_ignored)
+    end
+
+    it 'returns empty array when no ignored files in meta' do
+      adapter = simplecov_coverage_fixture('spec/fixtures/nocov.json')
+      expect(adapter.ignored_files).to eq([])
+    end
+
+    it 'returns empty array when meta section is missing' do
+      result = {
+        'coverage' => {
+          'test.rb' => {'lines' => [1, 0]}
+        }
+      }
+      adapter = described_class.new(result, nil)
+      expect(adapter.ignored_files).to eq([])
+    end
+  end
 end
