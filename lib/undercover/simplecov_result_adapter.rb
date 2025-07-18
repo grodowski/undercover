@@ -56,6 +56,10 @@ module Undercover
     def total_coverage; end
     def total_branch_coverage; end
 
+    def ignored_files
+      @ignored_files ||= simplecov_result.dig('meta', 'ignored_files') || []
+    end
+
     private
 
     def find_file(filepath)

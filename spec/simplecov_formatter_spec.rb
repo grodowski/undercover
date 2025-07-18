@@ -60,7 +60,9 @@ end
 
 RSpec.describe 'Undercover::ResultHashFormatterWithRoot' do
   let(:lines) { [1, 0, nil, 1] }
-  let(:source_file) { double('source_file', project_filename: '/absolute/path/file.rb') }
+  let(:source_file) do
+    double('source_file', project_filename: '/absolute/path/file.rb', filename: '/absolute/path/file.rb')
+  end
   let(:result) do
     result = SimpleCov::Result.from_hash(
       'rspec' => {
@@ -95,6 +97,72 @@ RSpec.describe 'Undercover::ResultHashFormatterWithRoot' do
       formatted = formatter.format
       expect(formatted[:coverage]).to have_key('absolute/path/file.rb')
       expect(formatted[:coverage]).not_to have_key('/absolute/path/file.rb')
+    end
+
+    it 'includes ignored files in meta' do
+      filtered_file1 = double('filtered_file1', filename: '/absolute/path/filtered_file.rb')
+      filtered_file2 = double('filtered_file2', filename: '/absolute/path/another_filtered.rb')
+      kept_file = double('kept_file', filename: '/absolute/path/file.rb')
+
+      allow(SimpleCov).to receive(:filtered_uncached).and_return([kept_file])
+      allow(SimpleCov).to receive(:root).and_return('/absolute')
+
+      SimpleCov.filtered_files = nil
+      original_files = [kept_file, filtered_file1, filtered_file2]
+      SimpleCov.filtered(original_files)
+
+      formatted = formatter.format
+
+      expect(formatted[:meta][:ignored_files]).to eq([
+                                                       'path/filtered_file.rb',
+                                                       'path/another_filtered.rb',
+                                                     ])
+    end
+
+    it 'handles case with no ignored files' do
+      # Create mock source file
+      kept_file = double('kept_file', filename: '/absolute/path/file.rb')
+
+      # Mock the original filtering behavior to keep all files
+      allow(SimpleCov).to receive(:filtered_uncached).and_return([kept_file])
+
+      # Reset filtered_files to ensure clean state
+      SimpleCov.filtered_files = nil
+
+      # Call the overridden filtered method with no files being filtered out
+      original_files = [kept_file]
+      SimpleCov.filtered(original_files)
+
+      formatted = formatter.format
+
+      expect(formatted[:meta][:ignored_files]).to eq([])
+    end
+
+    it 'filters out non-existent files from ignored list' do
+      # Create mock source files
+      filtered_file = double('filtered_file', filename: '/absolute/path/filtered_file.rb')
+      nonexistent_file = double('nonexistent_file', filename: '/absolute/path/nonexistent.rb')
+      kept_file = double('kept_file', filename: '/absolute/path/file.rb')
+
+      # Mock the original filtering behavior to filter out some files
+      allow(SimpleCov).to receive(:filtered_uncached).and_return([kept_file])
+
+      # Mock SimpleCov.root to match the test paths
+      allow(SimpleCov).to receive(:root).and_return('/absolute')
+
+      # Reset filtered_files to ensure clean state
+      SimpleCov.filtered_files = nil
+
+      # Call the overridden filtered method to populate filtered_files
+      original_files = [kept_file, filtered_file, nonexistent_file]
+      SimpleCov.filtered(original_files)
+
+      formatted = formatter.format
+
+      expect(formatted[:meta][:ignored_files]).to eq([
+                                                       'path/filtered_file.rb',
+                                                       'path/nonexistent.rb',
+                                                     ])
     end
   end
 

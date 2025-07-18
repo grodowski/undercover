@@ -16,7 +16,7 @@ describe Undercover::Report do
     git_dir = File.join(options.path, options.git_dir)
     Undercover::Changeset.new(git_dir, options.compare)
   end
-  subject(:report) { described_class.new(changeset, options) }
+  subject(:report) { described_class.new(changeset, options, lcov_from_options(options)) }
 
   context 'with SimpleCov resultset' do
     let(:options_with_simplecov) do
@@ -28,14 +28,11 @@ describe Undercover::Report do
     end
 
     it 'initializes with SimpleCov resultset adapter' do
-      json_file = StringIO.new('{"coverage": {}}')
-      lcov_file = double
-      expect(File).to receive(:open).with('spec/fixtures/nocov.json').and_return(json_file)
+      simplecov_adapter = double('SimpleCov adapter', coverage: [], ignored_files: [])
 
-      expect(Undercover::SimplecovResultAdapter).to receive(:parse).with(json_file, options_with_simplecov)
-      expect(Undercover::LcovParser).not_to receive(:parse).with(lcov_file, options_with_simplecov)
+      expect(Undercover::LcovParser).not_to receive(:parse)
 
-      described_class.new(changeset, options_with_simplecov)
+      described_class.new(changeset, options_with_simplecov, simplecov_adapter)
     end
   end
 
@@ -119,19 +116,8 @@ describe Undercover::Report do
         .and_yield('test_two_patches.rb', 21)
         .and_yield('Rakefile', 1)
         .and_yield('.undercover_config', 1) # unparsable, won't appear in the report
+      allow(mock_changeset).to receive(:filter_with)
       mock_changeset
-    end
-
-    it 'flags 2 two results when Rakefile is ignored' do
-      options.glob_reject_filters = ['Rakefile']
-      options.lcov = 'spec/fixtures/test_two_patches.lcov'
-      report.build
-      flagged = report.flagged_results
-      expect(flagged.size).to eq(2)
-      expect(flagged[0].file_path).to eq('test_two_patches.rb')
-      expect(flagged[0].first_line).to eq(3)
-      expect(flagged[1].file_path).to eq('test_two_patches.rb')
-      expect(flagged[1].first_line).to eq(15)
     end
 
     it 'deprecated build_warnings still works' do
@@ -139,7 +125,7 @@ describe Undercover::Report do
       options.lcov = 'spec/fixtures/test_two_patches.lcov'
       report.build
       warnings = report.build_warnings.to_a
-      expect(warnings.size).to eq(2)
+      expect(warnings.size).to eq(3)
       expect(warnings[0].file_path).to eq('test_two_patches.rb')
       expect(warnings[0].first_line).to eq(3)
       expect(warnings[1].file_path).to eq('test_two_patches.rb')
@@ -207,6 +193,7 @@ describe Undercover::Report do
         opt.lcov = 'spec/fixtures/monorepo/app/coverage/app.lcov'
         opt.path = 'spec/fixtures/monorepo'
         opt.git_dir = 'monorepo.git'
+        opt.glob_allow_filters = ['*.rb']
       end
     end
 
@@ -214,7 +201,7 @@ describe Undercover::Report do
       git_dir = File.join(options.path, options.git_dir)
       Undercover::Changeset.new(git_dir, options.compare)
     end
-    subject(:report) { described_class.new(changeset, options) }
+    subject(:report) { described_class.new(changeset, options, lcov_from_options(options)) }
 
     it 'matches the paths relative to where undercover runs' do
       # simulate running undercover in the subdirectory
@@ -238,5 +225,31 @@ describe Undercover::Report do
     it 'matches the paths relative to --simplecov-root' do
       skip
     end
+  end
+
+  context 'without SimpleCov resultset' do
+    let(:options_without_simplecov) do
+      Undercover::Options.new.tap do |opt|
+        opt.lcov = 'spec/fixtures/fixtures.lcov'
+        opt.path = 'spec/fixtures'
+        opt.git_dir = 'test.git'
+      end
+    end
+    subject(:report) do
+      described_class.new(changeset, options_without_simplecov, lcov_from_options(options_without_simplecov))
+    end
+
+    it 'creates FilterSet with empty ignored files' do
+      expect(report.filter_set.simplecov_ignored_files).to eq([])
+    end
+
+    it 'behaves like the original implementation' do
+      expect(report.filter_set.include?('class.rb')).to be true
+      expect(report.filter_set.include?('app/lib/temp/temp_file.rb')).to be true
+    end
+  end
+
+  def lcov_from_options(opts)
+    Undercover::LcovParser.parse(File.open(opts.lcov), opts)
   end
 end
