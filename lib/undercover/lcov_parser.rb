@@ -57,6 +57,11 @@ module Undercover
       false
     end
 
+    def ignored_files
+      # supported by SimplecovResultAdapter only
+      []
+    end
+
     private
 
     # rubocop:disable Metrics/MethodLength, Style/SpecialGlobalVars, Metrics/AbcSize

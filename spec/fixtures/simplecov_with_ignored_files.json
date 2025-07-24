@@ -1,0 +1,36 @@
+{
+  "meta": {
+    "timestamp": 1579085826,
+    "simplecov_root": "/Users/mrgrodo/dev/undercover",
+    "ignored_files": [
+      { "string": "app/lib/temp/" },
+      { "regex": "\/migrate\/" },
+      { "file": "test/factories/user_factory.rb" }
+    ]
+  },
+  "coverage": {
+    "class.rb": {
+      "lines": [
+        null,
+        1,
+        1,
+        1,
+        null,
+        1,
+        0,
+        null
+      ],
+      "branches": []
+    },
+    "module.rb": {
+      "lines": [
+        null,
+        1,
+        1,
+        0,
+        null
+      ],
+      "branches": []
+    }
+  }
+}
