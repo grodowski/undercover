@@ -100,68 +100,132 @@ RSpec.describe 'Undercover::ResultHashFormatterWithRoot' do
     end
 
     it 'includes ignored files in meta' do
-      filtered_file1 = double('filtered_file1', filename: '/absolute/path/filtered_file.rb')
-      filtered_file2 = double('filtered_file2', filename: '/absolute/path/another_filtered.rb')
-      kept_file = double('kept_file', filename: '/absolute/path/file.rb')
-
-      allow(SimpleCov).to receive(:filtered_uncached).and_return([kept_file])
-      allow(SimpleCov).to receive(:root).and_return('/absolute')
-
-      SimpleCov.filtered_files = nil
-      original_files = [kept_file, filtered_file1, filtered_file2]
-      SimpleCov.filtered(original_files)
+      # Mock the filter definitions to return a mix of filter types
+      allow(SimpleCov).to receive(:filter_definitions).and_return([
+                                                                    {string: 'spec/'},
+                                                                    {regex: '\/test\/'},
+                                                                    {file: 'path/custom_ignored.rb'},
+                                                                  ])
 
       formatted = formatter.format
 
       expect(formatted[:meta][:ignored_files]).to eq([
-                                                       'path/filtered_file.rb',
-                                                       'path/another_filtered.rb',
+                                                       {string: 'spec/'},
+                                                       {regex: '\/test\/'},
+                                                       {file: 'path/custom_ignored.rb'},
                                                      ])
     end
 
     it 'handles case with no ignored files' do
-      # Create mock source file
-      kept_file = double('kept_file', filename: '/absolute/path/file.rb')
-
-      # Mock the original filtering behavior to keep all files
-      allow(SimpleCov).to receive(:filtered_uncached).and_return([kept_file])
-
-      # Reset filtered_files to ensure clean state
-      SimpleCov.filtered_files = nil
-
-      # Call the overridden filtered method with no files being filtered out
-      original_files = [kept_file]
-      SimpleCov.filtered(original_files)
+      # Mock empty filter definitions
+      allow(SimpleCov).to receive(:filter_definitions).and_return([])
 
       formatted = formatter.format
 
       expect(formatted[:meta][:ignored_files]).to eq([])
     end
 
-    it 'filters out non-existent files from ignored list' do
-      # Create mock source files
-      filtered_file = double('filtered_file', filename: '/absolute/path/filtered_file.rb')
-      nonexistent_file = double('nonexistent_file', filename: '/absolute/path/nonexistent.rb')
-      kept_file = double('kept_file', filename: '/absolute/path/file.rb')
-
-      # Mock the original filtering behavior to filter out some files
-      allow(SimpleCov).to receive(:filtered_uncached).and_return([kept_file])
-
-      # Mock SimpleCov.root to match the test paths
-      allow(SimpleCov).to receive(:root).and_return('/absolute')
-
-      # Reset filtered_files to ensure clean state
-      SimpleCov.filtered_files = nil
-
-      # Call the overridden filtered method to populate filtered_files
-      original_files = [kept_file, filtered_file, nonexistent_file]
-      SimpleCov.filtered(original_files)
+    it 'handles mixed filter types' do
+      # Mock filter definitions with various types
+      allow(SimpleCov).to receive(:filter_definitions).and_return([
+                                                                    {string: 'app/models/'},
+                                                                    {regex: '\/fixtures\/'},
+                                                                    {file: 'specific_ignored.rb'},
+                                                                    {string: 'vendor/'},
+                                                                  ])
 
       formatted = formatter.format
 
       expect(formatted[:meta][:ignored_files]).to eq([
-                                                       'path/filtered_file.rb',
-                                                       'path/nonexistent.rb',
+                                                       {string: 'app/models/'},
+                                                       {regex: '\/fixtures\/'},
+                                                       {file: 'specific_ignored.rb'},
+                                                       {string: 'vendor/'},
+                                                     ])
+    end
+
+    it 'does not add file entries for paths covered by serializable filters' do
+      SimpleCov.filter_definitions = nil
+      string_filter = SimpleCov::StringFilter.new('spec/')
+      allow(SimpleCov).to receive(:filters).and_return([string_filter])
+
+      filtered_file = double('filtered_file', filename: '/absolute/spec/example_spec.rb')
+      kept_file = double('kept_file', filename: '/absolute/app/model.rb')
+
+      allow(SimpleCov).to receive(:filtered_uncached).and_return([kept_file])
+      allow(SimpleCov).to receive(:root).and_return('/absolute')
+
+      SimpleCov.filtered([kept_file, filtered_file])
+      formatted = formatter.format
+
+      expect(formatted[:meta][:ignored_files]).to eq([{string: 'spec/'}])
+    end
+
+    it 'adds file entries for paths not covered by serializable filters' do
+      SimpleCov.filter_definitions = nil
+      string_filter = SimpleCov::StringFilter.new('vendor/')
+      allow(SimpleCov).to receive(:filters).and_return([string_filter])
+
+      filtered_file = double('filtered_file', filename: '/absolute/custom/special.rb')
+      kept_file = double('kept_file', filename: '/absolute/app/model.rb')
+
+      allow(SimpleCov).to receive(:filtered_uncached).and_return([kept_file])
+      allow(SimpleCov).to receive(:root).and_return('/absolute')
+
+      SimpleCov.filtered([kept_file, filtered_file])
+      formatted = formatter.format
+
+      expect(formatted[:meta][:ignored_files]).to eq([
+                                                       {string: 'vendor/'},
+                                                       {file: 'custom/special.rb'},
+                                                     ])
+    end
+
+    it 'handles regex filters that do not match in covered_by_serializable_filters' do
+      SimpleCov.filter_definitions = nil
+      regex_filter = SimpleCov::RegexFilter.new(/\/nonexistent\//)
+      allow(SimpleCov).to receive(:filters).and_return([regex_filter])
+
+      filtered_file = double('filtered_file', filename: '/absolute/app/model.rb')
+      kept_file = double('kept_file', filename: '/absolute/app/other.rb')
+
+      allow(SimpleCov).to receive(:filtered_uncached).and_return([kept_file])
+      allow(SimpleCov).to receive(:root).and_return('/absolute')
+
+      SimpleCov.filtered([kept_file, filtered_file])
+      formatted = formatter.format
+
+      expect(formatted[:meta][:ignored_files]).to eq([
+                                                       {regex: '/nonexistent/'},
+                                                       {file: 'app/model.rb'},
+                                                     ])
+    end
+
+    it 'handles unknown filter types in extract_filter_definitions' do
+      SimpleCov.filter_definitions = nil
+
+      custom_filter_class = Class.new(SimpleCov::Filter) do
+        def matches?(_source_file)
+          true
+        end
+      end
+
+      string_filter = SimpleCov::StringFilter.new('spec/')
+      custom_filter = custom_filter_class.new('custom_argument')
+      allow(SimpleCov).to receive(:filters).and_return([string_filter, custom_filter])
+
+      filtered_file = double('filtered_file', filename: '/absolute/custom/file.rb')
+      kept_file = double('kept_file', filename: '/absolute/app/model.rb')
+
+      allow(SimpleCov).to receive(:filtered_uncached).and_return([kept_file])
+      allow(SimpleCov).to receive(:root).and_return('/absolute')
+
+      SimpleCov.filtered([kept_file, filtered_file])
+      formatted = formatter.format
+
+      expect(formatted[:meta][:ignored_files]).to eq([
+                                                       {string: 'spec/'},
+                                                       {file: 'custom/file.rb'},
                                                      ])
     end
   end

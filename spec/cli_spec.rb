@@ -274,7 +274,7 @@ describe Undercover::CLI do
 
     json_content = {
       'meta' => {
-        'ignored_files' => ['app/lib/temp/temp_file.rb', 'db/migrate/migration.rb']
+        'ignored_files' => [{'string' => 'app/lib/temp/'}, {'file' => 'db/migrate/migration.rb'}]
       },
       'coverage' => {
         'app/models/user.rb' => {'lines' => [1, 0]}
@@ -289,7 +289,8 @@ describe Undercover::CLI do
 
     simplecov_adapter = double('SimpleCov adapter',
                                coverage: [],
-                               ignored_files: ['app/lib/temp/temp_file.rb', 'db/migrate/migration.rb'])
+                               ignored_files: [{'string' => 'app/lib/temp/'},
+                                               {'file' => 'db/migrate/migration.rb'}])
     allow(Undercover::SimplecovResultAdapter).to receive(:parse).and_return(simplecov_adapter)
 
     allow_any_instance_of(Undercover::Report).to receive(:validate) { nil }
@@ -299,7 +300,7 @@ describe Undercover::CLI do
     expect(Undercover::FilterSet).to receive(:new).with(
       ['*.rb', '*.rake', '*.ru', 'Rakefile'],
       ['test/*', 'spec/*', 'db/*', 'config/*', '*_test.rb', '*_spec.rb'],
-      ['app/lib/temp/temp_file.rb', 'db/migrate/migration.rb']
+      [{'string' => 'app/lib/temp/'}, {'file' => 'db/migrate/migration.rb'}]
     ).once.and_call_original
 
     subject.run(['-s', 'test.json'])

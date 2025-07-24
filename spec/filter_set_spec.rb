@@ -6,9 +6,9 @@ require 'undercover/filter_set'
 describe Undercover::FilterSet do
   let(:allow_filters) { ['*.rb'] }
   let(:reject_filters) { ['*_spec.rb'] }
-  let(:simplecov_ignored_files) { ['app/lib/filtered_file.rb'] }
+  let(:simplecov_filters) { [{file: 'app/lib/filtered_file.rb'}] }
 
-  subject(:filter_set) { described_class.new(allow_filters, reject_filters, simplecov_ignored_files) }
+  subject(:filter_set) { described_class.new(allow_filters, reject_filters, simplecov_filters) }
 
   describe '#include?' do
     context 'when file is in SimpleCov ignored files' do
@@ -32,7 +32,7 @@ describe Undercover::FilterSet do
     end
 
     context 'with empty SimpleCov ignored files' do
-      let(:simplecov_ignored_files) { [] }
+      let(:simplecov_filters) { [] }
 
       it 'behaves like the original FilterSet' do
         expect(filter_set.include?('app/models/user.rb')).to be true
@@ -44,7 +44,7 @@ describe Undercover::FilterSet do
     context 'with complex glob patterns' do
       let(:allow_filters) { ['*.rb', '*.rake', 'Rakefile'] }
       let(:reject_filters) { ['test/*', 'spec/*'] }
-      let(:simplecov_ignored_files) { ['lib/migrations/20230101_create_users.rb'] }
+      let(:simplecov_filters) { [{file: 'lib/migrations/20230101_create_users.rb'}] }
 
       it 'correctly applies all filters' do
         expect(filter_set.include?('app/models/user.rb')).to be true
@@ -52,6 +52,77 @@ describe Undercover::FilterSet do
         expect(filter_set.include?('test/user_test.rb')).to be false
         expect(filter_set.include?('spec/user_spec.rb')).to be false
         expect(filter_set.include?('lib/migrations/20230101_create_users.rb')).to be false
+      end
+    end
+
+    context 'with string and regex filters' do
+      let(:simplecov_filters) do
+        [
+          {string: 'spec/'},
+          {regex: '\/test\/'},
+          {file: 'custom_ignored.rb'},
+        ]
+      end
+
+      it 'correctly evaluates string filters' do
+        expect(filter_set.include?('spec/user_spec.rb')).to be false
+        expect(filter_set.include?('app/spec/helper.rb')).to be false
+      end
+
+      it 'correctly evaluates regex filters' do
+        expect(filter_set.include?('app/test/unit_test.rb')).to be false
+        expect(filter_set.include?('lib/test/integration_test.rb')).to be false
+      end
+
+      it 'correctly evaluates file filters' do
+        expect(filter_set.include?('custom_ignored.rb')).to be false
+      end
+
+      it 'allows files not matching any filter' do
+        expect(filter_set.include?('app/models/user.rb')).to be true
+      end
+
+      it 'handles file filter that does not match' do
+        expect(filter_set.include?('different_file.rb')).to be true
+      end
+
+      it 'handles file filter that returns false when filepath does not match exactly' do
+        file_filter_set = described_class.new(['*.rb'], [], [{file: 'exact_match.rb'}])
+        expect(file_filter_set.include?('different_file.rb')).to be true
+        expect(file_filter_set.include?('exact_match.rb')).to be false
+      end
+
+      it 'explicitly tests file filter branch where comparison returns false' do
+        test_filter_set = described_class.new(['*.rb'], [], [{file: 'specific_file.rb'}])
+        expect(test_filter_set.include?('other_file.rb')).to be true
+      end
+
+      it 'tests the false branch of file filter comparison within any loop' do
+        multi_filter_set = described_class.new(['*.rb'], [], [
+                                                 {file: 'will_not_match.rb'},
+                                                 {string: 'also_will_not_match'},
+                                               ])
+        expect(multi_filter_set.include?('some_other_file.rb')).to be true
+      end
+
+      it 'specifically tests file filter false return in isolation' do
+        isolated_filter_set = described_class.new(['*.rb'], [], [{file: 'exact_name.rb'}])
+        expect(isolated_filter_set.include?('totally_different.rb')).to be true
+        expect(isolated_filter_set.include?('exact_name.rb')).to be false
+      end
+
+      it 'forces file filter false evaluation by using non-matching filename' do
+        force_false_set = described_class.new(['*.rb'], [], [{file: 'specific_file.rb'}])
+        expect(force_false_set.include?('different_file.rb')).to be true
+      end
+
+      it 'tests the elsif branch condition itself with falsy file value' do
+        falsy_filter_set = described_class.new(['*.rb'], [], [
+                                                 {file: nil},
+                                                 {file: ''},
+                                                 {string: 'will_not_match'},
+                                               ])
+        expect(falsy_filter_set.include?('any_file.rb')).to be true
       end
     end
   end

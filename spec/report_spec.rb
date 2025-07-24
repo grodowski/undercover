@@ -240,7 +240,7 @@ describe Undercover::Report do
     end
 
     it 'creates FilterSet with empty ignored files' do
-      expect(report.filter_set.simplecov_ignored_files).to eq([])
+      expect(report.filter_set.simplecov_filters).to eq([])
     end
 
     it 'behaves like the original implementation' do

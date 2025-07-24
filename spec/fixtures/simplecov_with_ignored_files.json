@@ -3,9 +3,9 @@
     "timestamp": 1579085826,
     "simplecov_root": "/Users/mrgrodo/dev/undercover",
     "ignored_files": [
-      "app/lib/temp/temp_file.rb",
-      "db/migrate/20230101_create_users.rb",
-      "test/factories/user_factory.rb"
+      { "string": "app/lib/temp/" },
+      { "regex": "\/migrate\/" },
+      { "file": "test/factories/user_factory.rb" }
     ]
   },
   "coverage": {

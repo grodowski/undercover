@@ -205,9 +205,9 @@ describe Undercover::SimplecovResultAdapter do
     it 'returns ignored files from meta section' do
       adapter = simplecov_coverage_fixture('spec/fixtures/simplecov_with_ignored_files.json')
       expected_ignored = [
-        'app/lib/temp/temp_file.rb',
-        'db/migrate/20230101_create_users.rb',
-        'test/factories/user_factory.rb',
+        {'string' => 'app/lib/temp/'},
+        {'regex' => '/migrate/'},
+        {'file' => 'test/factories/user_factory.rb'},
       ]
 
       expect(adapter.ignored_files).to eq(expected_ignored)
