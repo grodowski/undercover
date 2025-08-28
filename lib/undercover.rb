@@ -21,6 +21,7 @@ require 'undercover/version'
 module Undercover
   class Report
     extend Forwardable
+
     def_delegators :changeset, :validate
 
     attr_reader :changeset,

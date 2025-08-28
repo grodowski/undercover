@@ -220,6 +220,32 @@ describe Undercover::Result do
     end
   end
 
+  context ':nocov: with SimpleCov report and multi-line branch coverage' do
+    let(:ast) { Imagen.from_local('spec/fixtures/branch_ignored.rb') }
+    let(:simplecov) do
+      simplecov_coverage_fixture 'spec/fixtures/branch_ignored_coverage/branch_ignored_test.json'
+    end
+    let(:coverage) { simplecov }
+
+    it 'accepts ignored branches with present line coverage (:nocov: edge case)' do
+      nodes = ast.find_all(->(node) { !node.is_a?(Imagen::Node::Root) })
+      test_method_result = described_class.new(nodes[0], coverage, 'branch_ignored.rb')
+
+      # has ignored branch due to overlap with :nocov:, but uningnored lines
+      1.upto(4).each do |line_no|
+        expect(test_method_result.uncovered?(2)).to be_falsy
+        expect(coverage.skipped?('branch_ignored.rb', line_no)).to be_falsy
+      end
+
+      6.upto(8).each do |line_no|
+        expect(test_method_result.uncovered?(line_no)).to be_falsy
+        expect(coverage.skipped?('branch_ignored.rb', line_no)).to be_truthy
+      end
+
+      expect(test_method_result.coverage_f).to eq(1.0)
+    end
+  end
+
   context 'with skipped lines in coverage' do
     let(:file_path) { 'test.rb' }
     let(:source_file) do

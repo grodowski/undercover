@@ -43,7 +43,7 @@ module Undercover
 
       # check branch coverage for line_no
       coverage.each do |ln, _block, _branch, cov|
-        return true if ln == line_no && cov && cov.zero?
+        return true if ln == line_no && cov && cov != 'ignored' && cov.zero?
       end
 
       # check line coverage for line_no

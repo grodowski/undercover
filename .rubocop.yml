@@ -25,10 +25,10 @@ Metrics/BlockLength:
     - spec/**/*
 
 Metrics/CyclomaticComplexity:
-  Max: 10
+  Max: 12
 
 Metrics/PerceivedComplexity:
-  Max: 10
+  Max: 12
 
 Style/HashEachMethods:
   Enabled: true

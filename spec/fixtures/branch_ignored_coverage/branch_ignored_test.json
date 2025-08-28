@@ -1,0 +1,51 @@
+{
+  "meta": {
+    "timestamp": 1756364439,
+    "simplecov_root": "/Users/mrgrodo/dev/undercover/spec/fixtures",
+    "ignored_files": []
+  },
+  "coverage": {
+    "branch_ignored.rb": {
+      "lines": [
+        1,
+        1,
+        1,
+        1,
+        "ignored",
+        "ignored",
+        "ignored",
+        "ignored",
+        "ignored",
+        null,
+        null
+      ],
+      "branches": [
+        {
+          "type": "then",
+          "start_line": 3,
+          "end_line": 8,
+          "coverage": "ignored"
+        },
+        {
+          "type": "else",
+          "start_line": 2,
+          "end_line": 10,
+          "coverage": "ignored"
+        },
+        {
+          "type": "then",
+          "start_line": 4,
+          "end_line": 4,
+          "coverage": 1
+        },
+        {
+          "type": "else",
+          "start_line": 7,
+          "end_line": 7,
+          "coverage": "ignored"
+        }
+      ]
+    }
+  },
+  "groups": {}
+}
