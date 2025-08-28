@@ -26,7 +26,7 @@ module Undercover
 
     attr_reader :changeset,
                 :lcov,
-                :simplecov_resultset,
+                :coverage_adapter,
                 :results,
                 :code_dir,
                 :filter_set,
@@ -36,15 +36,16 @@ module Undercover
     #
     # @param changeset [Undercover::Changeset]
     # @param opts [Undercover::Options]
-    def initialize(changeset, opts)
-      if opts.simplecov_resultset
-        @simplecov_resultset = SimplecovResultAdapter.parse(File.open(opts.simplecov_resultset), opts)
-      end
-      @lcov = LcovParser.parse(File.open(opts.lcov), opts) if opts.lcov
+    # @param coverage_adapter [Undercover::SimplecovResultAdapter|Undercover::LcovParser] pre-parsed coverage adapter
+    def initialize(changeset, opts, coverage_adapter)
+      @coverage_adapter = coverage_adapter
 
       @code_dir = opts.path
       @changeset = changeset
-      @filter_set = FilterSet.new(opts.glob_allow_filters, opts.glob_reject_filters)
+
+      ignored_files = coverage_adapter.ignored_files || []
+      @filter_set = FilterSet.new(opts.glob_allow_filters, opts.glob_reject_filters, ignored_files)
+      changeset.filter_with(filter_set)
       @max_warnings_limit = opts.max_warnings_limit
       @loaded_files = {}
       @results = {}
@@ -107,29 +108,21 @@ module Undercover
 
     attr_reader :loaded_files
 
-    # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+    # rubocop:disable Metrics/AbcSize
     def load_and_parse_file(filepath)
       key = filepath.gsub(/^\.\//, '')
       return if loaded_files[key]
-      return unless include_file?(filepath)
 
       root_ast = Imagen::Node::Root.new.build_from_file(
         File.join(code_dir, filepath)
       )
       return if root_ast.children.empty?
 
-      # lcov will be deprecated at some point and we'll be able to refactor harder
-      coverage = simplecov_resultset || lcov
-
       loaded_files[key] = []
       root_ast.find_all(->(node) { !node.is_a?(Imagen::Node::Root) }).each do |imagen_node|
-        loaded_files[key] << Result.new(imagen_node, coverage, filepath)
+        loaded_files[key] << Result.new(imagen_node, coverage_adapter, filepath)
       end
     end
-    # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
-
-    def include_file?(filepath)
-      filter_set.include?(filepath)
-    end
+    # rubocop:enable Metrics/AbcSize
   end
 end

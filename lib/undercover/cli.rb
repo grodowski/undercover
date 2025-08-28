@@ -5,9 +5,6 @@ require 'rainbow'
 
 module Undercover
   module CLI
-    # TODO: Report calls >parser< for each file instead of
-    # traversing the whole project at first!
-
     WARNINGS_TO_S = {
       stale_coverage: Rainbow('🚨 WARNING: Coverage data is older than your ' \
                               'latest changes and results might be incomplete. ' \
@@ -21,12 +18,20 @@ module Undercover
       run_report(opts)
     end
 
-    def self.run_report(opts)
+    def self.run_report(opts) # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
       coverage_path = opts.simplecov_resultset || opts.lcov
       return handle_missing_coverage_path(opts) if coverage_path.nil?
       return handle_missing_file(coverage_path) unless File.exist?(coverage_path)
 
-      report = Undercover::Report.new(changeset(opts), opts).build
+      simplecov_adapter = if opts.simplecov_resultset
+                            SimplecovResultAdapter.parse(File.open(opts.simplecov_resultset), opts)
+                          else
+                            # TODO: lcov will be deprecated end of 2025 and we'll be able to refactor harder
+                            LcovParser.parse(File.open(opts.lcov), opts)
+                          end
+
+      changeset_obj = changeset(opts)
+      report = Undercover::Report.new(changeset_obj, opts, simplecov_adapter).build
       handle_report_validation(report, coverage_path)
     end
 
@@ -63,8 +68,7 @@ module Undercover
 
     def self.changeset(opts)
       git_dir = File.join(opts.path, opts.git_dir)
-      filter_set = Undercover::FilterSet.new(opts.glob_allow_filters, opts.glob_reject_filters)
-      Undercover::Changeset.new(git_dir, opts.compare, filter_set)
+      Undercover::Changeset.new(git_dir, opts.compare)
     end
   end
 end

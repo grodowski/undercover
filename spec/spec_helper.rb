@@ -33,7 +33,12 @@ end
 RSpec::Matchers.define :undercover_options do |opts_hash|
   match do |actual|
     opts_hash.all? do |opt_key, opt_value|
-      expect(actual.send(opt_key)).to match(opt_value)
+      actual_value = actual.send(opt_key)
+      if opt_value.is_a?(RSpec::Matchers::BuiltIn::BaseMatcher)
+        opt_value.matches?(actual_value)
+      else
+        actual_value == opt_value
+      end
     end
   end
 end

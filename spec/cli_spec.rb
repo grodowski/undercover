@@ -16,7 +16,8 @@ describe Undercover::CLI do
           path: '.',
           git_dir: '.git',
           compare: nil
-        )
+        ),
+        mock_simplecov_result_adapter
       )
       .and_call_original
     subject.run([])
@@ -63,6 +64,7 @@ describe Undercover::CLI do
   it 'creates an Undercover::Report with options' do
     stub_stdout
     stub_build
+
     expect(Undercover::Report)
       .to receive(:new)
       .with(
@@ -72,7 +74,8 @@ describe Undercover::CLI do
           path: 'spec/fixtures',
           git_dir: 'test.git',
           compare: nil
-        )
+        ),
+        mock_simplecov_result_adapter
       )
       .and_call_original
     subject.run(%w[-lspec/fixtures/sample.lcov -pspec/fixtures -gtest.git])
@@ -81,6 +84,7 @@ describe Undercover::CLI do
   it 'accepts --compare' do
     stub_stdout
     stub_build
+
     expect(Undercover::Report)
       .to receive(:new)
       .with(
@@ -90,7 +94,8 @@ describe Undercover::CLI do
           path: '.',
           git_dir: '.git',
           compare: 'HEAD~1'
-        )
+        ),
+        mock_simplecov_result_adapter
       )
       .and_call_original
     subject.run(%w[-cHEAD~1])
@@ -99,6 +104,7 @@ describe Undercover::CLI do
   it 'sets file globs from options' do
     stub_stdout
     stub_build
+
     expect(Undercover::Report)
       .to receive(:new)
       .with(
@@ -110,7 +116,8 @@ describe Undercover::CLI do
           compare: nil,
           glob_allow_filters: ['*.rb', '*.rake'],
           glob_reject_filters: ['Rakefile']
-        )
+        ),
+        mock_simplecov_result_adapter
       )
       .and_call_original
     subject.run(%w[-f *.rb,*.rake -x Rakefile])
@@ -181,6 +188,7 @@ describe Undercover::CLI do
   it 'sets max_warnings_limit from options' do
     stub_stdout
     stub_build
+
     expect(Undercover::Report)
       .to receive(:new)
       .with(
@@ -191,7 +199,8 @@ describe Undercover::CLI do
           git_dir: '.git',
           compare: nil,
           max_warnings_limit: 5
-        )
+        ),
+        mock_simplecov_result_adapter
       )
       .and_call_original
     subject.run(%w[-w 5])
@@ -200,6 +209,7 @@ describe Undercover::CLI do
   it 'sets max_warnings_limit from long option' do
     stub_stdout
     stub_build
+
     expect(Undercover::Report)
       .to receive(:new)
       .with(
@@ -210,7 +220,8 @@ describe Undercover::CLI do
           git_dir: '.git',
           compare: nil,
           max_warnings_limit: 10
-        )
+        ),
+        mock_simplecov_result_adapter
       )
       .and_call_original
     subject.run(%w[--max-warnings 10])
@@ -250,9 +261,73 @@ describe Undercover::CLI do
     allow_any_instance_of(Undercover::Report).to receive(:build) { |rep| rep }
     allow_any_instance_of(Undercover::Report).to receive(:flagged_results) { [] }
 
-    expect(Undercover::SimplecovResultAdapter).to receive(:parse).with(json_file, instance_of(Undercover::Options))
+    expect(Undercover::SimplecovResultAdapter)
+      .to receive(:parse).with(json_file, instance_of(Undercover::Options))
+      .and_return(double(coverage: [], ignored_files: []))
 
     subject.run(['-l', 'test.lcov', '-s', 'test.json'])
+  end
+
+  it 'creates changeset with SimpleCov ignored files' do
+    stub_stdout
+    allow_any_instance_of(Undercover::Options).to receive(:guess_resultset_path)
+
+    json_content = {
+      'meta' => {
+        'ignored_files' => [{'string' => 'app/lib/temp/'}, {'file' => 'db/migrate/migration.rb'}]
+      },
+      'coverage' => {
+        'app/models/user.rb' => {'lines' => [1, 0]}
+      }
+    }.to_json
+    json_file = StringIO.new(json_content)
+
+    allow(File).to receive(:exist?).and_call_original
+    allow(File).to receive(:exist?).with('test.json').and_return(true)
+    allow(File).to receive(:exist?).with('./.undercover').and_return(false)
+    allow(File).to receive(:open).with('test.json') { json_file }
+
+    simplecov_adapter = double('SimpleCov adapter',
+                               coverage: [],
+                               ignored_files: [{'string' => 'app/lib/temp/'},
+                                               {'file' => 'db/migrate/migration.rb'}])
+    allow(Undercover::SimplecovResultAdapter).to receive(:parse).and_return(simplecov_adapter)
+
+    allow_any_instance_of(Undercover::Report).to receive(:validate) { nil }
+    allow_any_instance_of(Undercover::Report).to receive(:build) { |rep| rep }
+    allow_any_instance_of(Undercover::Report).to receive(:flagged_results) { [] }
+
+    expect(Undercover::FilterSet).to receive(:new).with(
+      ['*.rb', '*.rake', '*.ru', 'Rakefile'],
+      ['test/*', 'spec/*', 'db/*', 'config/*', '*_test.rb', '*_spec.rb'],
+      [{'string' => 'app/lib/temp/'}, {'file' => 'db/migrate/migration.rb'}]
+    ).once.and_call_original
+
+    subject.run(['-s', 'test.json'])
+  end
+
+  it 'parses lcov report and passes it to the report builder' do
+    stub_stdout
+
+    allow_any_instance_of(Undercover::Report).to receive(:validate) { nil }
+    allow_any_instance_of(Undercover::Report).to receive(:build) { |rep| rep }
+    allow_any_instance_of(Undercover::Report).to receive(:flagged_results) { [] }
+    expect(Undercover::LcovParser).to receive(:parse) { mock_lcov_parser }
+    expect(Undercover::Report)
+      .to receive(:new)
+      .with(
+        instance_of(Undercover::Changeset),
+        undercover_options(
+          lcov: 'spec/fixtures/sample.lcov',
+          path: '.',
+          git_dir: '.git',
+          compare: nil
+        ),
+        mock_lcov_parser
+      )
+      .and_call_original
+
+    subject.run(['-l', 'spec/fixtures/sample.lcov'])
   end
 
   it 'returns 1 exit code when no coverage report found' do
@@ -292,6 +367,11 @@ describe Undercover::CLI do
     end.to output(expected_output).to_stdout
   end
 
+  let(:mock_simplecov_result_adapter) do
+    instance_double(Undercover::SimplecovResultAdapter, coverage: [], ignored_files: [])
+  end
+  let(:mock_lcov_parser) { instance_double(Undercover::LcovParser, coverage: [], ignored_files: []) }
+
   def stub_build # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     file_stub = double('file', read: '{"coverage": {}}', each: nil)
     allow_any_instance_of(Undercover::Options).to receive(:guess_resultset_path) do |opts|
@@ -302,10 +382,10 @@ describe Undercover::CLI do
     allow(File).to receive(:exist?).with('./.undercover').and_return(false)
     allow(File).to receive(:open) { file_stub }
     allow(Undercover::SimplecovResultAdapter).to receive(:parse).with(file_stub, instance_of(Undercover::Options)) do
-      double(coverage: [])
+      mock_simplecov_result_adapter
     end
     allow(Undercover::LcovParser).to receive(:parse).with(file_stub, instance_of(Undercover::Options)) do
-      double(coverage: [])
+      mock_lcov_parser
     end
     allow_any_instance_of(Undercover::Report).to receive(:validate) { nil }
     allow_any_instance_of(Undercover::Report).to receive(:build) { |rep| rep }
