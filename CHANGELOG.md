@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+# [0.8.0] - 2025-08-28
+
+### Added
+- Filter out files ignored by simplecov using `add_filter` ([#234](https://github.com/grodowski/undercover/pull/234))
+- Add LF and LH parsing to LcovParser for simplecov-lcov 0.9 compatibility
+
+### Fixed
+- Fix an `Undercover::Result` edge case causing errors with ignored branches on uningnored lines
+
 # [0.7.4] - 2025-07-13
 
 ### Fixed
@@ -185,7 +194,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - First release of `undercover` 🎉
 
-[Unreleased]: https://github.com/grodowski/undercover/compare/v0.7.4...HEAD
+[Unreleased]: https://github.com/grodowski/undercover/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/grodowski/undercover/compare/v0.7.4...v0.8.0
 [0.7.4]: https://github.com/grodowski/undercover/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/grodowski/undercover/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/grodowski/undercover/compare/v0.7.1...v0.7.2
