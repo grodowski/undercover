@@ -62,4 +62,10 @@ describe Undercover::LcovParser do
     expect(empty_parser.total_coverage).to eq(0)
     expect(empty_parser.total_branch_coverage).to eq(0)
   end
+
+  it 'ignores LF and LH lines' do
+    parser = described_class.parse('spec/fixtures/fixtures_lf_lh.lcov')
+
+    expect(parser.total_coverage).to eq(1.0)
+  end
 end
