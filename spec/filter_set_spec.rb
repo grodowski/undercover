@@ -58,9 +58,9 @@ describe Undercover::FilterSet do
     context 'with string and regex filters' do
       let(:simplecov_filters) do
         [
-          {string: 'spec/'},
-          {regex: '\/test\/'},
-          {file: 'custom_ignored.rb'},
+          {'string' => 'spec/'},
+          {'regex' => '\/test\/'},
+          {'file' => 'custom_ignored.rb'},
         ]
       end
 
