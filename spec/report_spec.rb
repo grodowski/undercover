@@ -34,6 +34,34 @@ describe Undercover::Report do
 
       described_class.new(changeset, options_with_simplecov, simplecov_adapter)
     end
+
+    context 'with ignored files' do
+      let(:options_with_simplecov) do
+        Undercover::Options.new.tap do |opt|
+          opt.path = 'spec/fixtures'
+          opt.git_dir = 'test.git'
+          opt.simplecov_resultset = 'spec/fixtures/simplecov_with_ignored_files.json'
+        end
+      end
+
+      subject(:report) do
+        described_class.new(changeset, options_with_simplecov, simplecov_from_options(options_with_simplecov))
+      end
+
+      it 'creates FilterSet with expected ignored files' do
+        expected_simplecov_filters = [
+          {"string"=>"app/lib/temp/"},
+          {"regex"=>"/migrate/"},
+          {"file"=>"test/factories/user_factory.rb"}
+        ]
+        expect(report.filter_set.simplecov_filters).to match_array(expected_simplecov_filters)
+      end
+
+      it 'uses simplecov filters to ignore files' do
+        expect(report.filter_set.include?('class.rb')).to be true
+        expect(report.filter_set.include?('app/lib/temp/temp_file.rb')).to be false
+      end
+    end
   end
 
   it 'builds a report with coverage metrics' do
@@ -251,5 +279,9 @@ describe Undercover::Report do
 
   def lcov_from_options(opts)
     Undercover::LcovParser.parse(File.open(opts.lcov), opts)
+  end
+
+  def simplecov_from_options(opts)
+    Undercover::SimplecovResultAdapter.parse(File.open(opts.simplecov_resultset), opts)
   end
 end
