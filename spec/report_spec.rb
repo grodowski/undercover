@@ -50,9 +50,9 @@ describe Undercover::Report do
 
       it 'creates FilterSet with expected ignored files' do
         expected_simplecov_filters = [
-          {"string"=>"app/lib/temp/"},
-          {"regex"=>"/migrate/"},
-          {"file"=>"test/factories/user_factory.rb"}
+          {'string' => 'app/lib/temp/'},
+          {'regex' => '/migrate/'},
+          {'file' => 'test/factories/user_factory.rb'},
         ]
         expect(report.filter_set.simplecov_filters).to match_array(expected_simplecov_filters)
       end
