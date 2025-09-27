@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'simplecov'
 require 'simplecov_json_formatter'
 
 # Patch ResultExporter to allow setting a custom export_path
