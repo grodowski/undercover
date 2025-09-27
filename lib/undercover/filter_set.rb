@@ -24,6 +24,7 @@ module Undercover
 
     def ignored_by_simplecov?(filepath)
       simplecov_filters.any? do |filter|
+        filter = filter.transform_keys(&:to_sym)
         if filter[:string]
           filepath.include?(filter[:string])
         elsif filter[:regex]
