@@ -244,6 +244,29 @@ describe Undercover::Result do
 
       expect(test_method_result.coverage_f).to eq(1.0)
     end
+
+    it '#pretty_print prints skipped branch' do
+      nodes = ast.find_all(->(node) { !node.is_a?(Imagen::Node::Root) })
+      test_method_result = described_class.new(nodes[0], coverage, 'branch_ignored.rb')
+
+      pretty_output = test_method_result.pretty_print
+      stripped_output = pretty_output.gsub(/\e\[[0-9;]*m/, '') # remove colors for testing
+
+      expected_output = <<~OUTPUT
+         1: def test_branch_ignored(arg) hits: n/a
+         2:   if arg == :arg1 hits: 1 branches: 1/1
+         3:     if ENV["FOO"] != "BAR" hits: 1 branches: 1/1
+         4:       :sym1 hits: 1 branches: 1/1
+         5:     # :nocov: skipped with :nocov:
+         6:     else skipped with :nocov:
+         7:       :sym2 skipped with :nocov:
+         8:     end skipped with :nocov:
+         9:     # :nocov: skipped with :nocov:
+        10:   end hits: n/a
+        11: end hits: n/a
+      OUTPUT
+      expect(stripped_output.strip).to eq(expected_output.strip)
+    end
   end
 
   context 'with skipped lines in coverage' do

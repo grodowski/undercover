@@ -134,10 +134,12 @@ module Undercover
 
     private
 
-    # rubocop:disable Metrics/AbcSize
-    def count_covered_branches(line_number)
+    def count_covered_branches(line_number) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
       branches = coverage.select { |cov| cov.size == 4 && cov[0] == line_number }
-      count_covered = branches.count { |cov| cov[3].positive? }
+      count_covered = branches.count do |cov|
+        branch_cov = cov[3]
+        branch_cov == 'ignored' || (branch_cov.respond_to?(:positive?) && branch_cov.positive?)
+      end
 
       return '' if branches.empty?
 
@@ -148,6 +150,5 @@ module Undercover
         Rainbow(" branches: #{count_covered}/#{branches.size}").italic.darkgray.dark
       end
     end
-    # rubocop:enable Metrics/AbcSize
   end
 end
