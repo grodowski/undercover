@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Fixed
+- Normalize slash prefix in FilterSet support to work with the 'rails' profile (https://github.com/grodowski/undercover/pull/244)
+
 # [0.8.2] - 2025-11-15
 
 ### Fixed

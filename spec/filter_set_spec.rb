@@ -125,5 +125,31 @@ describe Undercover::FilterSet do
         expect(falsy_filter_set.include?('any_file.rb')).to be true
       end
     end
+
+    context 'with Rails profile regex filters using leading slash' do
+      let(:simplecov_filters) do
+        # the "rails" profile creates these by default, as generated with:
+        # require "simplecov"
+        # require "undercover/simplecov_formatter"
+        # SimpleCov.formatter = SimpleCov::Formatter::Undercover
+        # SimpleCov.collate(Dir['./.resultset-test-*.json'], 'rails')
+        [
+          {'regex' => '^/db/'},
+          {'regex' => '^/config/'},
+          {'string' => '/spec/'},
+        ]
+      end
+
+      it 'matches files without leading slash' do
+        expect(filter_set.include?('db/migrate/20250101_create_users.rb')).to be false
+        expect(filter_set.include?('config/initializers/setup.rb')).to be false
+        expect(filter_set.include?('spec/controllers/foo_controller_test.rb')).to be false
+      end
+
+      it 'allows files not matching the regex patterns' do
+        expect(filter_set.include?('app/models/user.rb')).to be true
+        expect(filter_set.include?('/app/models/user.rb')).to be true
+      end
+    end
   end
 end
