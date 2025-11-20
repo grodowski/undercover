@@ -26,13 +26,17 @@ module Undercover
       simplecov_filters.any? do |filter|
         filter = filter.transform_keys(&:to_sym)
         if filter[:string]
-          filepath.include?(filter[:string])
+          normalized(filepath).include?(filter[:string])
         elsif filter[:regex]
-          filepath.match?(Regexp.new(filter[:regex]))
+          normalized(filepath).match?(Regexp.new(filter[:regex]))
         elsif filter[:file]
-          filepath == filter[:file]
+          filepath == filter[:file] # TODO: check if file also gets a slash?
         end
       end
+    end
+
+    def normalized(filepath)
+      filepath.start_with?('/') ? filepath : "/#{filepath}"
     end
   end
 end
