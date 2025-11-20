@@ -148,6 +148,7 @@ describe Undercover::FilterSet do
 
       it 'allows files not matching the regex patterns' do
         expect(filter_set.include?('app/models/user.rb')).to be true
+        expect(filter_set.include?('/app/models/user.rb')).to be true
       end
     end
   end
