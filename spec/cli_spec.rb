@@ -299,8 +299,9 @@ describe Undercover::CLI do
 
     expect(Undercover::FilterSet).to receive(:new).with(
       ['*.rb', '*.rake', '*.ru', 'Rakefile'],
-      ['test/*', 'spec/*', 'db/*', 'config/*', '*_test.rb', '*_spec.rb'],
-      [{'string' => 'app/lib/temp/'}, {'file' => 'db/migrate/migration.rb'}]
+      ['test/*', 'spec/*', 'db/*', 'config/*', '*_test.rb', '*_spec.rb', 'vendor/*'],
+      [{'string' => 'app/lib/temp/'}, {'file' => 'db/migrate/migration.rb'}],
+      path: '.'
     ).once.and_call_original
 
     subject.run(['-s', 'test.json'])
