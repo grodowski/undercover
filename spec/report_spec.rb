@@ -215,7 +215,7 @@ describe Undercover::Report do
     end
   end
 
-  context 'with monorepo-like fixtures' do
+  context 'with monorepo-like LCOV fixtures' do
     let(:options) do
       Undercover::Options.new.tap do |opt|
         opt.lcov = 'spec/fixtures/monorepo/app/coverage/app.lcov'
@@ -242,6 +242,42 @@ describe Undercover::Report do
       expect(report.results.keys.sort).to eq(
         %w[app/lib/foo_lib.rb app/main.rb]
       )
+      warnings = report.build_warnings.to_a
+      expect(warnings.size).to eq(1)
+      expect(warnings[0].file_path).to eq('app/lib/foo_lib.rb')
+      expect(warnings[0].first_line).to eq(10)
+      expect(warnings[0].coverage_f).to eq(0.6)
+    end
+  end
+
+  context 'with monorepo-like JSON fixtures' do
+    let(:options) do
+      Undercover::Options.new.tap do |opt|
+        opt.simplecov_resultset = 'spec/fixtures/monorepo/app/coverage/app.json'
+        opt.path = 'spec/fixtures/monorepo'
+        opt.git_dir = 'monorepo.git'
+        opt.glob_allow_filters = ['*.rb']
+        opt.glob_reject_filters = []
+      end
+    end
+
+    let(:changeset) do
+      git_dir = File.join(options.path, options.git_dir)
+      Undercover::Changeset.new(git_dir, options.compare)
+    end
+    subject(:report) { described_class.new(changeset, options, simplecov_from_options(options)) }
+
+    it 'matches and ignores paths relative to where undercover runs' do
+      allow(Dir).to receive(:pwd).and_return('/users/john/spec/fixtures/monorepo/app')
+      allow(File).to receive(:expand_path).and_call_original
+      allow(File).to receive(:expand_path).with('spec/fixtures/monorepo') { |path| "/users/john/#{path}" }
+
+      report.build
+
+      result_paths = report.results.keys.sort
+      # changeset files are ignored correctly with {"string" => "/vendor/bundle/"} and {"regex" => "^\/db/"}
+      expect(result_paths).to eq(%w[app/lib/foo_lib.rb app/main.rb])
+
       warnings = report.build_warnings.to_a
       expect(warnings.size).to eq(1)
       expect(warnings[0].file_path).to eq('app/lib/foo_lib.rb')
