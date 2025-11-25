@@ -256,7 +256,11 @@ describe Undercover::Report do
         opt.simplecov_resultset = 'spec/fixtures/monorepo/app/coverage/app.json'
         opt.path = 'spec/fixtures/monorepo'
         opt.git_dir = 'monorepo.git'
-        opt.glob_allow_filters = ['*.rb']
+        # opt.glob_allow_filters = ['*.rb']
+        opt.glob_allow_filters =
+          Undercover::Options::DEFAULT_FILE_INCLUDE_GLOBS.map do |glob|
+            "app/**/#{glob}"
+          end
         opt.glob_reject_filters = []
       end
     end
