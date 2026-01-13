@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Fixed
+- Print branch coverage even on n/a lines (https://github.com/grodowski/undercover/pull/249) by [@kuahyeow](https://github.com/kuahyeow)
+
 # [0.8.3] - 2025-11-20
 ### Fixed
 - Normalize slash prefix in FilterSet support to work with the 'rails' profile (https://github.com/grodowski/undercover/pull/244)

@@ -1,0 +1,15 @@
+SF:./safe_navigation_in_method_arg.rb
+DA:1,1
+DA:2,1
+DA:5,1
+DA:6,2
+DA:8,1
+LF:5
+LH:5
+BRDA:6,0,1,1
+BRDA:6,0,2,1
+BRDA:10,0,3,-
+BRDA:10,0,4,1
+BRF:4
+BRH:3
+end_of_record
