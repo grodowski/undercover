@@ -3,7 +3,8 @@
 require 'undercover/root_to_relative_paths'
 
 module Undercover
-  LcovParseError = Class.new(StandardError)
+  class LcovParseError < StandardError
+  end
 
   class LcovParser
     include RootToRelativePaths
