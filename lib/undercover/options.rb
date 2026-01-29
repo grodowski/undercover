@@ -32,7 +32,7 @@ module Undercover
     ].freeze
 
     DEFAULT_FILE_INCLUDE_GLOBS = %w[*.rb *.rake *.ru Rakefile].freeze
-    DEFAULT_FILE_EXCLUDE_GLOBS = %w[test/* spec/* db/* config/* *_test.rb *_spec.rb].freeze
+    DEFAULT_FILE_EXCLUDE_GLOBS = %w[test/* spec/* db/* config/* *_test.rb *_spec.rb vendor/*].freeze
 
     attr_accessor :lcov,
                   :simplecov_resultset,
