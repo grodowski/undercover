@@ -17,6 +17,7 @@ require 'undercover/options'
 require 'undercover/filter_set'
 require 'undercover/simplecov_result_adapter'
 require 'undercover/version'
+require 'undercover/view_node'
 
 module Undercover
   class Report
@@ -104,15 +105,37 @@ module Undercover
     end
     alias to_s inspect
 
+    VIEW_EXTENSIONS = %w[.erb .haml .slim .jbuilder].freeze
+    private_constant :VIEW_EXTENSIONS
+
     private
 
     attr_reader :loaded_files
 
-    # rubocop:disable Metrics/AbcSize
     def load_and_parse_file(filepath)
       key = filepath.gsub(/^\.\//, '')
       return if loaded_files[key]
 
+      if view_file?(filepath)
+        load_view_file(key, filepath)
+      else
+        load_ruby_file(key, filepath)
+      end
+    end
+
+    def view_file?(filepath)
+      VIEW_EXTENSIONS.any? { |ext| filepath.end_with?(ext) }
+    end
+
+    def load_view_file(key, filepath)
+      view_node = ViewNode.new(filepath, code_dir)
+      return if view_node.last_line.zero?
+
+      loaded_files[key] = [Result.new(view_node, coverage_adapter, filepath)]
+    end
+
+    # rubocop:disable Metrics/AbcSize
+    def load_ruby_file(key, filepath)
       root_ast = Imagen::Node::Root.new.build_from_file(
         File.join(code_dir, filepath)
       )

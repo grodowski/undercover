@@ -18,7 +18,7 @@ module Undercover
       @coverage = file_cov.select do |ln, _|
         if first_line == last_line
           ln == first_line
-        elsif node.empty_def? || node.is_a?(Imagen::Node::Block)
+        elsif node.empty_def? || node.is_a?(Imagen::Node::Block) || node.is_a?(ViewNode)
           ln >= first_line && ln <= last_line # rubocop:disable Style/ComparableBetween
         else
           ln > first_line && ln < last_line

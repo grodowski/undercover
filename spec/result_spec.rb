@@ -366,4 +366,139 @@ describe Undercover::Result do
       expect(pretty_output).to include('skipped with :nocov:')
     end
   end
+
+  context 'with ViewNode for ERB file' do
+    let(:view_node) { Undercover::ViewNode.new('test.html.erb', 'spec/fixtures') }
+    let(:simplecov) { simplecov_coverage_fixture 'spec/fixtures/erb_coverage.json' }
+    let(:coverage) { simplecov }
+
+    it 'computes coverage for ERB file' do
+      result = described_class.new(view_node, coverage, 'spec/fixtures/test.html.erb')
+
+      # lines 8 and 9 are 0 (else branch not covered)
+      # lines 3, 6, 7, 10 have coverage
+      expect(result.coverage_f).to be < 1.0
+      expect(result.coverage_f).to be > 0.0
+    end
+
+    it 'includes all lines from 1 to last_line' do
+      result = described_class.new(view_node, coverage, 'spec/fixtures/test.html.erb')
+
+      expect(result.first_line).to eq(1)
+      expect(result.last_line).to eq(12)
+    end
+
+    it 'detects uncovered lines' do
+      result = described_class.new(view_node, coverage, 'spec/fixtures/test.html.erb')
+
+      expect(result.uncovered?(8)).to be_truthy
+      expect(result.uncovered?(9)).to be_truthy
+      expect(result.uncovered?(7)).to be_falsy
+    end
+
+    it 'pretty prints ERB source' do
+      result = described_class.new(view_node, coverage, 'spec/fixtures/test.html.erb')
+
+      pretty_output = result.pretty_print
+      expect(pretty_output).to include('<html>')
+      expect(pretty_output).to include('</html>')
+      expect(pretty_output).to include('<%= @title %>')
+    end
+  end
+
+  context 'with ViewNode for Haml file' do
+    let(:view_node) { Undercover::ViewNode.new('test.haml', 'spec/fixtures') }
+    let(:simplecov) { simplecov_coverage_fixture 'spec/fixtures/haml_coverage.json' }
+    let(:coverage) { simplecov }
+
+    it 'computes coverage for Haml file' do
+      result = described_class.new(view_node, coverage, 'spec/fixtures/test.haml')
+
+      expect(result.coverage_f).to be < 1.0
+      expect(result.coverage_f).to be > 0.0
+    end
+
+    it 'detects uncovered lines at correct positions' do
+      result = described_class.new(view_node, coverage, 'spec/fixtures/test.haml')
+
+      # Lines 7-8 are else branch (not covered)
+      expect(result.uncovered?(7)).to be_truthy
+      expect(result.uncovered?(8)).to be_truthy
+      # Line 6 is in then branch (covered)
+      expect(result.uncovered?(6)).to be_falsy
+    end
+
+    it 'pretty prints Haml source with correct line numbers' do
+      result = described_class.new(view_node, coverage, 'spec/fixtures/test.haml')
+
+      pretty_output = result.pretty_print
+      expect(pretty_output).to include('%html')
+      expect(pretty_output).to include('%title= @title')
+      expect(pretty_output).to include('Hello, Guest')
+    end
+  end
+
+  context 'with ViewNode for Slim file' do
+    let(:view_node) { Undercover::ViewNode.new('test.slim', 'spec/fixtures') }
+    let(:simplecov) { simplecov_coverage_fixture 'spec/fixtures/slim_coverage.json' }
+    let(:coverage) { simplecov }
+
+    it 'computes coverage for Slim file' do
+      result = described_class.new(view_node, coverage, 'spec/fixtures/test.slim')
+
+      expect(result.coverage_f).to be < 1.0
+      expect(result.coverage_f).to be > 0.0
+    end
+
+    it 'detects uncovered lines at correct positions' do
+      result = described_class.new(view_node, coverage, 'spec/fixtures/test.slim')
+
+      # Lines 7-8 are else branch (not covered)
+      expect(result.uncovered?(7)).to be_truthy
+      expect(result.uncovered?(8)).to be_truthy
+      # Line 6 is in then branch (covered)
+      expect(result.uncovered?(6)).to be_falsy
+    end
+
+    it 'pretty prints Slim source with correct line numbers' do
+      result = described_class.new(view_node, coverage, 'spec/fixtures/test.slim')
+
+      pretty_output = result.pretty_print
+      expect(pretty_output).to include('html')
+      expect(pretty_output).to include('title = @title')
+      expect(pretty_output).to include('Hello, Guest')
+    end
+  end
+
+  context 'with ViewNode for JBuilder file' do
+    let(:view_node) { Undercover::ViewNode.new('test.json.jbuilder', 'spec/fixtures') }
+    let(:simplecov) { simplecov_coverage_fixture 'spec/fixtures/jbuilder_coverage.json' }
+    let(:coverage) { simplecov }
+
+    it 'computes coverage for JBuilder file' do
+      result = described_class.new(view_node, coverage, 'spec/fixtures/test.json.jbuilder')
+
+      expect(result.coverage_f).to be < 1.0
+      expect(result.coverage_f).to be > 0.0
+    end
+
+    it 'detects uncovered lines at correct positions' do
+      result = described_class.new(view_node, coverage, 'spec/fixtures/test.json.jbuilder')
+
+      # Lines 7-9 are else branch (not covered)
+      expect(result.uncovered?(7)).to be_truthy
+      expect(result.uncovered?(8)).to be_truthy
+      expect(result.uncovered?(9)).to be_truthy
+      # Line 4 is in then branch (covered)
+      expect(result.uncovered?(4)).to be_falsy
+    end
+
+    it 'pretty prints JBuilder source with correct line numbers' do
+      result = described_class.new(view_node, coverage, 'spec/fixtures/test.json.jbuilder')
+
+      pretty_output = result.pretty_print
+      expect(pretty_output).to include('json.title @title')
+      expect(pretty_output).to include('json.user nil')
+    end
+  end
 end
