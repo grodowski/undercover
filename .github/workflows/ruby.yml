@@ -39,13 +39,11 @@ jobs:
           output=$(ruby -e "$(curl -s https://undercover-ci.com/uploader.rb)" -- \
             --repo grodowski/undercover \
             --commit ${{ github.event.pull_request.head.sha || github.sha }} \
-            --simplecov /home/runner/work/undercover/undercover/undercover_coverage.json 2>&1)
-          exit_code=$?
-          if [ $exit_code -ne 0 ]; then
+            --simplecov /home/runner/work/undercover/undercover/undercover_coverage.json 2>&1) || {
             if echo "$output" | grep -q "has already completed"; then
               echo "Coverage already processed for this commit ✅"
             else
               echo "Coverage upload failed: $output"
               exit 1
             fi
-          fi
+          }
