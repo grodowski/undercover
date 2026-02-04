@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ruby: ['3.4', '3.0']
+        ruby: ['4.0', '3.4']
     steps:
       - uses: actions/checkout@v6
         with:
@@ -33,10 +33,19 @@ jobs:
     steps:
       - uses: actions/download-artifact@v7
         with:
-          name: undercover-3.4-coverage
+          name: undercover-4.0-coverage
       - name: Upload coverage
         run: |
-          ruby -e "$(curl -s https://undercover-ci.com/uploader.rb)" -- \
+          output=$(ruby -e "$(curl -s https://undercover-ci.com/uploader.rb)" -- \
             --repo grodowski/undercover \
             --commit ${{ github.event.pull_request.head.sha || github.sha }} \
-            --simplecov /home/runner/work/undercover/undercover/undercover_coverage.json
+            --simplecov /home/runner/work/undercover/undercover/undercover_coverage.json 2>&1)
+          exit_code=$?
+          if [ $exit_code -ne 0 ]; then
+            if echo "$output" | grep -q "has already completed"; then
+              echo "Coverage already processed for this commit ✅"
+            else
+              echo "Coverage upload failed: $output"
+              exit 1
+            fi
+          fi
