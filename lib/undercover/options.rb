@@ -34,6 +34,8 @@ module Undercover
     DEFAULT_FILE_INCLUDE_GLOBS = %w[*.rb *.rake *.ru Rakefile].freeze
     DEFAULT_FILE_EXCLUDE_GLOBS = %w[test/* spec/* db/* config/* *_test.rb *_spec.rb].freeze
 
+    FORMATS = %w[text json].freeze
+
     attr_accessor :lcov,
                   :simplecov_resultset,
                   :path,
@@ -44,7 +46,8 @@ module Undercover
                   :file_scope,
                   :glob_allow_filters,
                   :glob_reject_filters,
-                  :max_warnings_limit
+                  :max_warnings_limit,
+                  :formatter
 
     def initialize
       @run_mode = DIFF_TRIGGER_LINE
@@ -55,6 +58,7 @@ module Undercover
       self.glob_allow_filters = DEFAULT_FILE_INCLUDE_GLOBS
       self.glob_reject_filters = DEFAULT_FILE_EXCLUDE_GLOBS
       self.max_warnings_limit = nil
+      self.formatter = 'text'
     end
 
     # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
@@ -84,6 +88,7 @@ module Undercover
         ruby_syntax_option(opts)
         max_warnings_limit_option(opts)
         file_filters(opts)
+        format_option(opts)
       end.parse(args)
 
       guess_resultset_path unless simplecov_resultset
@@ -195,6 +200,13 @@ module Undercover
       desc = 'Skip files matching specified glob patterns (comma separated). Empty by default.'
       parser.on('-x', '--exclude-files globs', desc) do |comma_separated_globs|
         self.glob_reject_filters = split_comma_separated_with_braces(comma_separated_globs)
+      end
+    end
+
+    def format_option(parser)
+      desc = "Output format: #{FORMATS.join(', ')} (default: text)"
+      parser.on('--format FORMAT', FORMATS, desc) do |format|
+        self.formatter = format
       end
     end
   end

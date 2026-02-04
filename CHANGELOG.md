@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+- `--format json` CLI option for machine-readable output ([#251](https://github.com/grodowski/undercover/pull/251))
+
 # [0.8.3] - 2025-11-20
 ### Fixed
 - Normalize slash prefix in FilterSet support to work with the 'rails' profile (https://github.com/grodowski/undercover/pull/244)
