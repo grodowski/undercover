@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+- View template coverage support for ERB, Haml, Slim, and JBuilder files ([#250](https://github.com/grodowski/undercover/pull/250)). Requires Ruby 3.2+ with `SimpleCov.enable_coverage_for_eval` and opt-in via `--include-files`.
+
 # [0.8.3] - 2025-11-20
 ### Fixed
 - Normalize slash prefix in FilterSet support to work with the 'rails' profile (https://github.com/grodowski/undercover/pull/244)
