@@ -1,0 +1,8 @@
+%html
+  %head
+    %title= @title
+  %body
+    - if @user
+      %h1 Hello, #{@user.name}
+    - else
+      %h1 Hello, Guest

@@ -277,6 +277,81 @@ describe Undercover::Report do
     end
   end
 
+  context 'with ERB view files' do
+    let(:options_with_erb) do
+      Undercover::Options.new.tap do |opt|
+        opt.path = '.'
+        opt.git_dir = 'spec/fixtures/test.git'
+        opt.simplecov_resultset = 'spec/fixtures/erb_coverage.json'
+      end
+    end
+
+    let(:changeset) do
+      mock_changeset = instance_double(Undercover::Changeset)
+      allow(mock_changeset)
+        .to receive(:each_changed_line)
+        .and_yield('spec/fixtures/test.html.erb', 3)
+        .and_yield('spec/fixtures/test.html.erb', 8)
+      allow(mock_changeset).to receive(:filter_with)
+      mock_changeset
+    end
+
+    subject(:report) do
+      described_class.new(changeset, options_with_erb, simplecov_from_options(options_with_erb))
+    end
+
+    it 'loads ERB files as ViewNode' do
+      report.build
+      expect(report.results.keys).to include('spec/fixtures/test.html.erb')
+
+      erb_results = report.results['spec/fixtures/test.html.erb'].to_a
+      expect(erb_results.size).to eq(1)
+      expect(erb_results.first.node).to be_a(Undercover::ViewNode)
+    end
+
+    it 'computes coverage for ERB files' do
+      report.build
+      erb_result = report.results['spec/fixtures/test.html.erb'].first
+
+      expect(erb_result.coverage_f).to be < 1.0
+      expect(erb_result.coverage_f).to be > 0.0
+    end
+
+    it 'flags uncovered lines in ERB files' do
+      report.build
+      erb_result = report.results['spec/fixtures/test.html.erb'].first
+
+      # line 8 is in the else branch which has 0 coverage
+      expect(erb_result.uncovered?(8)).to be_truthy
+    end
+
+    it 'returns ViewNode properties correctly' do
+      report.build
+      erb_result = report.results['spec/fixtures/test.html.erb'].first
+
+      expect(erb_result.node.name).to eq('test.html.erb')
+      expect(erb_result.node.human_name).to eq('erb view')
+      expect(erb_result.first_line).to eq(1)
+      expect(erb_result.last_line).to eq(12)
+    end
+
+    context 'with empty ERB file' do
+      let(:changeset) do
+        mock_changeset = instance_double(Undercover::Changeset)
+        allow(mock_changeset)
+          .to receive(:each_changed_line)
+          .and_yield('spec/fixtures/empty.html.erb', 1)
+        allow(mock_changeset).to receive(:filter_with)
+        mock_changeset
+      end
+
+      it 'skips empty ERB files' do
+        report.build
+        expect(report.results.keys).not_to include('spec/fixtures/empty.html.erb')
+      end
+    end
+  end
+
   def lcov_from_options(opts)
     Undercover::LcovParser.parse(File.open(opts.lcov), opts)
   end

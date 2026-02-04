@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "simplecov_version": "0.22.0",
+    "simplecov_root": "/Users/mrgrodo/dev/undercover"
+  },
+  "coverage": {
+    "spec/fixtures/test.html.erb": {
+      "lines": [
+        null,
+        null,
+        1,
+        null,
+        null,
+        1,
+        1,
+        0,
+        0,
+        1,
+        null,
+        null
+      ],
+      "branches": [
+        {
+          "type": "then",
+          "start_line": 6,
+          "end_line": 7,
+          "coverage": 1
+        },
+        {
+          "type": "else",
+          "start_line": 8,
+          "end_line": 10,
+          "coverage": 0
+        }
+      ]
+    }
+  }
+}

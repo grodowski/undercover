@@ -1,0 +1,34 @@
+{
+  "meta": {
+    "simplecov_version": "0.22.0",
+    "simplecov_root": "/Users/mrgrodo/dev/undercover"
+  },
+  "coverage": {
+    "spec/fixtures/test.slim": {
+      "lines": [
+        null,
+        null,
+        1,
+        null,
+        1,
+        1,
+        0,
+        0
+      ],
+      "branches": [
+        {
+          "type": "then",
+          "start_line": 5,
+          "end_line": 6,
+          "coverage": 1
+        },
+        {
+          "type": "else",
+          "start_line": 7,
+          "end_line": 8,
+          "coverage": 0
+        }
+      ]
+    }
+  }
+}
