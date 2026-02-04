@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- `--format json` CLI option for machine-readable output ([#251](https://github.com/grodowski/undercover/pull/251))
 
 # [0.8.4] - 2026-02-06
 ### Fixed

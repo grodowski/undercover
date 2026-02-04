@@ -5,12 +5,6 @@ require 'rainbow'
 
 module Undercover
   module CLI
-    WARNINGS_TO_S = {
-      stale_coverage: Rainbow('🚨 WARNING: Coverage data is older than your ' \
-                              'latest changes and results might be incomplete. ' \
-                              'Re-run tests to update').yellow,
-      no_changes: Rainbow('✅ No reportable changes').green
-    }.freeze
     def self.run(args)
       opts = Undercover::Options.new.parse(args)
       syntax_version(opts.syntax_version)
@@ -32,7 +26,7 @@ module Undercover
 
       changeset_obj = changeset(opts)
       report = Undercover::Report.new(changeset_obj, opts, simplecov_adapter).build
-      handle_report_validation(report, coverage_path)
+      handle_report_validation(report, coverage_path, opts)
     end
 
     def self.handle_missing_coverage_path(opts)
@@ -48,16 +42,21 @@ module Undercover
       1
     end
 
-    def self.handle_report_validation(report, coverage_path)
-      error = report.validate(coverage_path)
-      if error
-        puts(WARNINGS_TO_S[error])
-        return 0 if error == :no_changes
-      end
+    def self.handle_report_validation(report, coverage_path, opts)
+      validation_error = report.validate(coverage_path)
+      flagged = validation_error ? [] : report.flagged_results
+      formatter = build_formatter(flagged, validation_error, opts)
 
-      flagged = report.flagged_results
-      puts Undercover::Formatter.new(flagged)
-      flagged.any? ? 1 : 0
+      puts formatter
+      formatter.exit_code
+    end
+
+    def self.build_formatter(flagged, validation_error, opts)
+      if opts.formatter == 'json'
+        Undercover::JsonFormatter.new(flagged, validation_error)
+      else
+        Undercover::Formatter.new(flagged, validation_error)
+      end
     end
 
     def self.syntax_version(version)
