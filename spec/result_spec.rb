@@ -385,14 +385,14 @@ describe Undercover::Result do
         stripped_output = pretty_output.gsub(/\e\[[0-9;]*m/, '') # remove colors for testing
 
         expected_output = <<~OUTPUT
-         5: def process_input(input, something: nil) hits: n/a
-         6:   return unless input.nil? hits: 2 branches: 2/2
-         7: 
-         8:   log_exception( hits: 1
-         9:     999, hits: n/a
-        10:     something&.id hits: n/a branches: 1/2
-        11:   ) hits: n/a
-        12: end hits: n/a
+           5: def process_input(input, something: nil) hits: n/a
+           6:   return unless input.nil? hits: 2 branches: 2/2
+           7:#{' '}
+           8:   log_exception( hits: 1
+           9:     999, hits: n/a
+          10:     something&.id hits: n/a branches: 1/2
+          11:   ) hits: n/a
+          12: end hits: n/a
         OUTPUT
         expect(stripped_output.strip).to eq(expected_output.strip)
       end
@@ -411,14 +411,14 @@ describe Undercover::Result do
         stripped_output = pretty_output.gsub(/\e\[[0-9;]*m/, '') # remove colors for testing
 
         expected_output = <<~OUTPUT
-         5: def process_input(input, something: nil) hits: n/a
-         6:   return unless input.nil? hits: 2 branches: 2/2
-         7: 
-         8:   log_exception( hits: 1
-         9:     999, hits: n/a
-        10:     something&.id hits: n/a branches: 1/2
-        11:   ) hits: n/a
-        12: end hits: n/a
+           5: def process_input(input, something: nil) hits: n/a
+           6:   return unless input.nil? hits: 2 branches: 2/2
+           7:#{' '}
+           8:   log_exception( hits: 1
+           9:     999, hits: n/a
+          10:     something&.id hits: n/a branches: 1/2
+          11:   ) hits: n/a
+          12: end hits: n/a
         OUTPUT
         expect(stripped_output.strip).to eq(expected_output.strip)
       end
