@@ -366,4 +366,62 @@ describe Undercover::Result do
       expect(pretty_output).to include('skipped with :nocov:')
     end
   end
+
+  context 'safe navigation in method arg' do
+    let(:ast) { Imagen.from_local('spec/fixtures/safe_navigation_in_method_arg.rb') }
+
+    context 'for a json file' do
+      let(:simplecov) do
+        simplecov_coverage_fixture 'spec/fixtures/safe_navigation_in_method_arg.json'
+      end
+
+      let(:coverage) { simplecov }
+
+      it '#pretty_print prints branch on n/a line' do
+        nodes = ast.find_all(->(node) { !node.is_a?(Imagen::Node::Root) })
+        test_method_result = described_class.new(nodes[1], coverage, 'safe_navigation_in_method_arg.rb')
+
+        pretty_output = test_method_result.pretty_print
+        stripped_output = pretty_output.gsub(/\e\[[0-9;]*m/, '') # remove colors for testing
+
+        expected_output = <<~OUTPUT
+           5: def process_input(input, something: nil) hits: n/a
+           6:   return unless input.nil? hits: 2 branches: 2/2
+           7:#{' '}
+           8:   log_exception( hits: 1
+           9:     999, hits: n/a
+          10:     something&.id hits: n/a branches: 1/2
+          11:   ) hits: n/a
+          12: end hits: n/a
+        OUTPUT
+        expect(stripped_output.strip).to eq(expected_output.strip)
+      end
+    end
+
+    context 'for an lcov file' do
+      let(:lcov) do
+        Undercover::LcovParser.parse('spec/fixtures/safe_navigation_in_method_arg.lcov')
+      end
+
+      it '#pretty_print prints branch on n/a line' do
+        nodes = ast.find_all(->(node) { !node.is_a?(Imagen::Node::Root) })
+        test_method_result = described_class.new(nodes[1], coverage, 'safe_navigation_in_method_arg.rb')
+
+        pretty_output = test_method_result.pretty_print
+        stripped_output = pretty_output.gsub(/\e\[[0-9;]*m/, '') # remove colors for testing
+
+        expected_output = <<~OUTPUT
+           5: def process_input(input, something: nil) hits: n/a
+           6:   return unless input.nil? hits: 2 branches: 2/2
+           7:#{' '}
+           8:   log_exception( hits: 1
+           9:     999, hits: n/a
+          10:     something&.id hits: n/a branches: 1/2
+          11:   ) hits: n/a
+          12: end hits: n/a
+        OUTPUT
+        expect(stripped_output.strip).to eq(expected_output.strip)
+      end
+    end
+  end
 end
