@@ -6,8 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+# [0.8.4] - 2026-02-06
 ### Fixed
 - Print branch coverage even on n/a lines (https://github.com/grodowski/undercover/pull/249) by [@kuahyeow](https://github.com/kuahyeow)
+
+### Added
+- Ruby 4 support in CI
 
 # [0.8.3] - 2025-11-20
 ### Fixed
@@ -212,7 +216,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - First release of `undercover` 🎉
 
-[Unreleased]: https://github.com/grodowski/undercover/compare/v0.8.3...HEAD
+[Unreleased]: https://github.com/grodowski/undercover/compare/v0.8.4...HEAD
+[0.8.4]: https://github.com/grodowski/undercover/compare/v0.8.3...v0.8.4
 [0.8.3]: https://github.com/grodowski/undercover/compare/v0.8.2...v0.8.3
 [0.8.2]: https://github.com/grodowski/undercover/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/grodowski/undercover/compare/v0.8.0...v0.8.1
