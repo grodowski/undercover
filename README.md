@@ -134,8 +134,39 @@ Usage: undercover [options]
     -w, --max-warnings limit         Maximum number of warnings to generate before stopping analysis. Useful as a performance improvement for large diffs.
     -f, --include-files globs        Include files matching specified glob patterns (comma separated). Defaults to '*.rb,*.rake,*.ru,Rakefile'
     -x, --exclude-files globs        Skip files matching specified glob patterns (comma separated). Empty by default.
+        --format FORMAT              Output format: text, json (default: text)
     -h, --help                       Prints this help
         --version                    Show version
+```
+
+### JSON Output
+
+Use `--format json` to get machine-readable output, useful for CI integrations and tooling:
+
+```sh
+undercover --compare origin/main --format json
+```
+
+Output structure:
+
+```json
+{
+  "warnings": [
+    {
+      "node": "Foo#bar",
+      "type": "instance method",
+      "file": "lib/foo.rb",
+      "first_line": 10,
+      "last_line": 15,
+      "coverage": 0.5,
+      "uncovered_lines": [11, 13]
+    }
+  ],
+  "summary": {
+    "total_warnings": 1,
+    "files_affected": 1
+  }
+}
 ```
 
 ### Configuration File

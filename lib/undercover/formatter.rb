@@ -2,14 +2,31 @@
 
 module Undercover
   class Formatter
-    def initialize(results)
+    WARNINGS_TO_S = {
+      stale_coverage: Rainbow('🚨 WARNING: Coverage data is older than your ' \
+                              'latest changes and results might be incomplete. ' \
+                              'Re-run tests to update').yellow,
+      no_changes: Rainbow('✅ No reportable changes').green
+    }.freeze
+
+    def initialize(results, validation_error = nil)
       @results = results
+      @validation_error = validation_error
     end
 
     def to_s
+      return WARNINGS_TO_S[@validation_error] if @validation_error
+
       return success unless @results.any?
 
       ([warnings_header] + formatted_warnings).join("\n")
+    end
+
+    def exit_code
+      return 0 if @validation_error
+      return 0 unless @results.any?
+
+      1
     end
 
     private
