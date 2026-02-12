@@ -44,7 +44,7 @@ module Undercover
       @changeset = changeset
 
       ignored_files = coverage_adapter.ignored_files || []
-      @filter_set = FilterSet.new(opts.glob_allow_filters, opts.glob_reject_filters, ignored_files)
+      @filter_set = FilterSet.new(opts.glob_allow_filters, opts.glob_reject_filters, ignored_files, path: @code_dir)
       changeset.filter_with(filter_set)
       @max_warnings_limit = opts.max_warnings_limit
       @loaded_files = {}
