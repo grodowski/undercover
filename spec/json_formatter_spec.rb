@@ -101,14 +101,33 @@ describe Undercover::JsonFormatter do
       end
     end
 
-    context 'when branch_label provides a type' do
+    context 'when two branches share the same line (e.g. ternary)' do
+      let(:mock_coverage) do
+        [
+          [13, 0, 1, 0],  # first arm: uncovered
+          [13, 0, 2, 0],  # second arm: uncovered — same line triggers branch_label lookup
+        ]
+      end
+
       subject { described_class.new([mock_result]).to_h }
 
-      it 'includes description from branch_label' do
-        allow(mock_result).to receive(:branch_label).with('lib/foo.rb', 0).and_return('then')
-        warning = subject[:warnings].first
-        uncovered = warning[:uncovered_branches].first
-        expect(uncovered[:description]).to eq('then')
+      it 'appends arm type from branch_label to AST description' do
+        allow(mock_result).to receive(:branch_label).with('lib/foo.rb', 1).and_return('then')
+        allow(mock_result).to receive(:branch_label).with('lib/foo.rb', 2).and_return('else')
+        branches = subject[:warnings].first[:uncovered_branches]
+        expect(branches.map { |b| b[:description] }).to eq(%w[then else])
+      end
+    end
+
+    context 'with a single branch on a line' do
+      let(:mock_coverage) { [[10, 0, 0, 0]] }
+
+      subject { described_class.new([mock_result]).to_h }
+
+      it 'does not append arm type when only one branch on the line' do
+        entry = subject[:warnings].first[:uncovered_branches].first
+        expect(entry).to eq({line: 10, block: 0, branch: 0})
+        expect(entry).not_to have_key(:description)
       end
     end
 
