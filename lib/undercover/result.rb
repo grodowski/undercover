@@ -9,7 +9,7 @@ module Undercover
     attr_reader :node, :coverage, :coverage_adapter, :file_path
 
     def_delegators :node, :first_line, :last_line, :name
-    def_delegators :coverage_adapter, :skipped?
+    def_delegators :coverage_adapter, :skipped?, :branch_label
 
     def initialize(node, coverage_adapter, file_path) # rubocop:disable Metrics/MethodLength,Metrics/AbcSize
       @node = node

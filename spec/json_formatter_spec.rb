@@ -4,7 +4,16 @@ require 'spec_helper'
 require 'undercover/json_formatter'
 
 describe Undercover::JsonFormatter do
-  let(:mock_node) { double('node', name: 'Foo#bar', human_name: 'instance method') }
+  let(:mock_node) { double('node', name: 'Foo#bar', human_name: 'instance method', ast_node: nil) }
+
+  let(:mock_coverage) do
+    [
+      [11, 0],        # line 11: uncovered
+      [12, 5],        # line 12: covered
+      [13, 0, 0, 0],  # line 13, block 0, branch 0: uncovered
+      [13, 0, 1, 3], # line 13, block 0, branch 1: covered
+    ]
+  end
 
   let(:mock_result) do
     instance_double(
@@ -13,9 +22,11 @@ describe Undercover::JsonFormatter do
       file_path: 'lib/foo.rb',
       first_line: 10,
       last_line: 15,
-      coverage_f: 0.5
+      coverage_f: 0.5,
+      coverage: mock_coverage
     ).tap do |result|
-      allow(result).to receive(:uncovered?) { |line| [11, 13].include?(line) }
+      allow(result).to receive(:skipped?).and_return(false)
+      allow(result).to receive(:branch_label).and_return(nil)
     end
   end
 
@@ -51,7 +62,21 @@ describe Undercover::JsonFormatter do
         expect(warning[:first_line]).to eq(10)
         expect(warning[:last_line]).to eq(15)
         expect(warning[:coverage]).to eq(0.5)
-        expect(warning[:uncovered_lines]).to eq([11, 13])
+      end
+
+      it 'reports uncovered lines separately from branches' do
+        warning = subject[:warnings].first
+        expect(warning[:uncovered_lines]).to eq([11])
+      end
+
+      it 'reports uncovered branches with line, block and branch identifiers' do
+        warning = subject[:warnings].first
+        expect(warning[:uncovered_branches]).to eq([{line: 13, block: 0, branch: 0}])
+      end
+
+      it 'does not include covered branches in uncovered_branches' do
+        warning = subject[:warnings].first
+        expect(warning[:uncovered_branches].none? { |b| b[:branch] == 1 }).to be true
       end
 
       it 'has correct summary counts' do
@@ -60,8 +85,35 @@ describe Undercover::JsonFormatter do
       end
     end
 
+    context 'when branches are marked as ignored' do
+      let(:mock_coverage) do
+        [
+          [11, 0, 0, 'ignored'],
+          [11, 0, 1, 0],
+        ]
+      end
+
+      subject { described_class.new([mock_result]).to_h }
+
+      it 'excludes ignored branches from uncovered_branches' do
+        warning = subject[:warnings].first
+        expect(warning[:uncovered_branches]).to eq([{line: 11, block: 0, branch: 1}])
+      end
+    end
+
+    context 'when branch_label provides a type' do
+      subject { described_class.new([mock_result]).to_h }
+
+      it 'includes description from branch_label' do
+        allow(mock_result).to receive(:branch_label).with('lib/foo.rb', 0).and_return('then')
+        warning = subject[:warnings].first
+        uncovered = warning[:uncovered_branches].first
+        expect(uncovered[:description]).to eq('then')
+      end
+    end
+
     context 'with multiple warnings in different files' do
-      let(:mock_node2) { double('node', name: 'Bar#baz', human_name: 'instance method') }
+      let(:mock_node2) { double('node', name: 'Bar#baz', human_name: 'instance method', ast_node: nil) }
       let(:mock_result2) do
         instance_double(
           Undercover::Result,
@@ -69,9 +121,11 @@ describe Undercover::JsonFormatter do
           file_path: 'lib/bar.rb',
           first_line: 5,
           last_line: 8,
-          coverage_f: 0.0
+          coverage_f: 0.0,
+          coverage: [[6, 0], [7, 0]]
         ).tap do |result|
-          allow(result).to receive(:uncovered?) { |line| [6, 7].include?(line) }
+          allow(result).to receive(:skipped?).and_return(false)
+          allow(result).to receive(:branch_label).and_return(nil)
         end
       end
 

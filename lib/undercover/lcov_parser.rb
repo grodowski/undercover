@@ -58,6 +58,10 @@ module Undercover
       false
     end
 
+    def branch_label(_filepath, _branch_no)
+      nil
+    end
+
     def ignored_files
       # supported by SimplecovResultAdapter only
       []
