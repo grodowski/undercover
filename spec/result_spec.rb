@@ -367,6 +367,59 @@ describe Undercover::Result do
     end
   end
 
+  describe '#annotated_branches' do
+    # Line 3 has the ternary (annotated); line 4 is a plain call (not annotated).
+    # Result filters to lines strictly inside the def: lines 2..4 (> 1 && < 6).
+    let(:source_file) { "def foo\n  a\n  x ? a : b\n  b\nend\n" }
+    let(:file_path) { 'test.rb' }
+    let(:ast) do
+      root = Imagen::Node::Root.new
+      Imagen::Visitor.traverse(Imagen::AST::Parser.parse(source_file, file_path), root)
+      root
+    end
+    let(:mock_adapter) do
+      double('adapter').tap do |a|
+        allow(a).to receive(:coverage).with(file_path).and_return([
+          [3, 0, 1, 0],           # branch_no=1, uncovered — same line, arm type resolved
+          [3, 0, 2, 3],           # branch_no=2, covered   — same line, arm type resolved
+          [3, 0, 3, 'ignored'],   # branch_no=3, ignored   — branch_label returns nil
+          [4, 0, 4, 0]            # branch_no=4, single branch on line 4 — no AST annotation
+        ])
+        allow(a).to receive(:skipped?).and_return(false)
+        allow(a).to receive(:branch_label).with(file_path, 1).and_return('then')
+        allow(a).to receive(:branch_label).with(file_path, 2).and_return('else')
+        allow(a).to receive(:branch_label).with(file_path, 3).and_return(nil)
+      end
+    end
+
+    subject do
+      node = ast.find_all(with_name('foo')).first
+      described_class.new(node, mock_adapter, file_path).annotated_branches
+    end
+
+    it 'returns all branch entries including covered and ignored' do
+      expect(subject.size).to eq(4)
+    end
+
+    it 'includes count in each entry' do
+      expect(subject.map { |b| b[:count] }).to eq([0, 3, 'ignored', 0])
+    end
+
+    it 'annotates same-line branches with AST description and arm type' do
+      expect(subject[0]).to include(line: 3, block: 0, branch: 1, count: 0, description: '? x → then')
+      expect(subject[1]).to include(line: 3, block: 0, branch: 2, count: 3, description: '? x → else')
+    end
+
+    it 'uses only AST description when branch_label returns nil' do
+      expect(subject[2]).to include(description: '? x')
+      expect(subject[2][:description]).not_to include(' → ')
+    end
+
+    it 'omits description when there is no AST annotation and no arm type' do
+      expect(subject[3]).not_to have_key(:description)
+    end
+  end
+
   context 'safe navigation in method arg' do
     let(:ast) { Imagen.from_local('spec/fixtures/safe_navigation_in_method_arg.rb') }
 

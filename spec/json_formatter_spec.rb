@@ -6,14 +6,9 @@ require 'undercover/json_formatter'
 describe Undercover::JsonFormatter do
   let(:mock_node) { double('node', name: 'Foo#bar', human_name: 'instance method', ast_node: nil) }
 
-  let(:mock_coverage) do
-    [
-      [11, 0],        # line 11: uncovered
-      [12, 5],        # line 12: covered
-      [13, 0, 0, 0],  # line 13, block 0, branch 0: uncovered
-      [13, 0, 1, 3], # line 13, block 0, branch 1: covered
-    ]
-  end
+  # Line coverage only — branch entries live in mock_annotated_branches
+  let(:mock_coverage) { [[11, 0], [12, 5]] }
+  let(:mock_annotated_branches) { [] }
 
   let(:mock_result) do
     instance_double(
@@ -26,7 +21,7 @@ describe Undercover::JsonFormatter do
       coverage: mock_coverage
     ).tap do |result|
       allow(result).to receive(:skipped?).and_return(false)
-      allow(result).to receive(:branch_label).and_return(nil)
+      allow(result).to receive(:annotated_branches).and_return(mock_annotated_branches)
     end
   end
 
@@ -52,6 +47,13 @@ describe Undercover::JsonFormatter do
     end
 
     context 'with warnings' do
+      let(:mock_annotated_branches) do
+        [
+          {line: 13, block: 0, branch: 0, count: 0},  # uncovered
+          {line: 13, block: 0, branch: 1, count: 3}   # covered
+        ]
+      end
+
       subject { described_class.new([mock_result]).to_h }
 
       it 'includes warning details' do
@@ -86,10 +88,10 @@ describe Undercover::JsonFormatter do
     end
 
     context 'when branches are marked as ignored' do
-      let(:mock_coverage) do
+      let(:mock_annotated_branches) do
         [
-          [11, 0, 0, 'ignored'],
-          [11, 0, 1, 0],
+          {line: 11, block: 0, branch: 0, count: 'ignored'},
+          {line: 11, block: 0, branch: 1, count: 0}
         ]
       end
 
@@ -102,29 +104,27 @@ describe Undercover::JsonFormatter do
     end
 
     context 'when two branches share the same line (e.g. ternary)' do
-      let(:mock_coverage) do
+      let(:mock_annotated_branches) do
         [
-          [13, 0, 1, 0],  # first arm: uncovered
-          [13, 0, 2, 0],  # second arm: uncovered — same line triggers branch_label lookup
+          {line: 13, block: 0, branch: 1, count: 0, description: 'then'},
+          {line: 13, block: 0, branch: 2, count: 0, description: 'else'}
         ]
       end
 
       subject { described_class.new([mock_result]).to_h }
 
-      it 'appends arm type from branch_label to AST description' do
-        allow(mock_result).to receive(:branch_label).with('lib/foo.rb', 1).and_return('then')
-        allow(mock_result).to receive(:branch_label).with('lib/foo.rb', 2).and_return('else')
+      it 'passes through description from annotated_branches' do
         branches = subject[:warnings].first[:uncovered_branches]
         expect(branches.map { |b| b[:description] }).to eq(%w[then else])
       end
     end
 
     context 'with a single branch on a line' do
-      let(:mock_coverage) { [[10, 0, 0, 0]] }
+      let(:mock_annotated_branches) { [{line: 10, block: 0, branch: 0, count: 0}] }
 
       subject { described_class.new([mock_result]).to_h }
 
-      it 'does not append arm type when only one branch on the line' do
+      it 'does not include a description when branch has no annotation' do
         entry = subject[:warnings].first[:uncovered_branches].first
         expect(entry).to eq({line: 10, block: 0, branch: 0})
         expect(entry).not_to have_key(:description)
@@ -144,7 +144,7 @@ describe Undercover::JsonFormatter do
           coverage: [[6, 0], [7, 0]]
         ).tap do |result|
           allow(result).to receive(:skipped?).and_return(false)
-          allow(result).to receive(:branch_label).and_return(nil)
+          allow(result).to receive(:annotated_branches).and_return([])
         end
       end
 

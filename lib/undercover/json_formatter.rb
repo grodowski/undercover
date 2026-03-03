@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'json'
-require 'undercover/ast_branch_annotator'
 
 module Undercover
   class JsonFormatter
@@ -55,27 +54,11 @@ module Undercover
             .map { |ln, _| ln }
     end
 
-    def uncovered_branches(result) # rubocop:disable Metrics/MethodLength,Metrics/AbcSize
-      ast_info = AstBranchAnnotator.call(result.node.ast_node)
-      branch_counts = branch_counts_per_line(result)
-
-      result.coverage
-            .select { |cov| cov.size == 4 }
-            .reject { |ln, _, _, cov| result.skipped?(result.file_path, ln) || cov == 'ignored' }
-            .select { |_, _, _, cov| cov.zero? }
-            .map do |ln, block_no, branch_no, _|
-              arm = result.branch_label(result.file_path, branch_no) if branch_counts[ln] > 1
-              label = [ast_info[ln], arm].compact.join(' → ')
-              entry = {line: ln, block: block_no, branch: branch_no}
-              entry[:description] = label unless label.empty?
-              entry
-            end
-    end
-
-    def branch_counts_per_line(result)
-      result.coverage
-            .select { |cov| cov.size == 4 }
-            .each_with_object(Hash.new(0)) { |(ln, *), counts| counts[ln] += 1 }
+    def uncovered_branches(result)
+      result.annotated_branches
+            .reject { |b| result.skipped?(result.file_path, b[:line]) || b[:count] == 'ignored' }
+            .select { |b| b[:count].zero? }
+            .map { |b| b.except(:count) }
     end
 
     def summary
