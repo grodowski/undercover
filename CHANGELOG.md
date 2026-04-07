@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Fixed
+- Add `benchmark` as a dependency, required for Ruby 4
+
 # [0.8.4] - 2026-02-06
 ### Fixed
 - Print branch coverage even on n/a lines (https://github.com/grodowski/undercover/pull/249) by [@kuahyeow](https://github.com/kuahyeow)

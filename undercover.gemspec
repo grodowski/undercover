@@ -4,7 +4,7 @@ lib = File.expand_path('lib', __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'undercover/version'
 
-Gem::Specification.new do |spec|
+Gem::Specification.new do |spec| # rubocop:disable Metrics/BlockLength
   spec.name          = 'undercover'
   spec.version       = Undercover::VERSION
   spec.authors       = ['Jan Grodowski']
@@ -28,6 +28,7 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = '>= 3.0.0'
 
   spec.add_dependency 'base64'
+  spec.add_dependency 'benchmark'
   spec.add_dependency 'bigdecimal'
   spec.add_dependency 'imagen', '>= 0.2.0'
   spec.add_dependency 'rainbow', '>= 2.1', '< 4.0'
