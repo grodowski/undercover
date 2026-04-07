@@ -5,9 +5,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
 ### Added
 - View template coverage support for ERB, Haml, Slim, and JBuilder files ([#250](https://github.com/grodowski/undercover/pull/250)). Requires Ruby 3.2+ with `SimpleCov.enable_coverage_for_eval` and opt-in via `--include-files`.
+
+### Fixed
+- Add `benchmark` as a dependency, required for Ruby 4
+
+# [0.8.4] - 2026-02-06
+### Fixed
+- Print branch coverage even on n/a lines (https://github.com/grodowski/undercover/pull/249) by [@kuahyeow](https://github.com/kuahyeow)
+
+### Added
+- Ruby 4 support in CI
 
 # [0.8.3] - 2025-11-20
 ### Fixed
@@ -212,7 +221,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - First release of `undercover` 🎉
 
-[Unreleased]: https://github.com/grodowski/undercover/compare/v0.8.3...HEAD
+[Unreleased]: https://github.com/grodowski/undercover/compare/v0.8.4...HEAD
+[0.8.4]: https://github.com/grodowski/undercover/compare/v0.8.3...v0.8.4
 [0.8.3]: https://github.com/grodowski/undercover/compare/v0.8.2...v0.8.3
 [0.8.2]: https://github.com/grodowski/undercover/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/grodowski/undercover/compare/v0.8.0...v0.8.1

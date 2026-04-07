@@ -1,0 +1,52 @@
+{
+  "meta": {
+    "timestamp": 1769744417,
+    "simplecov_root": "/Users/kuahyeow/code/undercover/spec/fixtures",
+    "ignored_files": []
+  },
+  "coverage": {
+    "safe_navigation_in_method_arg.rb": {
+      "lines": [
+        1,
+        1,
+        null,
+        null,
+        1,
+        2,
+        null,
+        1,
+        null,
+        null,
+        null,
+        null
+      ],
+      "branches": [
+        {
+          "type": "else",
+          "start_line": 6,
+          "end_line": 6,
+          "coverage": 1
+        },
+        {
+          "type": "then",
+          "start_line": 6,
+          "end_line": 6,
+          "coverage": 1
+        },
+        {
+          "type": "then",
+          "start_line": 10,
+          "end_line": 10,
+          "coverage": 0
+        },
+        {
+          "type": "else",
+          "start_line": 10,
+          "end_line": 10,
+          "coverage": 1
+        }
+      ]
+    }
+  },
+  "groups": {}
+}

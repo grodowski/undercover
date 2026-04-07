@@ -108,7 +108,8 @@ module Undercover
             Rainbow(' skipped with :nocov:').italic.darkgray.dark
         elsif covered.nil?
           Rainbow(formatted_line).darkgray.dark +
-            Rainbow(' hits: n/a').italic.darkgray.dark
+            Rainbow(' hits: n/a').italic.darkgray.dark +
+            count_covered_branches(num)
         elsif covered.positive?
           Rainbow(formatted_line).green +
             Rainbow(" hits: #{covered}").italic.darkgray.dark +
