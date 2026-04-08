@@ -11,7 +11,7 @@ module Imagen
   module Node
     # Virtual file-level container node for an ERB template. Mirrors the role
     # that Root plays for Ruby files: ErbVisitor puts all parsed block nodes
-    # (If, While, Case, ErbBlock) as children of this node.
+    # as children of this node.
     class ErbFile < Base
       attr_reader :full_path
 
@@ -38,10 +38,19 @@ module Imagen
       def file_path  = full_path
     end
 
-    # Base class for nodes parsed from ERB-extracted Ruby.
-    # Overrides source_lines to read from the original ERB file rather than
-    # the extracted Ruby source buffer, so pretty_print shows real ERB content.
+    # Represents a Ruby construct parsed from an ERB template (if, while, case,
+    # do...end block). Overrides source_lines to read from the original ERB file
+    # rather than the extracted Ruby source buffer.
     class ErbNode < Base
+      def build_from_ast(ast_node)
+        super
+        tap { @name = node_name(ast_node) }
+      end
+
+      def human_name
+        "#{ast_node.type} block"
+      end
+
       def source_lines
         file = ast_node.location.expression.source_buffer.name
         return [] unless File.exist?(file)
@@ -52,62 +61,23 @@ module Imagen
       def empty_def?
         false
       end
-    end
-
-    # Handles do...end blocks in ERB (e.g. <% @users.each do |u| %>)
-    class ErbBlock < ErbNode
-      def build_from_ast(ast_node)
-        super
-        tap { @name = ['block', args_list].compact.join(' ') }
-      end
-
-      def human_name
-        'block'
-      end
 
       private
 
-      def args_list
+      def node_name(ast_node)
+        return "block#{args_list(ast_node)}" if ast_node.type == :block
+
+        ast_node.type.to_s
+      end
+
+      def args_list(ast_node)
         args_node = ast_node.children.find { |n| n.is_a?(::Parser::AST::Node) && n.type == :args }
         return unless args_node
 
         arg_names = args_node.children.map { |arg| arg.children[0] }
         return if arg_names.empty?
 
-        "(#{arg_names.join(', ')})"
-      end
-    end
-
-    class If < ErbNode
-      def build_from_ast(ast_node)
-        super
-        tap { @name = 'if' }
-      end
-
-      def human_name
-        'if block'
-      end
-    end
-
-    class While < ErbNode
-      def build_from_ast(ast_node)
-        super
-        tap { @name = 'while' }
-      end
-
-      def human_name
-        'while block'
-      end
-    end
-
-    class Case < ErbNode
-      def build_from_ast(ast_node)
-        super
-        tap { @name = 'case' }
-      end
-
-      def human_name
-        'case block'
+        " (#{arg_names.join(', ')})"
       end
     end
   end
@@ -119,10 +89,10 @@ module Undercover
   # Used when processing .erb files via herb's extract_ruby output.
   class ErbVisitor < Imagen::Visitor
     TYPES = Imagen::Visitor::TYPES.merge(
-      block: Imagen::Node::ErbBlock,
-      if: Imagen::Node::If,
-      while: Imagen::Node::While,
-      case: Imagen::Node::Case
+      block: Imagen::Node::ErbNode,
+      if: Imagen::Node::ErbNode,
+      while: Imagen::Node::ErbNode,
+      case: Imagen::Node::ErbNode
     ).freeze
 
     def visit(ast_node, parent)

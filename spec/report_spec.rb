@@ -305,7 +305,7 @@ describe Undercover::Report do
 
       erb_results = report.results['spec/fixtures/test.html.erb'].to_a
       expect(erb_results.size).to eq(1)
-      expect(erb_results.first.node).to be_a(Imagen::Node::If)
+      expect(erb_results.first.node).to be_a(Imagen::Node::ErbNode)
     end
 
     it 'computes coverage for ERB files' do
