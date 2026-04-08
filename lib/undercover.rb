@@ -2,6 +2,7 @@
 
 $LOAD_PATH << 'lib'
 require 'json'
+require 'herb'
 require 'imagen'
 require 'rainbow'
 require 'bigdecimal'
@@ -17,7 +18,7 @@ require 'undercover/options'
 require 'undercover/filter_set'
 require 'undercover/simplecov_result_adapter'
 require 'undercover/version'
-require 'undercover/view_node'
+require 'undercover/erb_node'
 
 module Undercover
   class Report
@@ -105,9 +106,6 @@ module Undercover
     end
     alias to_s inspect
 
-    VIEW_EXTENSIONS = %w[.erb .haml .slim .jbuilder].freeze
-    private_constant :VIEW_EXTENSIONS
-
     private
 
     attr_reader :loaded_files
@@ -116,23 +114,30 @@ module Undercover
       key = filepath.gsub(/^\.\//, '')
       return if loaded_files[key]
 
-      if view_file?(filepath)
-        load_view_file(key, filepath)
+      if filepath.end_with?('.erb')
+        load_erb_file(key, filepath)
       else
         load_ruby_file(key, filepath)
       end
     end
 
-    def view_file?(filepath)
-      VIEW_EXTENSIONS.any? { |ext| filepath.end_with?(ext) }
-    end
+    # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+    def load_erb_file(key, filepath)
+      full_path = File.join(code_dir, filepath)
+      return unless File.exist?(full_path)
 
-    def load_view_file(key, filepath)
-      view_node = ViewNode.new(filepath, code_dir)
-      return if view_node.last_line.zero?
+      ruby_source = Herb.extract_ruby(File.read(full_path))
+      erb_file = Imagen::Node::ErbFile.new(filepath, code_dir)
+                                      .build_from_ruby_source(ruby_source)
+      return if erb_file.children.empty?
 
-      loaded_files[key] = [Result.new(view_node, coverage_adapter, filepath)]
+      loaded_files[key] = erb_file
+                          .find_all(->(node) { !node.is_a?(Imagen::Node::ErbFile) })
+                          .map { |node| Result.new(node, coverage_adapter, filepath) }
+    rescue StandardError => e
+      warn "#{filepath}: ERB parsing failed (#{e.message})"
     end
+    # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
     # rubocop:disable Metrics/AbcSize
     def load_ruby_file(key, filepath)
