@@ -1,0 +1,22 @@
+<html>
+<head>
+  <title><%= @title %></title>
+</head>
+<body>
+  <% if @user %>
+    <h1>Hello, <%= @user.name %></h1>
+  <% else %>
+    <h1>Hello, Guest</h1>
+  <% end %>
+  <% @items.each do |item| %>
+    <p><%= item %></p>
+  <% end %>
+  <% while @retries > 0 %>
+    <p>Retrying...</p>
+  <% end %>
+  <% case @status %>
+  <% when :ok %><p>OK</p>
+  <% when :error %><p>Error</p>
+  <% end %>
+</body>
+</html>
