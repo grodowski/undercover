@@ -63,9 +63,9 @@ end
 
 Then run your test suite once through to generate the initial coverage file before you can run the `undercover` command.
 
-## View template coverage (ERB, Haml, Slim, JBuilder)
+## ERB view template coverage
 
-Undercover supports coverage analysis for Rails view templates. This requires:
+Undercover supports coverage analysis for ERB view templates. This requires:
 
 1. **Ruby 3.2+**
 2. **SimpleCov's `enable_coverage_for_eval`** option
@@ -81,18 +81,16 @@ end
 3. **Opt-in via `--include-files`** since view coverage is not enabled by default:
 
 ```sh
-undercover --include-files '*.rb,*.erb,*.haml,*.slim,*.jbuilder'
+undercover --include-files '*.rb,*.erb'
 ```
 
 Or in your `.undercover` config file:
 
 ```sh
--f *.rb,*.erb,*.haml,*.slim,*.jbuilder
+-f *.rb,*.erb
 ```
 
 **Why opt-in?** View coverage requires `enable_coverage_for_eval` which is not enabled by default in SimpleCov. Without it, view files would be flagged as having 0% coverage (false positives).
-
-**Supported template types:** `.erb`, `.haml`, `.slim`, `.jbuilder`
 
 ## Upgrading from pre-0.7.0
 

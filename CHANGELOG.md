@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 ### Added
-- View template coverage support for ERB, Haml, Slim, and JBuilder files ([#250](https://github.com/grodowski/undercover/pull/250)). Requires Ruby 3.2+ with `SimpleCov.enable_coverage_for_eval` and opt-in via `--include-files`.
+- ERB view template coverage support ([#250](https://github.com/grodowski/undercover/pull/250)). Requires Ruby 3.2+ with `SimpleCov.enable_coverage_for_eval` and opt-in via `--include-files`.
 
 ### Fixed
 - Add `benchmark` as a dependency, required for Ruby 4
