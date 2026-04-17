@@ -68,17 +68,18 @@ describe Undercover::AstBranchAnnotator do
     end
   end
 
-  describe '&&' do
-    it 'labels the && line' do
+  describe '&& and ||' do
+    # Ruby's Coverage module does not track && / || as branch points —
+    # only if/unless/case/ternary produce BRDA entries. Annotating these
+    # lines would produce labels that never match any coverage entry.
+    it 'does not annotate && (not a Ruby coverage branch)' do
       info = annotate('a && b')
-      expect(info[1]).to eq('&&')
+      expect(info).to be_empty
     end
-  end
 
-  describe '||' do
-    it 'labels the || line' do
+    it 'does not annotate || (not a Ruby coverage branch)' do
       info = annotate('a || b')
-      expect(info[1]).to eq('||')
+      expect(info).to be_empty
     end
   end
 

@@ -6,7 +6,7 @@ module Undercover
       new.annotate(ast_node)
     end
 
-    # rubocop:disable Metrics/MethodLength,Metrics/AbcSize,Metrics/CyclomaticComplexity
+    # rubocop:disable Metrics/MethodLength,Metrics/AbcSize
     def annotate(ast_node, info = {})
       return info unless ast_node.is_a?(::Parser::AST::Node)
 
@@ -20,16 +20,12 @@ module Undercover
           cond_src = expression_source(child.children.first)
           info[child.location.keyword.line] ||= "when #{cond_src}"
         end
-      when :and
-        info[ast_node.location.line] ||= '&&'
-      when :or
-        info[ast_node.location.line] ||= '||'
       end
 
       ast_node.children.each { |c| annotate(c, info) }
       info
     end
-    # rubocop:enable Metrics/MethodLength,Metrics/AbcSize,Metrics/CyclomaticComplexity
+    # rubocop:enable Metrics/MethodLength,Metrics/AbcSize
 
     private
 
