@@ -49,8 +49,8 @@ describe Undercover::JsonFormatter do
     context 'with warnings' do
       let(:mock_annotated_branches) do
         [
-          {line: 13, block: 0, branch: 0, count: 0},  # uncovered
-          {line: 13, block: 0, branch: 1, count: 3}   # covered
+          {line: 13, block: 0, branch: 0, count: 0}, # uncovered
+          {line: 13, block: 0, branch: 1, count: 3}, # covered
         ]
       end
 
@@ -91,7 +91,7 @@ describe Undercover::JsonFormatter do
       let(:mock_annotated_branches) do
         [
           {line: 11, block: 0, branch: 0, count: 'ignored'},
-          {line: 11, block: 0, branch: 1, count: 0}
+          {line: 11, block: 0, branch: 1, count: 0},
         ]
       end
 
@@ -107,7 +107,7 @@ describe Undercover::JsonFormatter do
       let(:mock_annotated_branches) do
         [
           {line: 13, block: 0, branch: 1, count: 0, description: 'then'},
-          {line: 13, block: 0, branch: 2, count: 0, description: 'else'}
+          {line: 13, block: 0, branch: 2, count: 0, description: 'else'},
         ]
       end
 

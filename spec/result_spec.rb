@@ -379,12 +379,13 @@ describe Undercover::Result do
     end
     let(:mock_adapter) do
       double('adapter').tap do |a|
-        allow(a).to receive(:coverage).with(file_path).and_return([
-          [3, 0, 1, 0],           # branch_no=1, uncovered — same line, arm type resolved
-          [3, 0, 2, 3],           # branch_no=2, covered   — same line, arm type resolved
-          [3, 0, 3, 'ignored'],   # branch_no=3, ignored   — branch_label returns nil
-          [4, 0, 4, 0]            # branch_no=4, single branch on line 4 — no AST annotation
-        ])
+        coverage_data = [
+          [3, 0, 1, 0],          # branch_no=1, uncovered, arm type resolved
+          [3, 0, 2, 3],          # branch_no=2, covered, arm type resolved
+          [3, 0, 3, 'ignored'],  # branch_no=3, ignored, branch_label returns nil
+          [4, 0, 4, 0],          # branch_no=4, single on line 4, no AST annotation
+        ]
+        allow(a).to receive(:coverage).with(file_path).and_return(coverage_data)
         allow(a).to receive(:skipped?).and_return(false)
         allow(a).to receive(:branch_label).with(file_path, 1).and_return('then')
         allow(a).to receive(:branch_label).with(file_path, 2).and_return('else')
