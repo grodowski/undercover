@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'forwardable'
-require 'undercover/ast_branch_annotator'
 
 module Undercover
   class Result # rubocop:disable Metrics/ClassLength
@@ -124,20 +123,12 @@ module Undercover
     end
     # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
 
-    # Returns all branch coverage entries for this result, each annotated with
-    # an optional :description derived from the AST (e.g. "if user.admin?", "else",
-    # "when :active", "? role == :admin → then"). The :count key holds the raw
-    # coverage value (Integer, 0 = uncovered, or "ignored").
-    def annotated_branches # rubocop:disable Metrics/AbcSize
-      ast_info = AstBranchAnnotator.call(node.ast_node)
-      branch_entries = coverage.select { |cov| cov.size == 4 }
-      counts_per_line = branch_entries.each_with_object(Hash.new(0)) { |(ln, *), h| h[ln] += 1 }
-      branch_entries.map do |ln, block_no, branch_no, count|
-        arm = branch_label(file_path, branch_no) if counts_per_line[ln] > 1
-        label = [ast_info[ln], arm].compact.join(' → ')
-        entry = {line: ln, block: block_no, branch: branch_no, count: count}
-        entry[:description] = label unless label.empty?
-        entry
+    # Returns raw branch coverage entries for this result as structured hashes.
+    # Callers that need human-readable descriptions should use AstBranchAnnotator
+    # separately (e.g. JsonFormatter).
+    def branches
+      coverage.select { |cov| cov.size == 4 }.map do |ln, block_no, branch_no, count|
+        {line: ln, block: block_no, branch: branch_no, count: count}
       end
     end
 

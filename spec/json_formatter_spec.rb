@@ -6,9 +6,8 @@ require 'undercover/json_formatter'
 describe Undercover::JsonFormatter do
   let(:mock_node) { double('node', name: 'Foo#bar', human_name: 'instance method', ast_node: nil) }
 
-  # Line coverage only — branch entries live in mock_annotated_branches
   let(:mock_coverage) { [[11, 0], [12, 5]] }
-  let(:mock_annotated_branches) { [] }
+  let(:mock_branches) { [] }
 
   let(:mock_result) do
     instance_double(
@@ -21,7 +20,8 @@ describe Undercover::JsonFormatter do
       coverage: mock_coverage
     ).tap do |result|
       allow(result).to receive(:skipped?).and_return(false)
-      allow(result).to receive(:annotated_branches).and_return(mock_annotated_branches)
+      allow(result).to receive(:branches).and_return(mock_branches)
+      allow(result).to receive(:branch_label).and_return(nil)
     end
   end
 
@@ -47,7 +47,7 @@ describe Undercover::JsonFormatter do
     end
 
     context 'with warnings' do
-      let(:mock_annotated_branches) do
+      let(:mock_branches) do
         [
           {line: 13, block: 0, branch: 0, count: 0}, # uncovered
           {line: 13, block: 0, branch: 1, count: 3}, # covered
@@ -88,7 +88,7 @@ describe Undercover::JsonFormatter do
     end
 
     context 'when branches are marked as ignored' do
-      let(:mock_annotated_branches) do
+      let(:mock_branches) do
         [
           {line: 11, block: 0, branch: 0, count: 'ignored'},
           {line: 11, block: 0, branch: 1, count: 0},
@@ -104,23 +104,28 @@ describe Undercover::JsonFormatter do
     end
 
     context 'when two branches share the same line (e.g. ternary)' do
-      let(:mock_annotated_branches) do
+      let(:mock_branches) do
         [
-          {line: 13, block: 0, branch: 1, count: 0, description: 'then'},
-          {line: 13, block: 0, branch: 2, count: 0, description: 'else'},
+          {line: 13, block: 0, branch: 1, count: 0},
+          {line: 13, block: 0, branch: 2, count: 0},
         ]
+      end
+
+      before do
+        allow(mock_result).to receive(:branch_label).with('lib/foo.rb', 1).and_return('then')
+        allow(mock_result).to receive(:branch_label).with('lib/foo.rb', 2).and_return('else')
       end
 
       subject { described_class.new([mock_result]).to_h }
 
-      it 'passes through description from annotated_branches' do
+      it 'includes description from branch_label for multi-branch lines' do
         branches = subject[:warnings].first[:uncovered_branches]
         expect(branches.map { |b| b[:description] }).to eq(%w[then else])
       end
     end
 
     context 'with a single branch on a line' do
-      let(:mock_annotated_branches) { [{line: 10, block: 0, branch: 0, count: 0}] }
+      let(:mock_branches) { [{line: 10, block: 0, branch: 0, count: 0}] }
 
       subject { described_class.new([mock_result]).to_h }
 
@@ -144,7 +149,8 @@ describe Undercover::JsonFormatter do
           coverage: [[6, 0], [7, 0]]
         ).tap do |result|
           allow(result).to receive(:skipped?).and_return(false)
-          allow(result).to receive(:annotated_branches).and_return([])
+          allow(result).to receive(:branches).and_return([])
+          allow(result).to receive(:branch_label).and_return(nil)
         end
       end
 

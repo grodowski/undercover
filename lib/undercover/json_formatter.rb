@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'json'
+require 'undercover/ast_branch_annotator'
 
 module Undercover
   class JsonFormatter
@@ -55,10 +56,22 @@ module Undercover
     end
 
     def uncovered_branches(result)
-      result.annotated_branches
-            .reject { |b| result.skipped?(result.file_path, b[:line]) || b[:count] == 'ignored' }
-            .select { |b| b[:count].zero? }
-            .map { |b| b.except(:count) }
+      annotated_branches(result)
+        .reject { |b| result.skipped?(result.file_path, b[:line]) || b[:count] == 'ignored' }
+        .select { |b| b[:count].zero? }
+        .map { |b| b.except(:count) }
+    end
+
+    def annotated_branches(result) # rubocop:disable Metrics/AbcSize
+      ast_info = AstBranchAnnotator.call(result.node.ast_node)
+      counts_per_line = result.branches.each_with_object(Hash.new(0)) { |b, h| h[b[:line]] += 1 }
+      result.branches.map do |entry|
+        arm = result.branch_label(result.file_path, entry[:branch]) if counts_per_line[entry[:line]] > 1
+        label = [ast_info[entry[:line]], arm].compact.join(' → ')
+        next entry if label.empty?
+
+        entry.merge(description: label)
+      end
     end
 
     def summary
