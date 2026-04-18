@@ -29,14 +29,15 @@ module Undercover
 
     private
 
-    def annotate_if_node(ast_node, info) # rubocop:disable Metrics/AbcSize
+    def annotate_if_node(ast_node, info) # rubocop:disable Metrics/MethodLength,Metrics/AbcSize
       loc = ast_node.location
       cond_src = expression_source(ast_node.children.first)
-      if loc.respond_to?(:keyword)
+      case loc
+      when Parser::Source::Map::Condition
         kw = loc.keyword
         info[kw.line] ||= "#{kw.source} #{cond_src}"
         info[loc.else.line] ||= 'else' if loc.else&.source == 'else'
-      else
+      when Parser::Source::Map::Ternary
         info[loc.question.line] ||= "? #{cond_src}"
         info[loc.colon.line] ||= ':'
       end
