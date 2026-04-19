@@ -83,6 +83,16 @@ describe Undercover::AstBranchAnnotator do
     end
   end
 
+  describe 'if with unrecognized location map' do
+    it 'silently skips without raising (e.g. pattern-match guards)' do
+      condition = parse('x')
+      unknown_map = Struct.new(:node).new # not Condition or Ternary
+      if_node = Parser::AST::Node.new(:if, [condition], {location: unknown_map})
+
+      expect(described_class.call(if_node)).to eq({})
+    end
+  end
+
   it 'recurses into nested constructs' do
     src = "def foo\n  if x\n    a\n  else\n    b\n  end\nend"
     info = annotate(src)
