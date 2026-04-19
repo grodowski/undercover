@@ -68,4 +68,9 @@ describe Undercover::LcovParser do
 
     expect(parser.total_coverage).to eq(1.0)
   end
+
+  it 'returns nil for branch_label' do
+    parser = described_class.parse('spec/fixtures/sample.lcov')
+    expect(parser.branch_label('lib/imagen.rb', 0)).to be_nil
+  end
 end

@@ -134,9 +134,66 @@ Usage: undercover [options]
     -w, --max-warnings limit         Maximum number of warnings to generate before stopping analysis. Useful as a performance improvement for large diffs.
     -f, --include-files globs        Include files matching specified glob patterns (comma separated). Defaults to '*.rb,*.rake,*.ru,Rakefile'
     -x, --exclude-files globs        Skip files matching specified glob patterns (comma separated). Empty by default.
+        --format FORMAT              Output format: text, json (default: text)
     -h, --help                       Prints this help
         --version                    Show version
 ```
+
+### JSON Output
+
+Use `--format json` to get machine-readable output, useful for CI integrations and tooling:
+
+```sh
+undercover --compare origin/main --format json
+```
+
+Output structure:
+
+```json
+{
+  "warnings": [
+    {
+      "node": "Foo#bar",
+      "type": "instance method",
+      "file": "lib/foo.rb",
+      "first_line": 10,
+      "last_line": 20,
+      "coverage": 0.5,
+      "uncovered_lines": [11],
+      "uncovered_branches": [
+        {
+          "line": 13,
+          "block": 0,
+          "branch": 0,
+          "description": "if user.admin?"
+        },
+        {
+          "line": 16,
+          "block": 0,
+          "branch": 1,
+          "description": "else"
+        },
+        {
+          "line": 19,
+          "block": 0,
+          "branch": 2,
+          "description": "? role == :admin → else"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_warnings": 1,
+    "files_affected": 1
+  }
+}
+```
+
+Each warning includes:
+- `uncovered_lines` — line numbers with zero execution count
+- `uncovered_branches` — branch entries that were never taken, each with `line`, `block`, and `branch` identifiers. The optional `description` field names the branch from the source (e.g. `"if user.admin?"`, `"else"`, `"when :active"`). For same-line branches such as ternaries, the arm type is appended after ` → ` (e.g. `"? role == :admin → else"`).
+
+Branch-level entries require `enable_coverage(:branch)` in your SimpleCov configuration (see [Setting up coverage reporting](#setting-up-coverage-reporting)).
 
 ### Configuration File
 

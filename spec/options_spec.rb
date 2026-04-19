@@ -20,7 +20,8 @@ describe Undercover::Options do
     end
 
     it 'guesses lcov path' do
-      default_path = 'coverage/lcov/undercover.lcov'
+      project_name = Pathname.new(File.expand_path('.')).split.last
+      default_path = "coverage/lcov/#{project_name}.lcov"
       options.parse([])
       expect(options.lcov).to be_nil
 

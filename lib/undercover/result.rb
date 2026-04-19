@@ -9,7 +9,7 @@ module Undercover
     attr_reader :node, :coverage, :coverage_adapter, :file_path
 
     def_delegators :node, :first_line, :last_line, :name
-    def_delegators :coverage_adapter, :skipped?
+    def_delegators :coverage_adapter, :skipped?, :branch_label
 
     def initialize(node, coverage_adapter, file_path) # rubocop:disable Metrics/MethodLength,Metrics/AbcSize
       @node = node
@@ -122,6 +122,15 @@ module Undercover
       end.join("\n")
     end
     # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
+
+    # Returns raw branch coverage entries for this result as structured hashes.
+    # Callers that need human-readable descriptions should use AstBranchAnnotator
+    # separately (e.g. JsonFormatter).
+    def branches
+      coverage.select { |cov| cov.size == 4 }.map do |ln, block_no, branch_no, count|
+        {line: ln, block: block_no, branch: branch_no, count: count}
+      end
+    end
 
     def file_path_with_lines
       "#{file_path}:#{first_line}:#{last_line}"

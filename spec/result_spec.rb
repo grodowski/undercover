@@ -367,6 +367,50 @@ describe Undercover::Result do
     end
   end
 
+  describe '#branches' do
+    let(:source_file) { "def foo\n  a\n  x ? a : b\n  b\nend\n" }
+    let(:file_path) { 'test.rb' }
+    let(:ast) do
+      root = Imagen::Node::Root.new
+      Imagen::Visitor.traverse(Imagen::AST::Parser.parse(source_file, file_path), root)
+      root
+    end
+    let(:mock_adapter) do
+      double('adapter').tap do |a|
+        coverage_data = [
+          [3, 0, 1, 0],
+          [3, 0, 2, 3],
+          [3, 0, 3, 'ignored'],
+          [4, 0, 4, 0],
+        ]
+        allow(a).to receive(:coverage).with(file_path).and_return(coverage_data)
+        allow(a).to receive(:skipped?).and_return(false)
+      end
+    end
+
+    subject do
+      node = ast.find_all(with_name('foo')).first
+      described_class.new(node, mock_adapter, file_path).branches
+    end
+
+    it 'returns all branch entries including covered and ignored' do
+      expect(subject.size).to eq(4)
+    end
+
+    it 'returns structured hashes with line, block, branch and count' do
+      expect(subject).to eq([
+                              {line: 3, block: 0, branch: 1, count: 0},
+                              {line: 3, block: 0, branch: 2, count: 3},
+                              {line: 3, block: 0, branch: 3, count: 'ignored'},
+                              {line: 4, block: 0, branch: 4, count: 0},
+                            ])
+    end
+
+    it 'does not include description keys' do
+      expect(subject.none? { |b| b.key?(:description) }).to be true
+    end
+  end
+
   context 'safe navigation in method arg' do
     let(:ast) { Imagen.from_local('spec/fixtures/safe_navigation_in_method_arg.rb') }
 

@@ -52,6 +52,13 @@ module Undercover
       source_file['lines'][line_no - 1] == 'ignored'
     end
 
+    def branch_label(filepath, branch_no)
+      source_file = find_file(filepath)
+      return nil unless source_file
+
+      source_file['branches']&.dig(branch_no - 1, 'type')
+    end
+
     # unused for now
     def total_coverage; end
     def total_branch_coverage; end

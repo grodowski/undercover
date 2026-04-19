@@ -139,8 +139,6 @@ describe Undercover::CLI do
     mock_report = instance_double(Undercover::Report, validate: nil)
     stub_build.and_return(mock_report)
 
-    allow(Undercover::Formatter).to receive(:new)
-
     expect(mock_report).to receive(:flagged_results) { [double] }
     expect(subject.run([])).to eq(1)
   end
@@ -149,10 +147,7 @@ describe Undercover::CLI do
     mock_report = instance_double(Undercover::Report, validate: :stale_coverage)
     stub_build.and_return(mock_report)
 
-    expected_output = "#{Undercover::CLI::WARNINGS_TO_S[:stale_coverage]}\n"
-
-    allow(Undercover::Formatter).to receive(:new)
-    expect(mock_report).to receive(:flagged_results) { [] }
+    expected_output = "#{Undercover::Formatter::WARNINGS_TO_S[:stale_coverage]}\n"
 
     expect do
       expect(subject.run([])).to eq(0)
@@ -163,11 +158,22 @@ describe Undercover::CLI do
     mock_report = instance_double(Undercover::Report, validate: :no_changes)
     stub_build.and_return(mock_report)
 
-    expected_output = "#{Undercover::CLI::WARNINGS_TO_S[:no_changes]}\n"
+    expected_output = "#{Undercover::Formatter::WARNINGS_TO_S[:no_changes]}\n"
 
     expect do
       expect(subject.run([])).to eq(0)
     end.to output(expected_output).to_stdout
+  end
+
+  it 'outputs JSON when --format json is used' do
+    mock_report = instance_double(Undercover::Report, validate: nil)
+    stub_build.and_return(mock_report)
+
+    expect(mock_report).to receive(:flagged_results) { [] }
+
+    expect do
+      expect(subject.run(['--format', 'json'])).to eq(0)
+    end.to output(/\{\s*"warnings":\s*\[\]/).to_stdout
   end
 
   it 'sets ruby syntax version from options' do
@@ -309,6 +315,7 @@ describe Undercover::CLI do
   it 'parses lcov report and passes it to the report builder' do
     stub_stdout
 
+    allow_any_instance_of(Undercover::Options).to receive(:guess_resultset_path)
     allow_any_instance_of(Undercover::Report).to receive(:validate) { nil }
     allow_any_instance_of(Undercover::Report).to receive(:build) { |rep| rep }
     allow_any_instance_of(Undercover::Report).to receive(:flagged_results) { [] }
@@ -343,10 +350,10 @@ describe Undercover::CLI do
   end
 
   it 'returns 1 exit code when coverage file does not exist' do
+    allow_any_instance_of(Undercover::Options).to receive(:guess_resultset_path)
     allow(File).to receive(:exist?).and_call_original
     allow(File).to receive(:exist?).with('./.undercover').and_return(false)
     allow(File).to receive(:exist?).with('nonexistent.lcov').and_return(false)
-    allow(File).to receive(:exist?).with('/Users/mrgrodo/dev/undercover/coverage/coverage.json').and_return(false)
 
     expected_output = a_string_matching(/❌ ERROR: Coverage report not found at: nonexistent.lcov/)
 

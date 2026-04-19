@@ -201,6 +201,42 @@ describe Undercover::SimplecovResultAdapter do
     end
   end
 
+  describe '#branch_label' do
+    let(:adapter) do
+      result = {
+        'coverage' => {
+          'test.rb' => {
+            'lines' => [1],
+            'branches' => [
+              {'start_line' => 1, 'end_line' => 1, 'type' => 'then', 'coverage' => 0},
+              {'start_line' => 1, 'end_line' => 1, 'type' => 'else', 'coverage' => 1},
+            ]
+          }
+        }
+      }
+      described_class.new(result, nil)
+    end
+
+    it 'returns the branch type for a 1-based branch index' do
+      expect(adapter.branch_label('test.rb', 1)).to eq('then')
+      expect(adapter.branch_label('test.rb', 2)).to eq('else')
+    end
+
+    it 'returns nil for out-of-range branch index' do
+      expect(adapter.branch_label('test.rb', 99)).to be_nil
+    end
+
+    it 'returns nil for unknown file' do
+      expect(adapter.branch_label('other.rb', 1)).to be_nil
+    end
+
+    it 'returns nil when file has no branch data' do
+      result = {'coverage' => {'no_branches.rb' => {'lines' => [1]}}}
+      adapter = described_class.new(result, nil)
+      expect(adapter.branch_label('no_branches.rb', 1)).to be_nil
+    end
+  end
+
   describe '#ignored_files' do
     it 'returns ignored files from meta section' do
       adapter = simplecov_coverage_fixture('spec/fixtures/simplecov_with_ignored_files.json')
