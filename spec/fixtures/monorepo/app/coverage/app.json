@@ -1,0 +1,84 @@
+{
+  "meta": {
+    "timestamp": 1756364500,
+    "simplecov_root": "/Users/mrgrodo/dev/undercover/spec/fixtures/monorepo/app",
+    "ignored_files": [
+      {
+        "string": "/vendor/bundle/"
+      },
+      {
+        "regex": "^/\\..*"
+      },
+      {
+        "string": "/test/"
+      },
+      {
+        "string": "/features/"
+      },
+      {
+        "string": "/spec/"
+      },
+      {
+        "string": "/autotest/"
+      },
+      {
+        "regex": "^/config/"
+      },
+      {
+        "regex": "^/db/"
+      }
+    ]
+  },
+  "coverage": {
+    "main.rb": {
+      "lines": [
+        1,
+        null,
+        1,
+        1,
+        1,
+        1
+      ],
+      "branches": []
+    },
+    "lib/foo_lib.rb": {
+      "lines": [
+        1,
+        1,
+        1,
+        1,
+        null,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "branches": [
+        {
+          "type": "then",
+          "start_line": 11,
+          "end_line": 11,
+          "coverage": 1
+        },
+        {
+          "type": "else",
+          "start_line": 11,
+          "end_line": 11,
+          "coverage": 0
+        }
+      ]
+    }
+  },
+  "groups": {}
+}
