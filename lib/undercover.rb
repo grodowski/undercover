@@ -2,6 +2,7 @@
 
 $LOAD_PATH << 'lib'
 require 'json'
+require 'herb'
 require 'imagen'
 require 'rainbow'
 require 'bigdecimal'
@@ -18,6 +19,7 @@ require 'undercover/options'
 require 'undercover/filter_set'
 require 'undercover/simplecov_result_adapter'
 require 'undercover/version'
+require 'undercover/erb_node'
 
 module Undercover
   class Report
@@ -109,11 +111,37 @@ module Undercover
 
     attr_reader :loaded_files
 
-    # rubocop:disable Metrics/AbcSize
     def load_and_parse_file(filepath)
       key = filepath.gsub(/^\.\//, '')
       return if loaded_files[key]
 
+      if filepath.end_with?('.erb')
+        load_erb_file(key, filepath)
+      else
+        load_ruby_file(key, filepath)
+      end
+    end
+
+    # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+    def load_erb_file(key, filepath)
+      full_path = File.join(code_dir, filepath)
+      return unless File.exist?(full_path)
+
+      ruby_source = Herb.extract_ruby(File.read(full_path))
+      erb_file = Imagen::Node::ErbFile.new(filepath, code_dir)
+                                      .build_from_ruby_source(ruby_source)
+      return if erb_file.children.empty?
+
+      loaded_files[key] = erb_file
+                          .find_all(->(node) { !node.is_a?(Imagen::Node::ErbFile) })
+                          .map { |node| Result.new(node, coverage_adapter, filepath) }
+    rescue StandardError => e
+      warn "#{filepath}: ERB parsing failed (#{e.message})"
+    end
+    # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
+
+    # rubocop:disable Metrics/AbcSize
+    def load_ruby_file(key, filepath)
       root_ast = Imagen::Node::Root.new.build_from_file(
         File.join(code_dir, filepath)
       )

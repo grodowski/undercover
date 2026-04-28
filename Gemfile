@@ -15,3 +15,5 @@ gem 'simplecov'
 gem 'simplecov-html'
 gem 'simplecov_json_formatter'
 gem 'timecop'
+
+gem 'herb', '>= 0.9'
