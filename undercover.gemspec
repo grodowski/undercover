@@ -30,9 +30,9 @@ Gem::Specification.new do |spec| # rubocop:disable Metrics/BlockLength
   spec.add_dependency 'base64'
   spec.add_dependency 'benchmark'
   spec.add_dependency 'bigdecimal'
+  spec.add_dependency 'git', '~> 4.0'
   spec.add_dependency 'imagen', '>= 0.2.0'
   spec.add_dependency 'rainbow', '>= 2.1', '< 4.0'
-  spec.add_dependency 'rugged', '>= 0.27', '< 1.10'
   spec.add_dependency 'simplecov'
   spec.add_dependency 'simplecov_json_formatter'
 end
