@@ -66,8 +66,15 @@ module Undercover
       return nil unless compare_base
 
       merge_base = repo.merge_base(compare_base.to_s, head)
-      # merge_base may be nil with --depth 1, compare two refs directly
-      merge_base ? repo.lookup(merge_base) : repo.rev_parse(compare_base)
+      if merge_base
+        repo.lookup(merge_base)
+      else
+        warn "undercover: WARNING: Could not find merge base between '#{compare_base}' and HEAD. " \
+             'This is usually caused by a shallow git clone. To fix, fetch with full history: ' \
+             '`actions/checkout` with `fetch-depth: 0`, or run `git fetch --unshallow`. ' \
+             'Falling back to a direct diff against the compare ref, which may produce inaccurate results.'
+        repo.rev_parse(compare_base)
+      end
     end
 
     def head

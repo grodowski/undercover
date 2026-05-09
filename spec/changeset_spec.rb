@@ -88,6 +88,15 @@ describe Undercover::Changeset do
     end
   end
 
+  describe 'compare_base with missing merge base' do
+    it 'warns and falls back to direct ref when merge base is not found' do
+      changeset = Undercover::Changeset.new('spec/fixtures/test.git', 'master')
+      allow_any_instance_of(Rugged::Repository).to receive(:merge_base).and_return(nil)
+
+      expect { changeset.file_paths }.to output(/WARNING.*merge base.*master/i).to_stderr
+    end
+  end
+
   describe 'validate' do
     let(:report_path) { 'spec/fixtures/sample.lcov' }
 
