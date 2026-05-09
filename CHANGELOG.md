@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Emit Claude Code plugin hint when running inside Claude Code (`CLAUDECODE` env var)
 
 # [0.8.5] - 2026-04-21
 ### Added
