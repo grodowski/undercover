@@ -121,6 +121,29 @@ describe Undercover::SimplecovResultAdapter do
       expect(adapter.simplecov_result).to eq(result)
       expect(adapter.instance_variable_get(:@code_dir)).to be_nil
     end
+
+    it 'filters coverage to only_files when provided' do
+      result = {
+        'coverage' => {
+          'included.rb' => {'lines' => [1, 0]},
+          'excluded.rb' => {'lines' => [1, 1]}
+        }
+      }
+      adapter = described_class.new(result, nil, only_files: ['included.rb'])
+
+      expect(adapter.simplecov_result['coverage'].keys).to eq(['included.rb'])
+    end
+
+    it 'results in empty coverage when only_files matches nothing' do
+      result = {
+        'coverage' => {
+          'some_file.rb' => {'lines' => [1, 0]}
+        }
+      }
+      adapter = described_class.new(result, nil, only_files: ['other.rb'])
+
+      expect(adapter.simplecov_result['coverage']).to be_empty
+    end
   end
 
   describe '#coverage' do

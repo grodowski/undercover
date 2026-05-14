@@ -73,4 +73,25 @@ describe Undercover::LcovParser do
     parser = described_class.parse('spec/fixtures/sample.lcov')
     expect(parser.branch_label('lib/imagen.rb', 0)).to be_nil
   end
+
+  describe 'only_files: filtering' do
+    it 'includes only the specified files' do
+      parser = described_class.parse('spec/fixtures/fixtures.lcov', nil, only_files: ['class.rb'])
+
+      expect(parser.source_files.keys).to eq(['class.rb'])
+    end
+
+    it 'skips DA and BRDA lines for excluded files' do
+      parser = described_class.parse('spec/fixtures/fixtures.lcov', nil, only_files: ['class.rb'])
+
+      expect(parser.source_files['module.rb']).to be_nil
+      expect(parser.source_files['class.rb']).not_to be_empty
+    end
+
+    it 'returns empty source_files when no files match the filter' do
+      parser = described_class.parse('spec/fixtures/fixtures.lcov', nil, only_files: ['nonexistent.rb'])
+
+      expect(parser.source_files).to be_empty
+    end
+  end
 end

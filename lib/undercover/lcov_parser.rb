@@ -11,15 +11,16 @@ module Undercover
 
     attr_reader :io, :source_files
 
-    def initialize(lcov_io, opts)
+    def initialize(lcov_io, opts, only_files: nil)
       @io = lcov_io
       @source_files = {}
       @code_dir = opts&.path
+      @only_files = only_files&.map { |f| fix_relative_filepath(f) }&.to_set
     end
 
-    def self.parse(lcov_report_path, opts = nil)
+    def self.parse(lcov_report_path, opts = nil, only_files: nil)
       lcov_io = File.open(lcov_report_path)
-      new(lcov_io, opts).parse
+      new(lcov_io, opts, only_files: only_files).parse
     end
 
     def parse
@@ -73,15 +74,20 @@ module Undercover
     def parse_line(line)
       case line
       when /^SF:(.+)/
-        @current_filename = $~[1].gsub(/^\.\//, '')
-        source_files[@current_filename] = []
+        filename = $~[1].gsub(/^\.\//, '')
+        @current_filename = @only_files.nil? || @only_files.include?(filename) ? filename : nil
+        source_files[@current_filename] = [] if @current_filename
       when /^DA:(\d+),(\d+)/
+        return unless @current_filename
+
         line_no = $~[1]
         covered = $~[2]
         source_files[@current_filename] << [line_no.to_i, covered.to_i]
       when /^(BRF|BRH):(\d+)/
         # branches found/hit; no-op
       when /^BRDA:(\d+),(\d+),(\d+),(-|\d+)/
+        return unless @current_filename
+
         line_no = $~[1]
         block_no = $~[2]
         branch_no = $~[3]
