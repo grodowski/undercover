@@ -21,7 +21,8 @@ module Undercover
       only_files = changeset_obj.file_paths.then { |f| f.empty? ? nil : f }
 
       simplecov_adapter = if opts.simplecov_resultset
-                            SimplecovResultAdapter.parse(File.open(opts.simplecov_resultset), opts, only_files: only_files)
+                            SimplecovResultAdapter.parse(File.open(opts.simplecov_resultset), opts,
+                                                         only_files: only_files)
                           else
                             # TODO: lcov will be deprecated end of 2025 and we'll be able to refactor harder
                             LcovParser.parse(File.open(opts.lcov), opts, only_files: only_files)

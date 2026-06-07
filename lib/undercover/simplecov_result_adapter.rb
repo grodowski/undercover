@@ -23,10 +23,10 @@ module Undercover
     def initialize(simplecov_result, opts, only_files: nil)
       @simplecov_result = simplecov_result
       @code_dir = opts&.path
-      if only_files
-        normalized = only_files.map { |f| fix_relative_filepath(f) }.to_set
-        simplecov_result['coverage'].select! { |path, _| normalized.include?(path) }
-      end
+      return unless only_files
+
+      normalized = only_files.to_set { |f| fix_relative_filepath(f) }
+      simplecov_result['coverage'].select! { |path, _| normalized.include?(path) }
     end
 
     # @param filepath[String]

@@ -260,7 +260,8 @@ describe Undercover::CLI do
     allow(File).to receive(:exist?).with('./.undercover').and_return(false)
     allow(File).to receive(:open).with('test.lcov') { lcov }
     allow(File).to receive(:open).with('test.json') { json_file }
-    allow(Undercover::LcovParser).to receive(:parse).with(lcov, instance_of(Undercover::Options), hash_including(only_files: anything)) do
+    allow(Undercover::LcovParser).to receive(:parse).with(lcov, instance_of(Undercover::Options),
+                                                          hash_including(only_files: anything)) do
       double(coverage: [])
     end
     allow_any_instance_of(Undercover::Report).to receive(:validate) { nil }
@@ -401,10 +402,12 @@ describe Undercover::CLI do
     allow(File).to receive(:exist?).with('coverage/coverage.json').and_return(true)
     allow(File).to receive(:exist?).with('./.undercover').and_return(false)
     allow(File).to receive(:open) { file_stub }
-    allow(Undercover::SimplecovResultAdapter).to receive(:parse).with(file_stub, instance_of(Undercover::Options), hash_including(only_files: anything)) do
+    allow(Undercover::SimplecovResultAdapter).to receive(:parse).with(file_stub, instance_of(Undercover::Options),
+                                                                      hash_including(only_files: anything)) do
       mock_simplecov_result_adapter
     end
-    allow(Undercover::LcovParser).to receive(:parse).with(file_stub, instance_of(Undercover::Options), hash_including(only_files: anything)) do
+    allow(Undercover::LcovParser).to receive(:parse).with(file_stub, instance_of(Undercover::Options),
+                                                          hash_including(only_files: anything)) do
       mock_lcov_parser
     end
     allow_any_instance_of(Undercover::Report).to receive(:validate) { nil }

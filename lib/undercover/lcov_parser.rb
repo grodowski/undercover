@@ -15,7 +15,7 @@ module Undercover
       @io = lcov_io
       @source_files = {}
       @code_dir = opts&.path
-      @only_files = only_files&.map { |f| fix_relative_filepath(f) }&.to_set
+      @only_files = only_files&.to_set { |f| fix_relative_filepath(f) }
     end
 
     def self.parse(lcov_report_path, opts = nil, only_files: nil)
@@ -70,7 +70,7 @@ module Undercover
 
     private
 
-    # rubocop:disable Metrics/MethodLength, Style/SpecialGlobalVars, Metrics/AbcSize
+    # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Style/SpecialGlobalVars, Metrics/AbcSize
     def parse_line(line)
       case line
       when /^SF:(.+)/
@@ -100,6 +100,6 @@ module Undercover
         raise LcovParseError, "could not recognise '#{line}' as valid LCOV"
       end
     end
-    # rubocop:enable Metrics/MethodLength, Style/SpecialGlobalVars, Metrics/AbcSize
+    # rubocop:enable Metrics/MethodLength, Metrics/CyclomaticComplexity, Style/SpecialGlobalVars, Metrics/AbcSize
   end
 end
