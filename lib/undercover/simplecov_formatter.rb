@@ -18,17 +18,32 @@ module SimpleCov
   class << self
     attr_accessor :filter_definitions
 
+    # SimpleCov < 1.0 applies filters through SimpleCov.filtered (called by
+    # SimpleCov::Result#filter!). SimpleCov >= 1.0 moved filtering into the
+    # private SimpleCov::Result#apply_filters! instance method and no longer
+    # routes through here, so we hook both paths (see the prepend below) and
+    # funnel them into #track_filtered_out.
     alias filtered_uncached filtered
 
     def filtered(files)
-      @filter_definitions ||= extract_filter_definitions
-      original_files = files.dup
       filtered_uncached(files).tap do |filtered_files|
-        filtered_file_paths = (original_files.map(&:filename) - filtered_files.map(&:filename))
-        filtered_file_paths.each do |file|
-          relative_path = file.delete_prefix("#{SimpleCov.root}/")
-          @filter_definitions << {file: relative_path} unless covered_by_serializable_filters?(relative_path)
-        end
+        track_filtered_out(files, filtered_files)
+      end
+    end
+
+    # Records the filters undercover needs to reproduce SimpleCov's ignore
+    # decisions. String/regex filters are serialized declaratively; files
+    # dropped by block/array/custom filters (which can't be serialized) are
+    # recorded by their project-relative path.
+    def track_filtered_out(original_files, filtered_files)
+      @filter_definitions ||= extract_filter_definitions
+      filtered_file_paths = (original_files.map(&:filename) - filtered_files.map(&:filename))
+      filtered_file_paths.each do |file|
+        relative_path = file.delete_prefix("#{SimpleCov.root}/")
+        next if covered_by_serializable_filters?(relative_path)
+
+        entry = {file: relative_path}
+        @filter_definitions << entry unless @filter_definitions.include?(entry)
       end
     end
 
@@ -50,7 +65,7 @@ module SimpleCov
     end
 
     def covered_by_serializable_filters?(relative_path)
-      @filter_definitions.any? do |filter_def|
+      (@filter_definitions || []).any? do |filter_def|
         if filter_def[:string]
           relative_path.include?(filter_def[:string])
         elsif filter_def[:regex]
@@ -59,6 +74,23 @@ module SimpleCov
       end
     end
   end
+end
+
+# SimpleCov >= 1.0 filters inside SimpleCov::Result#apply_filters! instead of
+# SimpleCov.filtered, so hook that method to keep populating filter_definitions.
+# On SimpleCov < 1.0 this method does not exist and the SimpleCov.filtered
+# override above is used instead.
+if defined?(SimpleCov::Result) && SimpleCov::Result.private_method_defined?(:apply_filters!)
+  module Undercover
+    module SimplecovResultFilterTracking
+      def apply_filters!(_filters)
+        files_before = @files.to_a
+        super
+        SimpleCov.track_filtered_out(files_before, @files)
+      end
+    end
+  end
+  SimpleCov::Result.prepend(Undercover::SimplecovResultFilterTracking)
 end
 
 module Undercover

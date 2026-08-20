@@ -21,7 +21,7 @@ RSpec.describe 'SimpleCov::Formatter::Undercover' do
   let(:formatted_result) { formatter.format_result(result) }
 
   before do
-    allow_any_instance_of(SimpleCov::Result).to receive(:filter!).and_return(nil)
+    allow(SimpleCov).to receive(:filters).and_return([])
   end
 
   it 'includes SimpleCov.root in meta' do
@@ -49,7 +49,7 @@ RSpec.describe 'SimpleCov::Formatter::Undercover' do
       }
     ).first
 
-    allow_any_instance_of(SimpleCov::Result).to receive(:filter!).and_return(nil)
+    allow(SimpleCov).to receive(:filters).and_return([])
 
     formatted = SimpleCov::Formatter::Undercover.new.format_result(result)
     expect(formatted).to be_a(Hash)
@@ -78,7 +78,7 @@ RSpec.describe 'Undercover::ResultHashFormatterWithRoot' do
   let(:formatter) { Undercover::ResultHashFormatterWithRoot.new(result) }
 
   before do
-    allow_any_instance_of(SimpleCov::Result).to receive(:filter!).and_return(nil)
+    allow(SimpleCov).to receive(:filters).and_return([])
     allow(formatter).to receive(:format_source_file).and_return({lines: lines, branches: []})
   end
 
@@ -248,6 +248,69 @@ RSpec.describe 'Undercover::ResultHashFormatterWithRoot' do
   end
 end
 
+# Integration coverage for the actual SimpleCov filtering path (add_filter / skip),
+# without stubbing SimpleCov.filtered / SimpleCov::Result#apply_filters!. This is the
+# path that broke on SimpleCov >= 1.0 when filtering moved out of SimpleCov.filtered
+# into SimpleCov::Result#apply_filters!, leaving ignored_files empty.
+RSpec.describe 'ignored_files through the real SimpleCov filtering path' do
+  let(:kept_file) { File.expand_path('lib/undercover.rb', SimpleCov.root) }
+  let(:string_filtered) { File.expand_path('lib/undercover/version.rb', SimpleCov.root) }
+  let(:block_filtered) { File.expand_path('lib/undercover/options.rb', SimpleCov.root) }
+
+  around do |example|
+    original_filters = SimpleCov.filters.dup
+    SimpleCov.filter_definitions = nil
+    SimpleCov.filters.clear
+    example.run
+  ensure
+    SimpleCov.filters.replace(original_filters)
+    SimpleCov.filter_definitions = nil
+  end
+
+  def build_ignored_files
+    result = SimpleCov::Result.new({
+                                     kept_file => {'lines' => [1, 1]},
+                                     string_filtered => {'lines' => [1, 1]},
+                                     block_filtered => {'lines' => [1, 1]}
+                                   })
+    Undercover::ResultHashFormatterWithRoot.new(result).format.dig(:meta, :ignored_files)
+  end
+
+  it 'serializes string and regex filters declaratively' do
+    SimpleCov.add_filter 'undercover/version'
+    SimpleCov.add_filter(/options/)
+
+    ignored = build_ignored_files
+
+    expect(ignored).to include({string: 'undercover/version'}, {regex: 'options'})
+  end
+
+  it 'records files dropped by block filters that cannot be serialized' do
+    SimpleCov.add_filter { |src| src.filename.end_with?('lib/undercover/options.rb') }
+
+    ignored = build_ignored_files
+
+    expect(ignored).to include({file: 'lib/undercover/options.rb'})
+  end
+
+  it 'leaves the kept file out of ignored_files' do
+    SimpleCov.add_filter 'undercover/version'
+
+    ignored = build_ignored_files
+
+    expect(ignored).not_to include({file: 'lib/undercover.rb'})
+  end
+
+  it 'does not duplicate a block-filtered file recorded across multiple results' do
+    SimpleCov.add_filter { |src| src.filename.end_with?('lib/undercover/options.rb') }
+
+    build_ignored_files
+    ignored = build_ignored_files
+
+    expect(ignored.count { |entry| entry == {file: 'lib/undercover/options.rb'} }).to eq(1)
+  end
+end
+
 RSpec.describe 'Undercover::UndercoverSimplecovFormatter' do
   let(:result) do
     SimpleCov::Result.from_hash(
@@ -262,7 +325,7 @@ RSpec.describe 'Undercover::UndercoverSimplecovFormatter' do
   let(:formatter) { Undercover::UndercoverSimplecovFormatter.new }
 
   before do
-    allow_any_instance_of(SimpleCov::Result).to receive(:filter!).and_return(nil)
+    allow(SimpleCov).to receive(:filters).and_return([])
   end
 
   describe '#format_result' do
