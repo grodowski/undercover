@@ -37,6 +37,9 @@ Or install it yourself as:
 
 ## Setting up coverage reporting
 
+> [!NOTE]
+> `undercover` requires SimpleCov >= 1.0 (and Ruby >= 3.2). For older SimpleCov (0.x) or Ruby setups, pin `undercover` to `~> 0.8`.
+
 To make your specs or tests compatible with `undercover`, please add `undercover` to your gemfile to use the undercover formatter the test helper.
 
 ```ruby
@@ -54,8 +57,8 @@ require 'undercover/simplecov_formatter'
 SimpleCov.formatter = SimpleCov::Formatter::Undercover
 
 SimpleCov.start do
-  add_filter(/^\/spec\//) # For RSpec
-  add_filter(/^\/test\//) # For Minitest
+  skip(/^\/spec\//) # For RSpec (`add_filter` on SimpleCov < 1.0)
+  skip(/^\/test\//) # For Minitest
   enable_coverage(:branch) # Report branch coverage to trigger branch-level undercover warnings
 end
 # ...
@@ -213,17 +216,17 @@ Options assume that the program is run from the top level of the project directo
 
 Projects with low or nonexistent test coverage are likely to generate large numbers of warnings. While the default workflow would be to address them before the PR approval, your strategy might be different.
 
-In order to acknowledge an untested change and remove the UndercoverCI warning with the intention to improve later (or never), you can wrap the code block with the `:nocov:` syntax, e.g.
+In order to acknowledge an untested change and remove the UndercoverCI warning with the intention to improve later (or never), you can wrap the code block with SimpleCov's skip markers, e.g.
 
 ```rb
-# :nocov:
+# simplecov:disable
 def skip_this_method
     never_reached
 end
-# :nocov:
+# simplecov:enable
 ```
 
-Read more about the `:nocov:` syntax in [SimpleCov's readme](https://github.com/simplecov-ruby/simplecov#ignoringskipping-code).
+The legacy `# :nocov:` token still works (deprecated in SimpleCov 1.0). Read more in [SimpleCov's readme](https://github.com/simplecov-ruby/simplecov#ignoringskipping-code).
 
 ## Why?
 

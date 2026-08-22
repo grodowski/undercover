@@ -11,12 +11,12 @@ module Undercover
     # @param file[File] JSON file supplied by SimpleCov::Formatter::Undercover
     # @return SimplecovResultAdapter
     def self.parse(file, opts = nil, only_files: nil)
-      # :nocov:
+      # simplecov:disable
       result_h = JSON.parse(file.read)
       raise ArgumentError, 'empty SimpleCov' if result_h.empty?
 
       new(result_h, opts, only_files: only_files)
-      # :nocov:
+      # simplecov:enable
     end
 
     # @param simplecov_result[SimpleCov::Result]
