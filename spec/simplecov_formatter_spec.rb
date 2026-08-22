@@ -244,10 +244,9 @@ RSpec.describe 'Undercover::ResultHashFormatterWithRoot' do
   end
 end
 
-# Integration coverage for the actual SimpleCov filtering path (skip), without
-# stubbing SimpleCov::Result#apply_filters!. This is the path that broke on
-# SimpleCov >= 1.0 when filtering moved out of SimpleCov.filtered into
-# SimpleCov::Result#apply_filters!, leaving ignored_files empty.
+# Integration coverage for the real SimpleCov filtering path (skip) via
+# SimpleCov::Result#apply_filters!, without stubbing -- this is what populates
+# ignored_files.
 RSpec.describe 'ignored_files through the real SimpleCov filtering path' do
   let(:kept_file) { File.expand_path('lib/undercover.rb', SimpleCov.root) }
   let(:string_filtered) { File.expand_path('lib/undercover/version.rb', SimpleCov.root) }

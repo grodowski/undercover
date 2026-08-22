@@ -3,10 +3,9 @@
 require 'simplecov'
 require 'json'
 
-# simplecov >= 1.0 ships its own simplecov_json_formatter.rb shim that can win
-# the require over the standalone gem depending on $LOAD_PATH order. Require the
-# standalone gem's classes by their subpaths (which simplecov does not ship) so
-# the SimpleCovJSONFormatter::* constants are always present.
+# SimpleCov ships its own simplecov_json_formatter.rb shim that can shadow the
+# standalone gem on $LOAD_PATH. Require the gem's classes by subpath (which the
+# shim does not define) so the SimpleCovJSONFormatter::* constants are present.
 require 'simplecov_json_formatter/result_hash_formatter'
 require 'simplecov_json_formatter/result_exporter'
 
@@ -120,9 +119,9 @@ module Undercover
       attr_accessor :output_filename
     end
 
-    # Own #format instead of inheriting SimpleCov::Formatter::JSONFormatter's:
-    # simplecov >= 1.0 reimplemented it to bypass #format_result and always
-    # write coverage.json, dropping undercover's meta and custom filename.
+    # Own #format instead of inheriting SimpleCov::Formatter::JSONFormatter's,
+    # which bypasses #format_result and always writes coverage.json, dropping
+    # undercover's meta and custom filename.
     def format(result)
       result_hash = format_result(result)
       SimpleCovJSONFormatter::ResultExporter.new(result_hash).export
