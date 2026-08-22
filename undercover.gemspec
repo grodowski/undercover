@@ -25,7 +25,7 @@ Gem::Specification.new do |spec| # rubocop:disable Metrics/BlockLength
   spec.executables   = spec.files.grep(/^bin\//) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.required_ruby_version = '>= 3.0.0'
+  spec.required_ruby_version = '>= 3.2.0'
 
   spec.add_dependency 'base64'
   spec.add_dependency 'benchmark'
@@ -33,6 +33,6 @@ Gem::Specification.new do |spec| # rubocop:disable Metrics/BlockLength
   spec.add_dependency 'imagen', '>= 0.2.0'
   spec.add_dependency 'rainbow', '>= 2.1', '< 4.0'
   spec.add_dependency 'rugged', '>= 0.27', '< 1.10'
-  spec.add_dependency 'simplecov'
+  spec.add_dependency 'simplecov', '>= 1.0'
   spec.add_dependency 'simplecov_json_formatter'
 end

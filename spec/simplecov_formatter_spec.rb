@@ -152,10 +152,9 @@ RSpec.describe 'Undercover::ResultHashFormatterWithRoot' do
       filtered_file = double('filtered_file', filename: '/absolute/spec/example_spec.rb')
       kept_file = double('kept_file', filename: '/absolute/app/model.rb')
 
-      allow(SimpleCov).to receive(:filtered_uncached).and_return([kept_file])
       allow(SimpleCov).to receive(:root).and_return('/absolute')
 
-      SimpleCov.filtered([kept_file, filtered_file])
+      SimpleCov.track_filtered_out([kept_file, filtered_file], [kept_file])
       formatted = formatter.format
 
       expect(formatted[:meta][:ignored_files]).to eq([{string: 'spec/'}])
@@ -169,10 +168,9 @@ RSpec.describe 'Undercover::ResultHashFormatterWithRoot' do
       filtered_file = double('filtered_file', filename: '/absolute/custom/special.rb')
       kept_file = double('kept_file', filename: '/absolute/app/model.rb')
 
-      allow(SimpleCov).to receive(:filtered_uncached).and_return([kept_file])
       allow(SimpleCov).to receive(:root).and_return('/absolute')
 
-      SimpleCov.filtered([kept_file, filtered_file])
+      SimpleCov.track_filtered_out([kept_file, filtered_file], [kept_file])
       formatted = formatter.format
 
       expect(formatted[:meta][:ignored_files]).to eq([
@@ -189,10 +187,9 @@ RSpec.describe 'Undercover::ResultHashFormatterWithRoot' do
       filtered_file = double('filtered_file', filename: '/absolute/app/model.rb')
       kept_file = double('kept_file', filename: '/absolute/app/other.rb')
 
-      allow(SimpleCov).to receive(:filtered_uncached).and_return([kept_file])
       allow(SimpleCov).to receive(:root).and_return('/absolute')
 
-      SimpleCov.filtered([kept_file, filtered_file])
+      SimpleCov.track_filtered_out([kept_file, filtered_file], [kept_file])
       formatted = formatter.format
 
       expect(formatted[:meta][:ignored_files]).to eq([
@@ -217,10 +214,9 @@ RSpec.describe 'Undercover::ResultHashFormatterWithRoot' do
       filtered_file = double('filtered_file', filename: '/absolute/custom/file.rb')
       kept_file = double('kept_file', filename: '/absolute/app/model.rb')
 
-      allow(SimpleCov).to receive(:filtered_uncached).and_return([kept_file])
       allow(SimpleCov).to receive(:root).and_return('/absolute')
 
-      SimpleCov.filtered([kept_file, filtered_file])
+      SimpleCov.track_filtered_out([kept_file, filtered_file], [kept_file])
       formatted = formatter.format
 
       expect(formatted[:meta][:ignored_files]).to eq([
@@ -248,10 +244,10 @@ RSpec.describe 'Undercover::ResultHashFormatterWithRoot' do
   end
 end
 
-# Integration coverage for the actual SimpleCov filtering path (add_filter / skip),
-# without stubbing SimpleCov.filtered / SimpleCov::Result#apply_filters!. This is the
-# path that broke on SimpleCov >= 1.0 when filtering moved out of SimpleCov.filtered
-# into SimpleCov::Result#apply_filters!, leaving ignored_files empty.
+# Integration coverage for the actual SimpleCov filtering path (skip), without
+# stubbing SimpleCov::Result#apply_filters!. This is the path that broke on
+# SimpleCov >= 1.0 when filtering moved out of SimpleCov.filtered into
+# SimpleCov::Result#apply_filters!, leaving ignored_files empty.
 RSpec.describe 'ignored_files through the real SimpleCov filtering path' do
   let(:kept_file) { File.expand_path('lib/undercover.rb', SimpleCov.root) }
   let(:string_filtered) { File.expand_path('lib/undercover/version.rb', SimpleCov.root) }
@@ -277,8 +273,8 @@ RSpec.describe 'ignored_files through the real SimpleCov filtering path' do
   end
 
   it 'serializes string and regex filters declaratively' do
-    SimpleCov.add_filter 'undercover/version'
-    SimpleCov.add_filter(/options/)
+    SimpleCov.skip 'undercover/version'
+    SimpleCov.skip(/options/)
 
     ignored = build_ignored_files
 
@@ -286,7 +282,7 @@ RSpec.describe 'ignored_files through the real SimpleCov filtering path' do
   end
 
   it 'records files dropped by block filters that cannot be serialized' do
-    SimpleCov.add_filter { |src| src.filename.end_with?('lib/undercover/options.rb') }
+    SimpleCov.skip { |src| src.filename.end_with?('lib/undercover/options.rb') }
 
     ignored = build_ignored_files
 
@@ -294,7 +290,7 @@ RSpec.describe 'ignored_files through the real SimpleCov filtering path' do
   end
 
   it 'leaves the kept file out of ignored_files' do
-    SimpleCov.add_filter 'undercover/version'
+    SimpleCov.skip 'undercover/version'
 
     ignored = build_ignored_files
 
@@ -302,7 +298,7 @@ RSpec.describe 'ignored_files through the real SimpleCov filtering path' do
   end
 
   it 'does not duplicate a block-filtered file recorded across multiple results' do
-    SimpleCov.add_filter { |src| src.filename.end_with?('lib/undercover/options.rb') }
+    SimpleCov.skip { |src| src.filename.end_with?('lib/undercover/options.rb') }
 
     build_ignored_files
     ignored = build_ignored_files

@@ -14,9 +14,9 @@ require 'simplecov_json_formatter/result_exporter'
 module SimpleCovJSONFormatter
   class ResultExporter
     def export_path
-      # :nocov:
+      # simplecov:disable
       File.join(SimpleCov.coverage_path, SimpleCov::Formatter::Undercover.output_filename || FILENAME)
-      # :nocov:
+      # simplecov:enable
     end
   end
 end
@@ -24,19 +24,6 @@ end
 module SimpleCov
   class << self
     attr_accessor :filter_definitions
-
-    # SimpleCov < 1.0 applies filters through SimpleCov.filtered (called by
-    # SimpleCov::Result#filter!). SimpleCov >= 1.0 moved filtering into the
-    # private SimpleCov::Result#apply_filters! instance method and no longer
-    # routes through here, so we hook both paths (see the prepend below) and
-    # funnel them into #track_filtered_out.
-    alias filtered_uncached filtered
-
-    def filtered(files)
-      filtered_uncached(files).tap do |filtered_files|
-        track_filtered_out(files, filtered_files)
-      end
-    end
 
     # Records the filters undercover needs to reproduce SimpleCov's ignore
     # decisions. String/regex filters are serialized declaratively; files
@@ -83,22 +70,18 @@ module SimpleCov
   end
 end
 
-# SimpleCov >= 1.0 filters inside SimpleCov::Result#apply_filters! instead of
-# SimpleCov.filtered, so hook that method to keep populating filter_definitions.
-# On SimpleCov < 1.0 this method does not exist and the SimpleCov.filtered
-# override above is used instead.
-if defined?(SimpleCov::Result) && SimpleCov::Result.private_method_defined?(:apply_filters!)
-  module Undercover
-    module SimplecovResultFilterTracking
-      def apply_filters!(_filters)
-        files_before = @files.to_a
-        super
-        SimpleCov.track_filtered_out(files_before, @files)
-      end
+# SimpleCov applies filters inside the private SimpleCov::Result#apply_filters!,
+# so hook that method to populate filter_definitions as files are dropped.
+module Undercover
+  module SimplecovResultFilterTracking
+    def apply_filters!(_filters)
+      files_before = @files.to_a
+      super
+      SimpleCov.track_filtered_out(files_before, @files)
     end
   end
-  SimpleCov::Result.prepend(Undercover::SimplecovResultFilterTracking)
 end
+SimpleCov::Result.prepend(Undercover::SimplecovResultFilterTracking)
 
 module Undercover
   class ResultHashFormatterWithRoot < SimpleCovJSONFormatter::ResultHashFormatter

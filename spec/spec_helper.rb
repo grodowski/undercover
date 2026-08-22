@@ -7,8 +7,8 @@ require 'simplecov'
 
 SimpleCov.start do
   enable_coverage(:branch)
-  add_filter(/^\/spec\//)
-  add_filter('lib/undercover/version.rb')
+  skip(/^\/spec\//)
+  skip('lib/undercover/version.rb')
 end
 
 # Load undercover files AFTER SimpleCov starts
