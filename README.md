@@ -38,7 +38,7 @@ Or install it yourself as:
 ## Setting up coverage reporting
 
 > [!NOTE]
-> `undercover` requires SimpleCov >= 1.0 (and Ruby >= 3.2). For older SimpleCov (0.x) or Ruby setups, pin `undercover` to `~> 0.8`.
+> `undercover` requires SimpleCov >= 1.0 (and Ruby >= 3.2). For older SimpleCov (0.x) or Ruby setups, pin `undercover` to `~> 0.8.0`.
 
 To make your specs or tests compatible with `undercover`, please add `undercover` to your gemfile to use the undercover formatter the test helper.
 
