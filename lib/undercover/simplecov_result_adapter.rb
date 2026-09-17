@@ -10,19 +10,23 @@ module Undercover
 
     # @param file[File] JSON file supplied by SimpleCov::Formatter::Undercover
     # @return SimplecovResultAdapter
-    def self.parse(file, opts = nil)
+    def self.parse(file, opts = nil, only_files: nil)
       # :nocov:
       result_h = JSON.parse(file.read)
       raise ArgumentError, 'empty SimpleCov' if result_h.empty?
 
-      new(result_h, opts)
+      new(result_h, opts, only_files: only_files)
       # :nocov:
     end
 
     # @param simplecov_result[SimpleCov::Result]
-    def initialize(simplecov_result, opts)
+    def initialize(simplecov_result, opts, only_files: nil)
       @simplecov_result = simplecov_result
       @code_dir = opts&.path
+      return unless only_files
+
+      normalized = only_files.to_set { |f| fix_relative_filepath(f) }
+      simplecov_result['coverage'].select! { |path, _| normalized.include?(path) }
     end
 
     # @param filepath[String]
