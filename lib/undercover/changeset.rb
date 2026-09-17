@@ -16,6 +16,11 @@ module Undercover
       @filter_set = filter_set
     end
 
+    # @return String absolute path to the repository working directory
+    def repo_workdir
+      repo.workdir
+    end
+
     def last_modified
       mod = file_paths.map do |f|
         path = File.join(repo.workdir, f)

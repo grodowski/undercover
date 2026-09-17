@@ -28,7 +28,8 @@ describe Undercover::Report do
     end
 
     it 'initializes with SimpleCov resultset adapter' do
-      simplecov_adapter = double('SimpleCov adapter', coverage: [], ignored_files: [])
+      simplecov_adapter = double('SimpleCov adapter', coverage: [], ignored_files: [], coverage_keys: [],
+                                                      coverage_root: '', :coverage_root= => nil)
 
       expect(Undercover::LcovParser).not_to receive(:parse)
 
@@ -145,6 +146,8 @@ describe Undercover::Report do
         .and_yield('Rakefile', 1)
         .and_yield('.undercover_config', 1) # unparsable, won't appear in the report
       allow(mock_changeset).to receive(:filter_with)
+      allow(mock_changeset).to receive(:repo_workdir).and_return('spec/fixtures')
+      allow(mock_changeset).to receive(:file_paths).and_return([])
       mock_changeset
     end
 
@@ -215,43 +218,108 @@ describe Undercover::Report do
     end
   end
 
-  context 'with monorepo-like fixtures' do
+  context 'with monorepo-like LCOV fixtures' do
     let(:options) do
       Undercover::Options.new.tap do |opt|
         opt.lcov = 'spec/fixtures/monorepo/app/coverage/app.lcov'
-        opt.path = 'spec/fixtures/monorepo'
-        opt.git_dir = 'monorepo.git'
+        opt.git_dir = 'spec/fixtures/monorepo/monorepo.git'
         opt.glob_allow_filters = ['*.rb']
       end
     end
 
-    let(:changeset) do
-      git_dir = File.join(options.path, options.git_dir)
-      Undercover::Changeset.new(git_dir, options.compare)
-    end
+    let(:changeset) { Undercover::Changeset.new(options.git_dir, options.compare) }
     subject(:report) { described_class.new(changeset, options, lcov_from_options(options)) }
 
-    it 'matches the paths relative to where undercover runs' do
-      # simulate running undercover in the subdirectory
-      allow(Dir).to receive(:pwd).and_return('/users/john/spec/fixtures/monorepo/app')
-      allow(File).to receive(:expand_path).and_call_original
-      allow(File).to receive(:expand_path).with('spec/fixtures/monorepo') { |path| "/users/john/#{path}" }
-
+    it 'matches coverage recorded in a subdirectory of the repository' do
       report.build
 
-      expect(report.results.keys.sort).to eq(
-        %w[app/lib/foo_lib.rb app/main.rb]
-      )
-      warnings = report.build_warnings.to_a
+      expect(report.coverage_root).to eq('app')
+      expect(report.results.keys.sort).to eq(%w[app/lib/foo_lib.rb app/main.rb])
+
+      warnings = report.flagged_results
+      expect(warnings.size).to eq(1)
+      expect(warnings[0].file_path).to eq('app/lib/foo_lib.rb')
+      expect(warnings[0].first_line).to eq(10)
+      expect(warnings[0].coverage_f).to eq(0.6)
+    end
+  end
+
+  context 'with monorepo-like JSON fixtures' do
+    let(:options) do
+      Undercover::Options.new.tap do |opt|
+        opt.simplecov_resultset = 'spec/fixtures/monorepo/app/coverage/app.json'
+        opt.git_dir = 'spec/fixtures/monorepo/monorepo.git'
+        opt.glob_allow_filters = ['*.rb']
+        opt.glob_reject_filters = []
+      end
+    end
+
+    let(:changeset) { Undercover::Changeset.new(options.git_dir, options.compare) }
+    subject(:report) { described_class.new(changeset, options, simplecov_from_options(options)) }
+
+    it 'derives the coverage root without being told where it is' do
+      report.build
+      expect(report.coverage_root).to eq('app')
+    end
+
+    it 'applies SimpleCov string and regex filters relative to the coverage root' do
+      report.build
+
+      # ignored by {"regex" => "^/db/"} and {"string" => "/vendor/bundle/"}, which SimpleCov
+      # writes relative to its own root, not the repository root
+      expect(report.results.keys).not_to include('app/db/migrate/202511251234567_create_foos.rb')
+      expect(report.results.keys).not_to include('app/vendor/bundle/gem.rb')
+    end
+
+    it 'ignores changes outside the coverage root' do
+      report.build
+
+      expect(changeset.file_paths).to include('admin_app/app.rb')
+      expect(report.results.keys).not_to include('admin_app/app.rb')
+      expect(report.results.keys.sort).to eq(%w[app/lib/foo_lib.rb app/main.rb])
+    end
+
+    it 'reports paths relative to the repository root' do
+      report.build
+
+      warnings = report.flagged_results
       expect(warnings.size).to eq(1)
       expect(warnings[0].file_path).to eq('app/lib/foo_lib.rb')
       expect(warnings[0].first_line).to eq(10)
       expect(warnings[0].coverage_f).to eq(0.6)
     end
 
-    # TODO: allow specifying a SimpleCov.root in the options instead?
-    it 'matches the paths relative to --simplecov-root' do
-      skip
+    context 'with file globs' do
+      it 'matches globs relative to the coverage root' do
+        options.glob_allow_filters = ['lib/*.rb']
+        report.build
+
+        expect(report.results.keys).to eq(%w[app/lib/foo_lib.rb])
+      end
+
+      it 'does not match globs written relative to the repository root' do
+        # scoping to the coverage root makes such a prefix unnecessary, and it no longer matches
+        options.glob_allow_filters = ['app/**/*.rb']
+        report.build
+
+        expect(report.results.keys).to be_empty
+      end
+    end
+
+    context 'when the adapter filtered coverage with only_files' do
+      subject(:report) do
+        adapter = Undercover::SimplecovResultAdapter.parse(
+          File.open(options.simplecov_resultset), options, only_files: changeset.file_paths
+        )
+        described_class.new(changeset, options, adapter)
+      end
+
+      it 'derives the coverage root before filtering, so coverage survives' do
+        report.build
+
+        expect(report.coverage_root).to eq('app')
+        expect(report.results.keys.sort).to eq(%w[app/lib/foo_lib.rb app/main.rb])
+      end
     end
   end
 
