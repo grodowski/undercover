@@ -1,12 +1,11 @@
 # frozen_string_literal: true
 
-require 'undercover/root_to_relative_paths'
+require 'undercover/coverage_root'
 
 module Undercover
   class SimplecovResultAdapter
-    include RootToRelativePaths
-
     attr_reader :simplecov_result
+    attr_accessor :coverage_root
 
     # @param file[File] JSON file supplied by SimpleCov::Formatter::Undercover
     # @return SimplecovResultAdapter
@@ -20,13 +19,20 @@ module Undercover
     end
 
     # @param simplecov_result[SimpleCov::Result]
-    def initialize(simplecov_result, opts, only_files: nil)
+    def initialize(simplecov_result, _opts = nil, only_files: nil)
       @simplecov_result = simplecov_result
-      @code_dir = opts&.path
+      @coverage_root = CoverageRoot::NONE
       return unless only_files
 
-      normalized = only_files.to_set { |f| fix_relative_filepath(f) }
-      simplecov_result['coverage'].select! { |path, _| normalized.include?(path) }
+      # Derive before filtering: the prefix is read off the full key set.
+      @coverage_root = CoverageRoot.derive(only_files, coverage_keys)
+      wanted = only_files.to_set { |f| CoverageRoot.strip(f, coverage_root) }
+      simplecov_result['coverage'].select! { |path, _| wanted.include?(path) }
+    end
+
+    # @return Array paths relative to SimpleCov.root
+    def coverage_keys
+      simplecov_result['coverage'].keys
     end
 
     # @param filepath[String]
@@ -74,7 +80,7 @@ module Undercover
     private
 
     def find_file(filepath)
-      simplecov_result['coverage'][fix_relative_filepath(filepath)]
+      simplecov_result['coverage'][CoverageRoot.strip(filepath, coverage_root)]
     end
   end
 end
