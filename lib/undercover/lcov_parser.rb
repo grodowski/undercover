@@ -1,21 +1,20 @@
 # frozen_string_literal: true
 
-require 'undercover/root_to_relative_paths'
+require 'undercover/coverage_root'
 
 module Undercover
   class LcovParseError < StandardError
   end
 
   class LcovParser
-    include RootToRelativePaths
-
     attr_reader :io, :source_files
+    attr_accessor :coverage_root
 
-    def initialize(lcov_io, opts, only_files: nil)
+    def initialize(lcov_io, _opts = nil, only_files: nil)
       @io = lcov_io
       @source_files = {}
-      @code_dir = opts&.path
-      @only_files = only_files&.to_set { |f| fix_relative_filepath(f) }
+      @only_files = only_files
+      @coverage_root = CoverageRoot::NONE
     end
 
     def self.parse(lcov_report_path, opts = nil, only_files: nil)
@@ -24,16 +23,19 @@ module Undercover
     end
 
     def parse
+      derive_coverage_root if @only_files
       io.each(&method(:parse_line))
       io.close
       self
     end
 
+    # @return Array paths relative to SimpleCov.root
+    def coverage_keys
+      source_files.keys
+    end
+
     def coverage(filepath)
-      _filename, coverage = source_files.find do |relative_path, _|
-        relative_path == fix_relative_filepath(filepath)
-      end
-      coverage || []
+      source_files[CoverageRoot.strip(filepath, coverage_root)] || []
     end
 
     def total_coverage
@@ -70,12 +72,21 @@ module Undercover
 
     private
 
+    # Scans SF: records only, so the prefix is known before any line data is held
+    # in memory and only_files can be matched at the coverage root.
+    def derive_coverage_root
+      names = io.each_line.filter_map { |line| line[/^SF:(.+)/, 1]&.gsub(/^\.\//, '') }
+      @coverage_root = CoverageRoot.derive(@only_files, names)
+      @wanted = @only_files.to_set { |f| CoverageRoot.strip(f, @coverage_root) }
+      io.rewind
+    end
+
     # rubocop:disable Metrics/MethodLength, Metrics/CyclomaticComplexity, Style/SpecialGlobalVars, Metrics/AbcSize
     def parse_line(line)
       case line
       when /^SF:(.+)/
         filename = $~[1].gsub(/^\.\//, '')
-        @current_filename = @only_files.nil? || @only_files.include?(filename) ? filename : nil
+        @current_filename = @wanted.nil? || @wanted.include?(filename) ? filename : nil
         source_files[@current_filename] = [] if @current_filename
       when /^DA:(\d+),(\d+)/
         return unless @current_filename
