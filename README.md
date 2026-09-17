@@ -86,6 +86,40 @@ SimpleCov.formatter = SimpleCov::Formatter::Undercover
 
 Note: LCOV support will be deprecated in a future release, but remains fully functional for existing projects.
 
+## Monorepos
+
+Undercover works when the coverage report covers a subdirectory of the repository rather than
+the whole thing, which is the usual shape of a monorepo:
+
+```
+monorepo/
+  .git
+  apps/
+    dash/          <- SimpleCov runs here
+      coverage/coverage.json
+    admin/
+```
+
+Run it from the directory SimpleCov covered and point `--git-dir` at the repository:
+
+```sh
+cd apps/dash
+undercover --git-dir ../../.git --compare origin/main
+```
+
+Undercover works out that coverage was recorded under `apps/dash` by matching the paths in the
+report against the files in the repository, so there is nothing to configure. In particular:
+
+- SimpleCov's own filters are honoured. `SimpleCov.start('rails')` skips `db/`, `config/` and
+  `vendor/`, and those files will not be reported even though git sees them as `apps/dash/db/...`
+- changes in sibling directories, such as `apps/admin`, are left alone. They are outside the
+  coverage report and there is nothing to judge them by
+- warnings are reported relative to the repository root (`apps/dash/lib/foo.rb`), so they line
+  up with what CI annotations expect
+
+File globs passed to `--include-files` and `--exclude-files` are matched relative to the covered
+directory, so write `lib/**/*.rb` rather than `apps/dash/lib/**/*.rb`.
+
 ## Usage
 
 Invoked with no arguments, Undercover will flag all untested methods and classes from the current diff:
@@ -127,7 +161,6 @@ Options can be passed when running the command from the command line:
 Usage: undercover [options]
     -s, --simplecov path             SimpleCov JSON report file
     -l, --lcov path                  LCOV report file path (to be deprecated)
-    -p, --path path                  Project directory
     -g, --git-dir dir                Override `.git` with a custom directory
     -c, --compare ref                Generate coverage warnings for all changes after `ref`
     -r, --ruby-syntax ver            Ruby syntax version, one of: current, ruby18, ruby19, ruby20, ruby21, ruby22, ruby23, ruby24, ruby25, ruby26, ruby30, ruby31, ruby32, ruby33
