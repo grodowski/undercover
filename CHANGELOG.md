@@ -5,7 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
 - add coverage report filtering to reduce resource usage ([#263](https://github.com/grodowski/undercover/pull/263))
+
+### Changed
+- **Breaking:** require SimpleCov `>= 1.0` and Ruby `>= 3.2`, restoring `ignored_files` under SimpleCov 1.x. Pin `undercover ~> 0.8.0` for SimpleCov 0.x / Ruby 3.0–3.1 ([#270](https://github.com/grodowski/undercover/pull/270))
 
 # [0.8.5] - 2026-04-21
 ### Added
