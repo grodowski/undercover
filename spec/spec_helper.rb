@@ -29,6 +29,16 @@ RSpec.configure do |config|
   config.expect_with :rspec do |c|
     c.syntax = :expect
   end
+
+  # SimpleCov.filter_definitions is global and accumulates as files are filtered out.
+  # Specs that exercise the filter tracking reset it, so restore it afterwards or the
+  # report this very suite generates is built from whatever the last one left behind.
+  config.around do |example|
+    original_filter_definitions = SimpleCov.filter_definitions
+    example.run
+  ensure
+    SimpleCov.filter_definitions = original_filter_definitions
+  end
 end
 
 RSpec::Matchers.define :undercover_options do |opts_hash|

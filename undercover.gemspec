@@ -34,5 +34,7 @@ Gem::Specification.new do |spec| # rubocop:disable Metrics/BlockLength
   spec.add_dependency 'rainbow', '>= 2.1', '< 4.0'
   spec.add_dependency 'rugged', '>= 0.27', '< 1.10'
   spec.add_dependency 'simplecov', '>= 1.0'
-  spec.add_dependency 'simplecov_json_formatter'
+  # Pinned: undercover requires its internal files by path and subclasses
+  # ResultHashFormatter, so a file reorganisation would break loading.
+  spec.add_dependency 'simplecov_json_formatter', '~> 0.1'
 end
