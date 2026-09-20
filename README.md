@@ -35,6 +35,24 @@ Or install it yourself as:
 
     $ gem install undercover
 
+### Git backend
+
+Undercover reads diffs through one of two interchangeable backends:
+
+- **`git` gem** (default) — pure Ruby, no native extensions. Shells out to the system `git` binary, which must be on `PATH`.
+- **`rugged`** — libgit2-based, faster on large repos. Optional, no system `git` required at runtime.
+
+The `git` gem requirement on a system `git` CLI is satisfied automatically in most environments (developer machines, CI runners, standard container images), but minimal production images such as distroless or `slim` Docker bases may need `git` added explicitly. If your deployment cannot install `git`, opt into `rugged` instead.
+
+To opt into `rugged`, add it to your Gemfile alongside `undercover`:
+
+```ruby
+gem 'undercover'
+gem 'rugged'
+```
+
+When `rugged` is loadable it is picked automatically; otherwise the `git` gem is used. No configuration is needed to switch — install or remove `rugged` from your bundle.
+
 ## Setting up coverage reporting
 
 To make your specs or tests compatible with `undercover`, please add `undercover` to your gemfile to use the undercover formatter the test helper.
