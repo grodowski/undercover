@@ -70,6 +70,19 @@ RSpec.describe 'Direct method execution for coverage tracking' do
       output = formatter.format_result(result)
       expect(output).to eq({meta: {}, coverage: {}})
     end
+
+    it 'writes the formatted result through ResultExporter and returns the hash' do
+      result = double('result')
+      formatter = Undercover::UndercoverSimplecovFormatter.new
+      result_hash = {meta: {timestamp: 1}, coverage: {}}
+      allow(formatter).to receive(:format_result).with(result).and_return(result_hash)
+
+      exporter = instance_double(SimpleCovJSONFormatter::ResultExporter)
+      expect(SimpleCovJSONFormatter::ResultExporter).to receive(:new).with(result_hash).and_return(exporter)
+      expect(exporter).to receive(:export)
+
+      expect(formatter.format(result)).to eq(result_hash)
+    end
   end
 
   describe 'Undercover::SimplecovResultAdapter.parse' do

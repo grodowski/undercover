@@ -105,7 +105,7 @@ module Undercover
           Rainbow(formatted_line).darkgray.dark
         elsif skipped?(file_path, num)
           Rainbow(formatted_line).darkgray.dark +
-            Rainbow(' skipped with :nocov:').italic.darkgray.dark
+            Rainbow(' skipped').italic.darkgray.dark
         elsif covered.nil?
           Rainbow(formatted_line).darkgray.dark +
             Rainbow(' hits: n/a').italic.darkgray.dark +

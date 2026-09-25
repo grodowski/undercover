@@ -257,11 +257,11 @@ describe Undercover::Result do
          2:   if arg == :arg1 hits: 1 branches: 1/1
          3:     if ENV["FOO"] != "BAR" hits: 1 branches: 1/1
          4:       :sym1 hits: 1 branches: 1/1
-         5:     # :nocov: skipped with :nocov:
-         6:     else skipped with :nocov:
-         7:       :sym2 skipped with :nocov:
-         8:     end skipped with :nocov:
-         9:     # :nocov: skipped with :nocov:
+         5:     # :nocov: skipped
+         6:     else skipped
+         7:       :sym2 skipped
+         8:     end skipped
+         9:     # :nocov: skipped
         10:   end hits: n/a
         11: end hits: n/a
       OUTPUT
@@ -363,7 +363,7 @@ describe Undercover::Result do
 
       # This should trigger the skipped line formatting (lines 106-108)
       pretty_output = result.pretty_print
-      expect(pretty_output).to include('skipped with :nocov:')
+      expect(pretty_output).to include('skipped')
     end
   end
 

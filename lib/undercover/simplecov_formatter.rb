@@ -1,15 +1,21 @@
 # frozen_string_literal: true
 
 require 'simplecov'
-require 'simplecov_json_formatter'
+require 'json'
+
+# SimpleCov ships its own simplecov_json_formatter.rb shim that can shadow the
+# standalone gem on $LOAD_PATH. Require the gem's classes by subpath (which the
+# shim does not define) so the SimpleCovJSONFormatter::* constants are present.
+require 'simplecov_json_formatter/result_hash_formatter'
+require 'simplecov_json_formatter/result_exporter'
 
 # Patch ResultExporter to allow setting a custom export_path
 module SimpleCovJSONFormatter
   class ResultExporter
     def export_path
-      # :nocov:
+      # simplecov:disable
       File.join(SimpleCov.coverage_path, SimpleCov::Formatter::Undercover.output_filename || FILENAME)
-      # :nocov:
+      # simplecov:enable
     end
   end
 end
@@ -18,17 +24,19 @@ module SimpleCov
   class << self
     attr_accessor :filter_definitions
 
-    alias filtered_uncached filtered
-
-    def filtered(files)
+    # Records the filters undercover needs to reproduce SimpleCov's ignore
+    # decisions. String/regex filters are serialized declaratively; files
+    # dropped by block/array/custom filters (which can't be serialized) are
+    # recorded by their project-relative path.
+    def track_filtered_out(original_files, filtered_files)
       @filter_definitions ||= extract_filter_definitions
-      original_files = files.dup
-      filtered_uncached(files).tap do |filtered_files|
-        filtered_file_paths = (original_files.map(&:filename) - filtered_files.map(&:filename))
-        filtered_file_paths.each do |file|
-          relative_path = file.delete_prefix("#{SimpleCov.root}/")
-          @filter_definitions << {file: relative_path} unless covered_by_serializable_filters?(relative_path)
-        end
+      filtered_file_paths = (original_files.map(&:filename) - filtered_files.map(&:filename))
+      filtered_file_paths.each do |file|
+        relative_path = file.delete_prefix("#{SimpleCov.root}/")
+        next if covered_by_serializable_filters?(relative_path)
+
+        entry = {file: relative_path}
+        @filter_definitions << entry unless @filter_definitions.include?(entry)
       end
     end
 
@@ -50,7 +58,7 @@ module SimpleCov
     end
 
     def covered_by_serializable_filters?(relative_path)
-      @filter_definitions.any? do |filter_def|
+      (@filter_definitions || []).any? do |filter_def|
         if filter_def[:string]
           relative_path.include?(filter_def[:string])
         elsif filter_def[:regex]
@@ -60,6 +68,19 @@ module SimpleCov
     end
   end
 end
+
+# SimpleCov applies filters inside the private SimpleCov::Result#apply_filters!,
+# so hook that method to populate filter_definitions as files are dropped.
+module Undercover
+  module SimplecovResultFilterTracking
+    def apply_filters!(_filters)
+      files_before = @files.to_a
+      super
+      SimpleCov.track_filtered_out(files_before, @files)
+    end
+  end
+end
+SimpleCov::Result.prepend(Undercover::SimplecovResultFilterTracking)
 
 module Undercover
   class ResultHashFormatterWithRoot < SimpleCovJSONFormatter::ResultHashFormatter
@@ -93,9 +114,18 @@ module Undercover
     end
   end
 
-  class UndercoverSimplecovFormatter < SimpleCov::Formatter::JSONFormatter
+  class UndercoverSimplecovFormatter
     class << self
       attr_accessor :output_filename
+    end
+
+    # Own #format instead of inheriting SimpleCov::Formatter::JSONFormatter's,
+    # which bypasses #format_result and always writes coverage.json, dropping
+    # undercover's meta and custom filename.
+    def format(result)
+      result_hash = format_result(result)
+      SimpleCovJSONFormatter::ResultExporter.new(result_hash).export
+      result_hash
     end
 
     def format_result(result)
