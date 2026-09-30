@@ -80,7 +80,7 @@ describe Undercover::SimplecovResultAdapter do
       adapter = described_class.parse(file, opts)
       expect(adapter).to be_a(described_class)
       expect(adapter.simplecov_result['coverage']).to have_key('test.rb')
-      expect(adapter.instance_variable_get(:@code_dir)).to eq('/test/path')
+      expect(adapter.coverage_root).to eq(Undercover::CoverageRoot::NONE)
     end
 
     it 'raises error for empty JSON' do
@@ -105,13 +105,24 @@ describe Undercover::SimplecovResultAdapter do
   end
 
   describe '#initialize' do
-    it 'sets simplecov_result and code_dir with opts' do
+    it 'sets simplecov_result and defaults the coverage root' do
       result = {'coverage' => {}}
-      opts = double(path: '/some/path')
-      adapter = described_class.new(result, opts)
+      adapter = described_class.new(result, double(path: '/some/path'))
 
       expect(adapter.simplecov_result).to eq(result)
-      expect(adapter.instance_variable_get(:@code_dir)).to eq('/some/path')
+      expect(adapter.coverage_root).to eq(Undercover::CoverageRoot::NONE)
+    end
+
+    it 'filters coverage to only_files once the coverage root is known' do
+      result = {'coverage' => {'main.rb' => {}, 'lib/foo.rb' => {}, 'lib/other.rb' => {}}}
+      adapter = described_class.new(result, nil, only_files: %w[app/main.rb app/lib/foo.rb])
+
+      # nothing is dropped until the root is set, since only_files is repository-relative
+      # while the keys are relative to SimpleCov.root
+      expect(adapter.simplecov_result['coverage'].keys).to match_array(%w[main.rb lib/foo.rb lib/other.rb])
+
+      adapter.coverage_root = 'app'
+      expect(adapter.simplecov_result['coverage'].keys).to match_array(%w[main.rb lib/foo.rb])
     end
 
     it 'handles nil opts' do
@@ -130,6 +141,7 @@ describe Undercover::SimplecovResultAdapter do
         }
       }
       adapter = described_class.new(result, nil, only_files: ['included.rb'])
+      adapter.coverage_root = Undercover::CoverageRoot::NONE
 
       expect(adapter.simplecov_result['coverage'].keys).to eq(['included.rb'])
     end
@@ -141,6 +153,7 @@ describe Undercover::SimplecovResultAdapter do
         }
       }
       adapter = described_class.new(result, nil, only_files: ['other.rb'])
+      adapter.coverage_root = Undercover::CoverageRoot::NONE
 
       expect(adapter.simplecov_result['coverage']).to be_empty
     end

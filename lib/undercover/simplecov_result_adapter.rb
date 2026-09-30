@@ -1,12 +1,10 @@
 # frozen_string_literal: true
 
-require 'undercover/root_to_relative_paths'
+require 'undercover/coverage_root'
 
 module Undercover
   class SimplecovResultAdapter
-    include RootToRelativePaths
-
-    attr_reader :simplecov_result
+    attr_reader :simplecov_result, :only_files, :coverage_root
 
     # @param file[File] JSON file supplied by SimpleCov::Formatter::Undercover
     # @return SimplecovResultAdapter
@@ -20,13 +18,28 @@ module Undercover
     end
 
     # @param simplecov_result[SimpleCov::Result]
-    def initialize(simplecov_result, opts, only_files: nil)
+    def initialize(simplecov_result, _opts = nil, only_files: nil)
       @simplecov_result = simplecov_result
-      @code_dir = opts&.path
-      return unless only_files
+      @only_files = only_files
+      @coverage_root = CoverageRoot::NONE
+    end
 
-      normalized = only_files.to_set { |f| fix_relative_filepath(f) }
-      simplecov_result['coverage'].select! { |path, _| normalized.include?(path) }
+    # Filtering waits for the coverage root, since only_files is relative to the repository
+    # while coverage keys are relative to SimpleCov.root.
+    def coverage_root=(root)
+      @coverage_root = root || CoverageRoot::NONE
+      keep_only_files!
+    end
+
+    # @return String SimpleCov.root as recorded when the report was written, an absolute
+    #   path on the machine that ran the tests
+    def simplecov_root
+      simplecov_result.dig('meta', 'simplecov_root')
+    end
+
+    # @return Array paths relative to SimpleCov.root
+    def coverage_keys
+      simplecov_result['coverage'].keys
     end
 
     # @param filepath[String]
@@ -73,8 +86,15 @@ module Undercover
 
     private
 
+    def keep_only_files!
+      return unless only_files
+
+      wanted = only_files.to_set { |path| CoverageRoot.strip(path, coverage_root) }
+      simplecov_result['coverage'].select! { |path, _| wanted.include?(path) }
+    end
+
     def find_file(filepath)
-      simplecov_result['coverage'][fix_relative_filepath(filepath)]
+      simplecov_result['coverage'][CoverageRoot.strip(filepath, coverage_root)]
     end
   end
 end

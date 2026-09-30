@@ -45,9 +45,7 @@ describe Undercover::Options do
   end
 
   describe '#guess_resultset_path' do
-    before do
-      options.path = '/test/path'
-    end
+    before { allow(Dir).to receive(:pwd).and_return('/test/path') }
 
     it 'sets simplecov_resultset when coverage.json exists' do
       expect(File).to receive(:exist?).with('/test/path/coverage/coverage.json').and_return(true)

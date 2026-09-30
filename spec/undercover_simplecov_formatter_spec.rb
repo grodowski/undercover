@@ -105,7 +105,7 @@ RSpec.describe 'Direct method execution for coverage tracking' do
       file2 = StringIO.new(json_content)
       opts = double('options', path: '/test/path')
       adapter2 = Undercover::SimplecovResultAdapter.parse(file2, opts)
-      expect(adapter2.instance_variable_get(:@code_dir)).to eq('/test/path')
+      expect(adapter2.coverage_root).to eq(Undercover::CoverageRoot::NONE)
 
       # Test empty JSON error path
       empty_file = StringIO.new('{}')
