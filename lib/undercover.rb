@@ -101,6 +101,13 @@ module Undercover
       all_results.select(&:flagged?)
     end
 
+    # Changed files undercover would have reported on, had --include-files /
+    # --exclude-files not rejected them. Everything rejected and nothing reported usually
+    # means the globs are written against the wrong root.
+    def globbed_out_files
+      @globbed_out_files ||= changeset.file_paths.select { |path| filter_set.rejected_by_globs?(path) }
+    end
+
     def inspect
       "#<Undercover::Report:#{object_id} results: #{results.size}>"
     end

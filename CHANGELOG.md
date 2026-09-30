@@ -5,7 +5,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
 ### Added
 - Add coverage report filtering to reduce resource usage ([#263](https://github.com/grodowski/undercover/pull/263))
 
@@ -13,7 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - **Breaking:** require SimpleCov `>= 1.0` and Ruby `>= 3.2`, restoring `ignored_files` under SimpleCov 1.x. Pin `undercover ~> 0.8.0` for SimpleCov 0.x / Ruby 3.0–3.1 ([#270](https://github.com/grodowski/undercover/pull/270))
 
 ### Fixed
-- Respect SimpleCov's own filters and ignore changes outside the covered directory when coverage covers a subdirectory of the repository, such as an app in a monorepo. File globs are now matched relative to that directory and `--path` is deprecated ([#245](https://github.com/grodowski/undercover/pull/245))
+- Respect SimpleCov's own filters and ignore changes outside the covered directory when the coverage report covers a subdirectory of the repository, such as an app in a monorepo. **Breaking:** `--include-files` and `--exclude-files` globs are now matched relative to the covered directory, so drop that directory from them — `apps/dash/**/*.rb` becomes `**/*.rb`; undercover warns rather than reporting success when globs skip every candidate file. Reports now also record the undercover version, and `--path` is deprecated and ignored because the project root comes from `--git-dir` ([#245](https://github.com/grodowski/undercover/pull/245))
 
 # [0.8.5] - 2026-04-21
 ### Added

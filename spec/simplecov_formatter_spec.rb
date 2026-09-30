@@ -227,6 +227,12 @@ RSpec.describe 'Undercover::ResultHashFormatterWithRoot' do
   end
 
   describe '#add_undercover_meta_fields' do
+    it 'adds the undercover version to meta' do
+      formatter.instance_variable_set(:@formatted_result, {meta: {}})
+      result = formatter.send(:add_undercover_meta_fields)
+      expect(result[:meta][:undercover_version]).to eq(Undercover::VERSION)
+    end
+
     it 'adds simplecov_root to meta' do
       formatter.instance_variable_set(:@formatted_result, {meta: {}})
       result = formatter.send(:add_undercover_meta_fields)

@@ -120,7 +120,7 @@ describe Undercover::CLI do
   it 'returns 0 exit code on success' do
     stub_stdout
 
-    mock_report = instance_double(Undercover::Report, validate: nil)
+    mock_report = instance_double(Undercover::Report, validate: nil, results: {}, globbed_out_files: [])
     stub_build.and_return(mock_report)
 
     expect(mock_report).to receive(:flagged_results) { [] }
@@ -130,11 +130,36 @@ describe Undercover::CLI do
   it 'returns 1 exit code on warnings' do
     stub_stdout
 
-    mock_report = instance_double(Undercover::Report, validate: nil)
+    mock_report = instance_double(Undercover::Report, validate: nil, results: {}, globbed_out_files: [])
     stub_build.and_return(mock_report)
 
     expect(mock_report).to receive(:flagged_results) { [double] }
     expect(subject.run([])).to eq(1)
+  end
+
+  it 'warns when every candidate file was skipped by the globs' do
+    stub_stdout
+
+    mock_report = instance_double(
+      Undercover::Report, validate: nil, results: {}, globbed_out_files: %w[app/main.rb app/lib/foo.rb]
+    )
+    stub_build.and_return(mock_report)
+    allow(mock_report).to receive(:flagged_results) { [] }
+
+    expect { subject.run([]) }.to output(/nothing was checked - all 2 candidate file\(s\) were skipped/).to_stderr
+  end
+
+  it 'does not warn about globs when there are results to report' do
+    stub_stdout
+
+    mock_report = instance_double(
+      Undercover::Report, validate: nil,
+                          results: {'app/main.rb' => Set.new}, globbed_out_files: %w[README.md]
+    )
+    stub_build.and_return(mock_report)
+    allow(mock_report).to receive(:flagged_results) { [] }
+
+    expect { subject.run([]) }.not_to output.to_stderr
   end
 
   it 'prints changeset validation for stale coverage' do
@@ -160,7 +185,7 @@ describe Undercover::CLI do
   end
 
   it 'outputs JSON when --format json is used' do
-    mock_report = instance_double(Undercover::Report, validate: nil)
+    mock_report = instance_double(Undercover::Report, validate: nil, results: {}, globbed_out_files: [])
     stub_build.and_return(mock_report)
 
     expect(mock_report).to receive(:flagged_results) { [] }

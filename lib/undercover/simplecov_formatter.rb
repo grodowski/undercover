@@ -2,6 +2,7 @@
 
 require 'simplecov'
 require 'json'
+require 'undercover/version'
 
 # SimpleCov ships its own simplecov_json_formatter.rb shim that can shadow the
 # standalone gem on $LOAD_PATH. Require the gem's classes by subpath (which the
@@ -96,7 +97,7 @@ module Undercover
 
     def add_undercover_meta_fields
       formatted_result.tap do |result|
-        result[:meta].merge!(simplecov_root: SimpleCov.root)
+        result[:meta].merge!(simplecov_root: SimpleCov.root, undercover_version: Undercover::VERSION)
       end
     end
 

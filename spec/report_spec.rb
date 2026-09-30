@@ -309,6 +309,27 @@ describe Undercover::Report do
 
         expect(report.results.keys).to be_empty
       end
+
+      it 'reports the files those globs skipped, so the run is not silently empty' do
+        options.glob_allow_filters = ['app/**/*.rb']
+        report.build
+
+        expect(report.results.keys).to be_empty
+        expect(report.globbed_out_files).to include('app/main.rb', 'app/lib/foo_lib.rb')
+        # files SimpleCov itself ignored are not blamed on the globs
+        expect(report.globbed_out_files).not_to include('app/db/migrate/202511251234567_create_foos.rb')
+        # nor is the sibling app, which is outside the coverage root entirely
+        expect(report.globbed_out_files).not_to include('admin_app/app.rb')
+      end
+
+      it 'still reports results when the globs are written correctly' do
+        report.build
+
+        # non-Ruby files sit outside the globs in any healthy run, so what marks a
+        # misconfiguration is everything being skipped and nothing being reported
+        expect(report.results.keys).not_to be_empty
+        expect(report.globbed_out_files).not_to include('app/main.rb', 'app/lib/foo_lib.rb')
+      end
     end
 
     context 'when the adapter filtered coverage with only_files' do

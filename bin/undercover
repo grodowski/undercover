@@ -2,10 +2,15 @@
 # frozen_string_literal: true
 
 $LOAD_PATH.unshift("#{__dir__}/../lib")
-$VERBOSE = nil
 
+# Silence load-time noise from dependencies (parser warns about its Ruby version), but
+# only while requiring: $VERBOSE = nil also turns Kernel#warn into a no-op, and undercover
+# uses it to surface deprecations and configuration problems.
+verbose_before_require = $VERBOSE
+$VERBOSE = nil
 require 'undercover'
 require 'benchmark'
+$VERBOSE = verbose_before_require
 
 result = 0
 time = Benchmark.realtime do
