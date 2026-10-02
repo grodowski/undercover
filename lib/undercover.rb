@@ -19,10 +19,14 @@ require 'undercover/coverage_root'
 require 'undercover/filter_set'
 require 'undercover/simplecov_result_adapter'
 require 'undercover/version'
+require 'undercover/erb_node'
+require 'undercover/erb_extractor'
+require 'undercover/file_loader'
 
 module Undercover
   class Report
     extend Forwardable
+    include FileLoader
 
     def_delegators :changeset, :validate
 
@@ -129,22 +133,5 @@ module Undercover
       simplecov_root = coverage_adapter.simplecov_root || Dir.pwd
       CoverageRoot.derive(code_dir, simplecov_root, coverage_adapter.coverage_keys)
     end
-
-    # rubocop:disable Metrics/AbcSize
-    def load_and_parse_file(filepath)
-      key = filepath.gsub(/^\.\//, '')
-      return if loaded_files[key]
-
-      root_ast = Imagen::Node::Root.new.build_from_file(
-        File.join(code_dir, filepath)
-      )
-      return if root_ast.children.empty?
-
-      loaded_files[key] = []
-      root_ast.find_all(->(node) { !node.is_a?(Imagen::Node::Root) }).each do |imagen_node|
-        loaded_files[key] << Result.new(imagen_node, coverage_adapter, filepath)
-      end
-    end
-    # rubocop:enable Metrics/AbcSize
   end
 end
