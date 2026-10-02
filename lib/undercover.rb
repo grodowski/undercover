@@ -15,6 +15,7 @@ require 'undercover/changeset'
 require 'undercover/formatter'
 require 'undercover/json_formatter'
 require 'undercover/options'
+require 'undercover/coverage_root'
 require 'undercover/filter_set'
 require 'undercover/simplecov_result_adapter'
 require 'undercover/version'
@@ -30,6 +31,7 @@ module Undercover
                 :coverage_adapter,
                 :results,
                 :code_dir,
+                :coverage_root,
                 :filter_set,
                 :max_warnings_limit
 
@@ -40,12 +42,11 @@ module Undercover
     # @param coverage_adapter [Undercover::SimplecovResultAdapter|Undercover::LcovParser] pre-parsed coverage adapter
     def initialize(changeset, opts, coverage_adapter)
       @coverage_adapter = coverage_adapter
-
-      @code_dir = opts.path
       @changeset = changeset
-
-      ignored_files = coverage_adapter.ignored_files || []
-      @filter_set = FilterSet.new(opts.glob_allow_filters, opts.glob_reject_filters, ignored_files)
+      @code_dir = changeset.repo_workdir
+      @coverage_root = resolve_coverage_root
+      coverage_adapter.coverage_root = @coverage_root
+      @filter_set = build_filter_set(opts)
       changeset.filter_with(filter_set)
       @max_warnings_limit = opts.max_warnings_limit
       @loaded_files = {}
@@ -100,6 +101,13 @@ module Undercover
       all_results.select(&:flagged?)
     end
 
+    # Changed files undercover would have reported on, had --include-files /
+    # --exclude-files not rejected them. Everything rejected and nothing reported usually
+    # means the globs are written against the wrong root.
+    def globbed_out_files
+      @globbed_out_files ||= changeset.file_paths.select { |path| filter_set.rejected_by_globs?(path) }
+    end
+
     def inspect
       "#<Undercover::Report:#{object_id} results: #{results.size}>"
     end
@@ -108,6 +116,19 @@ module Undercover
     private
 
     attr_reader :loaded_files
+
+    def build_filter_set(opts)
+      FilterSet.new(opts.glob_allow_filters, opts.glob_reject_filters, coverage_adapter.ignored_files || [],
+                    coverage_root: coverage_root)
+    end
+
+    # LCOV reports carry no SimpleCov.root, so fall back to where undercover runs, which
+    # is where SimpleCov ran for anyone invoking the CLI by hand. A wrong guess is caught
+    # by the covered-file check in CoverageRoot.
+    def resolve_coverage_root
+      simplecov_root = coverage_adapter.simplecov_root || Dir.pwd
+      CoverageRoot.derive(code_dir, simplecov_root, coverage_adapter.coverage_keys)
+    end
 
     # rubocop:disable Metrics/AbcSize
     def load_and_parse_file(filepath)

@@ -32,7 +32,7 @@ module Undercover
     ].freeze
 
     DEFAULT_FILE_INCLUDE_GLOBS = %w[*.rb *.rake *.ru Rakefile].freeze
-    DEFAULT_FILE_EXCLUDE_GLOBS = %w[test/* spec/* db/* config/* *_test.rb *_spec.rb].freeze
+    DEFAULT_FILE_EXCLUDE_GLOBS = %w[test/* spec/* db/* config/* *_test.rb *_spec.rb vendor/*].freeze
 
     FORMATS = %w[text json].freeze
 
@@ -53,7 +53,6 @@ module Undercover
       @run_mode = DIFF_TRIGGER_LINE
       @file_scope = FILE_SCOPE_EXTENDED
       # set defaults
-      self.path = '.'
       self.git_dir = '.git'
       self.glob_allow_filters = DEFAULT_FILE_INCLUDE_GLOBS
       self.glob_reject_filters = DEFAULT_FILE_EXCLUDE_GLOBS
@@ -143,8 +142,12 @@ module Undercover
       end
     end
 
+    # Deprecated. The project root is now read from the git repository, and paths in the
+    # coverage report are matched onto it without needing to be told where either lives.
+    # Still parsed so that an existing .undercover config file does not fail to load.
     def project_path_option(parser)
-      parser.on('-p', '--path path', 'Project directory') do |path|
+      parser.on('-p', '--path path', 'Deprecated, has no effect') do |path|
+        warn('undercover: --path is deprecated and ignored, it will be removed in a future release')
         self.path = path
       end
     end
@@ -179,13 +182,12 @@ module Undercover
     end
 
     def guess_resultset_path
-      cwd = Pathname.new(File.expand_path(path))
-      try_path = File.join(cwd, 'coverage', 'coverage.json')
+      try_path = File.join(Dir.pwd, 'coverage', 'coverage.json')
       self.simplecov_resultset = try_path if File.exist?(try_path)
     end
 
     def guess_lcov_path
-      cwd = Pathname.new(File.expand_path(path))
+      cwd = Pathname.new(Dir.pwd)
       try_path = File.join(cwd, 'coverage', 'lcov', "#{cwd.split.last}.lcov")
       self.lcov = try_path if File.exist?(try_path)
     end

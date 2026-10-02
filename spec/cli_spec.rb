@@ -13,7 +13,6 @@ describe Undercover::CLI do
         instance_of(Undercover::Changeset),
         undercover_options(
           lcov: nil,
-          path: '.',
           git_dir: '.git',
           compare: nil
         ),
@@ -33,7 +32,6 @@ describe Undercover::CLI do
       .with(
         undercover_options(
           lcov: match('spec/fixtures/sample.lcov'),
-          path: '.',
           git_dir: '.git',
           compare: nil
         )
@@ -52,7 +50,6 @@ describe Undercover::CLI do
       .with(
         undercover_options(
           lcov: match('made_up.lcov'),
-          path: '.',
           git_dir: '.git',
           compare: nil
         )
@@ -71,14 +68,13 @@ describe Undercover::CLI do
         instance_of(Undercover::Changeset),
         undercover_options(
           lcov: 'spec/fixtures/sample.lcov',
-          path: 'spec/fixtures',
-          git_dir: 'test.git',
+          git_dir: 'spec/fixtures/test.git',
           compare: nil
         ),
         mock_simplecov_result_adapter
       )
       .and_call_original
-    subject.run(%w[-lspec/fixtures/sample.lcov -pspec/fixtures -gtest.git])
+    subject.run(%w[-lspec/fixtures/sample.lcov -gspec/fixtures/test.git])
   end
 
   it 'accepts --compare' do
@@ -91,7 +87,6 @@ describe Undercover::CLI do
         instance_of(Undercover::Changeset),
         undercover_options(
           lcov: nil,
-          path: '.',
           git_dir: '.git',
           compare: 'HEAD~1'
         ),
@@ -111,7 +106,6 @@ describe Undercover::CLI do
         instance_of(Undercover::Changeset),
         undercover_options(
           lcov: nil,
-          path: '.',
           git_dir: '.git',
           compare: nil,
           glob_allow_filters: ['*.rb', '*.rake'],
@@ -126,7 +120,7 @@ describe Undercover::CLI do
   it 'returns 0 exit code on success' do
     stub_stdout
 
-    mock_report = instance_double(Undercover::Report, validate: nil)
+    mock_report = instance_double(Undercover::Report, validate: nil, results: {}, globbed_out_files: [])
     stub_build.and_return(mock_report)
 
     expect(mock_report).to receive(:flagged_results) { [] }
@@ -136,11 +130,36 @@ describe Undercover::CLI do
   it 'returns 1 exit code on warnings' do
     stub_stdout
 
-    mock_report = instance_double(Undercover::Report, validate: nil)
+    mock_report = instance_double(Undercover::Report, validate: nil, results: {}, globbed_out_files: [])
     stub_build.and_return(mock_report)
 
     expect(mock_report).to receive(:flagged_results) { [double] }
     expect(subject.run([])).to eq(1)
+  end
+
+  it 'warns when every candidate file was skipped by the globs' do
+    stub_stdout
+
+    mock_report = instance_double(
+      Undercover::Report, validate: nil, results: {}, globbed_out_files: %w[app/main.rb app/lib/foo.rb]
+    )
+    stub_build.and_return(mock_report)
+    allow(mock_report).to receive(:flagged_results) { [] }
+
+    expect { subject.run([]) }.to output(/nothing was checked - all 2 candidate file\(s\) were skipped/).to_stderr
+  end
+
+  it 'does not warn about globs when there are results to report' do
+    stub_stdout
+
+    mock_report = instance_double(
+      Undercover::Report, validate: nil,
+                          results: {'app/main.rb' => Set.new}, globbed_out_files: %w[README.md]
+    )
+    stub_build.and_return(mock_report)
+    allow(mock_report).to receive(:flagged_results) { [] }
+
+    expect { subject.run([]) }.not_to output.to_stderr
   end
 
   it 'prints changeset validation for stale coverage' do
@@ -166,7 +185,7 @@ describe Undercover::CLI do
   end
 
   it 'outputs JSON when --format json is used' do
-    mock_report = instance_double(Undercover::Report, validate: nil)
+    mock_report = instance_double(Undercover::Report, validate: nil, results: {}, globbed_out_files: [])
     stub_build.and_return(mock_report)
 
     expect(mock_report).to receive(:flagged_results) { [] }
@@ -201,7 +220,6 @@ describe Undercover::CLI do
         instance_of(Undercover::Changeset),
         undercover_options(
           lcov: nil,
-          path: '.',
           git_dir: '.git',
           compare: nil,
           max_warnings_limit: 5
@@ -222,7 +240,6 @@ describe Undercover::CLI do
         instance_of(Undercover::Changeset),
         undercover_options(
           lcov: nil,
-          path: '.',
           git_dir: '.git',
           compare: nil,
           max_warnings_limit: 10
@@ -270,7 +287,8 @@ describe Undercover::CLI do
 
     expect(Undercover::SimplecovResultAdapter)
       .to receive(:parse).with(json_file, instance_of(Undercover::Options), hash_including(only_files: anything))
-      .and_return(double(coverage: [], ignored_files: []))
+      .and_return(double(coverage: [], ignored_files: [], coverage_keys: [], simplecov_root: nil,
+                         coverage_root: Undercover::CoverageRoot::NONE, :coverage_root= => nil))
 
     subject.run(['-l', 'test.lcov', '-s', 'test.json'])
   end
@@ -295,6 +313,10 @@ describe Undercover::CLI do
     allow(File).to receive(:open).with('test.json') { json_file }
 
     simplecov_adapter = double('SimpleCov adapter',
+                               coverage_keys: [],
+                               simplecov_root: nil,
+                               coverage_root: Undercover::CoverageRoot::NONE,
+                               :coverage_root= => nil,
                                coverage: [],
                                ignored_files: [{'string' => 'app/lib/temp/'},
                                                {'file' => 'db/migrate/migration.rb'}])
@@ -306,8 +328,9 @@ describe Undercover::CLI do
 
     expect(Undercover::FilterSet).to receive(:new).with(
       ['*.rb', '*.rake', '*.ru', 'Rakefile'],
-      ['test/*', 'spec/*', 'db/*', 'config/*', '*_test.rb', '*_spec.rb'],
-      [{'string' => 'app/lib/temp/'}, {'file' => 'db/migrate/migration.rb'}]
+      ['test/*', 'spec/*', 'db/*', 'config/*', '*_test.rb', '*_spec.rb', 'vendor/*'],
+      [{'string' => 'app/lib/temp/'}, {'file' => 'db/migrate/migration.rb'}],
+      coverage_root: Undercover::CoverageRoot::NONE
     ).once.and_call_original
 
     subject.run(['-s', 'test.json'])
@@ -340,7 +363,6 @@ describe Undercover::CLI do
         instance_of(Undercover::Changeset),
         undercover_options(
           lcov: 'spec/fixtures/sample.lcov',
-          path: '.',
           git_dir: '.git',
           compare: nil
         ),
@@ -389,9 +411,19 @@ describe Undercover::CLI do
   end
 
   let(:mock_simplecov_result_adapter) do
-    instance_double(Undercover::SimplecovResultAdapter, coverage: [], ignored_files: [])
+    instance_double(
+      Undercover::SimplecovResultAdapter,
+      coverage: [], ignored_files: [], coverage_keys: [], simplecov_root: nil,
+      coverage_root: Undercover::CoverageRoot::NONE, :coverage_root= => nil
+    )
   end
-  let(:mock_lcov_parser) { instance_double(Undercover::LcovParser, coverage: [], ignored_files: []) }
+  let(:mock_lcov_parser) do
+    instance_double(
+      Undercover::LcovParser,
+      coverage: [], ignored_files: [], coverage_keys: [], simplecov_root: nil,
+      coverage_root: Undercover::CoverageRoot::NONE, :coverage_root= => nil
+    )
+  end
 
   def stub_build # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     file_stub = double('file', read: '{"coverage": {}}', each: nil)

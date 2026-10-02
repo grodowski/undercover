@@ -1,21 +1,20 @@
 # frozen_string_literal: true
 
-require 'undercover/root_to_relative_paths'
+require 'undercover/coverage_root'
 
 module Undercover
   class LcovParseError < StandardError
   end
 
   class LcovParser
-    include RootToRelativePaths
-
     attr_reader :io, :source_files
+    attr_accessor :coverage_root
 
-    def initialize(lcov_io, opts, only_files: nil)
+    def initialize(lcov_io, _opts = nil, only_files: nil)
       @io = lcov_io
       @source_files = {}
-      @code_dir = opts&.path
-      @only_files = only_files&.to_set { |f| fix_relative_filepath(f) }
+      @only_files = only_files&.to_set
+      @coverage_root = CoverageRoot::NONE
     end
 
     def self.parse(lcov_report_path, opts = nil, only_files: nil)
@@ -29,11 +28,19 @@ module Undercover
       self
     end
 
+    # @return Array paths relative to SimpleCov.root
+    def coverage_keys
+      source_files.keys
+    end
+
+    # LCOV carries no SimpleCov.root, so coverage is always taken to sit at the repository
+    # root. Reports covering a subdirectory need the SimpleCov JSON format.
+    def simplecov_root
+      nil
+    end
+
     def coverage(filepath)
-      _filename, coverage = source_files.find do |relative_path, _|
-        relative_path == fix_relative_filepath(filepath)
-      end
-      coverage || []
+      source_files[CoverageRoot.strip(filepath, coverage_root)] || []
     end
 
     def total_coverage

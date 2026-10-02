@@ -32,10 +32,10 @@ module Undercover
       handle_report_validation(report, coverage_path, opts)
     end
 
-    def self.handle_missing_coverage_path(opts)
+    def self.handle_missing_coverage_path(_opts = nil)
       puts Rainbow('❌ ERROR: No coverage report found. Checked default paths:').red
       puts Rainbow('  - ./coverage/coverage.json (SimpleCov)').red
-      puts Rainbow("  - ./coverage/lcov/#{Pathname.new(File.expand_path(opts.path)).split.last}.lcov (LCOV)").red
+      puts Rainbow("  - ./coverage/lcov/#{Pathname.new(Dir.pwd).split.last}.lcov (LCOV)").red
       puts Rainbow('Set a custom path with --lcov or --simplecov option').red
       1
     end
@@ -48,10 +48,24 @@ module Undercover
     def self.handle_report_validation(report, coverage_path, opts)
       validation_error = report.validate(coverage_path)
       flagged = validation_error ? [] : report.flagged_results
+      warn_if_everything_was_globbed_out(report) unless validation_error
       formatter = build_formatter(flagged, validation_error, opts)
 
       puts formatter
       formatter.exit_code
+    end
+
+    # Reporting nothing because every candidate was filtered out looks identical to a
+    # clean run, so say which it was. Goes to stderr to leave --format json parseable.
+    def self.warn_if_everything_was_globbed_out(report)
+      return unless report.results.empty?
+
+      skipped = report.globbed_out_files
+      return if skipped.empty?
+
+      warn(Rainbow("⚠️  WARNING: nothing was checked - all #{skipped.size} candidate file(s) were " \
+                   'skipped by --include-files/--exclude-files. Globs are matched relative to the ' \
+                   'directory SimpleCov covered, so they should not repeat its path.').yellow)
     end
 
     def self.build_formatter(flagged, validation_error, opts)
@@ -68,9 +82,10 @@ module Undercover
       Imagen.parser_version = version
     end
 
+    # --git-dir is resolved against the working directory, and the repository it points
+    # at determines the project root. Everything else is derived from there.
     def self.changeset(opts)
-      git_dir = File.join(opts.path, opts.git_dir)
-      Undercover::Changeset.new(git_dir, opts.compare)
+      Undercover::Changeset.new(opts.git_dir, opts.compare)
     end
   end
 end

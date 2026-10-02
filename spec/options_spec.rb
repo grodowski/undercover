@@ -19,6 +19,16 @@ describe Undercover::Options do
         .and raise_error(SystemExit) { |error| expect(error.status).to eq(0) }
     end
 
+    it 'warns that --path is deprecated and does not use it' do
+      expect { options.parse(['--path', 'some/project']) }
+        .to output(/--path is deprecated and ignored/).to_stderr
+
+      # parsed for compatibility with existing .undercover config files, but the
+      # project root now comes from the repository --git-dir points at
+      expect(options.path).to eq('some/project')
+      expect(options.git_dir).to eq('.git')
+    end
+
     it 'guesses lcov path' do
       project_name = Pathname.new(File.expand_path('.')).split.last
       default_path = "coverage/lcov/#{project_name}.lcov"
@@ -45,9 +55,7 @@ describe Undercover::Options do
   end
 
   describe '#guess_resultset_path' do
-    before do
-      options.path = '/test/path'
-    end
+    before { allow(Dir).to receive(:pwd).and_return('/test/path') }
 
     it 'sets simplecov_resultset when coverage.json exists' do
       expect(File).to receive(:exist?).with('/test/path/coverage/coverage.json').and_return(true)
