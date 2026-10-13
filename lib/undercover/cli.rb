@@ -54,7 +54,10 @@ module Undercover
     def self.handle_report_validation(report, coverage_path, opts)
       validation_error = report.validate(coverage_path)
       flagged = validation_error ? [] : report.flagged_results
-      warn_if_everything_was_globbed_out(report) unless validation_error
+      unless validation_error
+        warn_if_everything_was_globbed_out(report, opts)
+        warn_if_erb_has_no_coverage(report)
+      end
       formatter = build_formatter(flagged, validation_error, opts)
 
       puts formatter
@@ -63,15 +66,37 @@ module Undercover
 
     # Reporting nothing because every candidate was filtered out looks identical to a
     # clean run, so say which it was. Goes to stderr to leave --format json parseable.
-    def self.warn_if_everything_was_globbed_out(report)
+    def self.warn_if_everything_was_globbed_out(report, opts)
       return unless report.results.empty?
 
       skipped = report.globbed_out_files
       return if skipped.empty?
+      return warn_erb_is_opt_in(skipped) if erb_not_opted_in?(skipped, opts)
 
       warn(Rainbow("⚠️  WARNING: nothing was checked - all #{skipped.size} candidate file(s) were " \
                    'skipped by --include-files/--exclude-files. Globs are matched relative to the ' \
                    'directory SimpleCov covered, so they should not repeat its path.').yellow)
+    end
+
+    # The default globs skip ERB templates, so blaming the glob root would mislead
+    def self.erb_not_opted_in?(skipped, opts)
+      skipped.any? { _1.end_with?(FileLoader::ERB_EXTENSION) } &&
+        opts.glob_allow_filters.none? { _1.include?(FileLoader::ERB_EXTENSION) }
+    end
+
+    def self.warn_erb_is_opt_in(skipped)
+      templates = skipped.count { _1.end_with?(FileLoader::ERB_EXTENSION) }
+      warn(Rainbow("⚠️  WARNING: nothing was checked - #{templates} changed ERB template(s) were skipped " \
+                   "because view coverage is opt-in. Check them with --include-files '*.rb,*.erb' " \
+                   'and enable_coverage(:eval) in SimpleCov.start.').yellow)
+    end
+
+    def self.warn_if_erb_has_no_coverage(report)
+      templates = report.erb_files_without_coverage
+      return if templates.empty?
+
+      warn(Rainbow("⚠️  WARNING: skipped #{templates.size} ERB template(s) - the coverage report has no " \
+                   'ERB coverage. Add enable_coverage(:eval) to SimpleCov.start to check them.').yellow)
     end
 
     def self.build_formatter(flagged, validation_error, opts)

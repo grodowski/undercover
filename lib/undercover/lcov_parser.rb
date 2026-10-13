@@ -33,6 +33,11 @@ module Undercover
       source_files.keys
     end
 
+    # @return Boolean whether the report covers any ERB template, before only_files filtering
+    def erb_coverage?
+      @erb_coverage || false
+    end
+
     # LCOV carries no SimpleCov.root, so coverage is always taken to sit at the repository
     # root. Reports covering a subdirectory need the SimpleCov JSON format.
     def simplecov_root
@@ -82,6 +87,7 @@ module Undercover
       case line
       when /^SF:(.+)/
         filename = $~[1].gsub(/^\.\//, '')
+        @erb_coverage ||= filename.end_with?('.erb')
         @current_filename = @only_files.nil? || @only_files.include?(filename) ? filename : nil
         source_files[@current_filename] = [] if @current_filename
       when /^DA:(\d+),(\d+)/

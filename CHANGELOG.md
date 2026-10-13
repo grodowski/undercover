@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 ### Added
 - Add coverage report filtering to reduce resource usage ([#263](https://github.com/grodowski/undercover/pull/263))
+- ERB view template coverage, opt in with `--include-files '*.rb,*.erb'`. Requires Ruby 3.2+ and `SimpleCov.enable_coverage :eval` ([#250](https://github.com/grodowski/undercover/pull/250))
 - Add `--commits-only` to check only committed changes after `--compare ref`, ignoring the index and working tree, for sparse or partial clones ([#273](https://github.com/grodowski/undercover/pull/273))
 
 ### Changed

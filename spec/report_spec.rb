@@ -371,6 +371,108 @@ describe Undercover::Report do
     end
   end
 
+  context 'with ERB view files' do
+    let(:options_with_erb) do
+      Undercover::Options.new.tap do |opt|
+        opt.git_dir = 'spec/fixtures/test.git'
+        opt.simplecov_resultset = 'spec/fixtures/erb_coverage.json'
+      end
+    end
+
+    let(:changeset) do
+      mock_changeset = instance_double(Undercover::Changeset)
+      allow(mock_changeset)
+        .to receive(:each_changed_line)
+        .and_yield('spec/fixtures/test.html.erb', 8)
+      allow(mock_changeset).to receive(:filter_with)
+      allow(mock_changeset).to receive(:repo_workdir).and_return('.')
+      allow(mock_changeset).to receive(:file_paths).and_return(['spec/fixtures/test.html.erb'])
+      mock_changeset
+    end
+
+    subject(:report) do
+      described_class.new(changeset, options_with_erb, simplecov_from_options(options_with_erb))
+    end
+
+    it 'loads ERB files as ERB-aware nodes' do
+      report.build
+      expect(report.results.keys).to include('spec/fixtures/test.html.erb')
+
+      erb_results = report.results['spec/fixtures/test.html.erb'].to_a
+      expect(erb_results.size).to eq(1)
+      expect(erb_results.first.node).to be_a(Imagen::Node::ErbNode)
+    end
+
+    it 'computes coverage for ERB files' do
+      report.build
+      erb_result = report.results['spec/fixtures/test.html.erb'].first
+
+      expect(erb_result.coverage_f).to be < 1.0
+      expect(erb_result.coverage_f).to be > 0.0
+    end
+
+    it 'flags uncovered lines in ERB files' do
+      report.build
+      erb_result = report.results['spec/fixtures/test.html.erb'].first
+
+      # line 8 is in the else branch which has 0 coverage
+      expect(erb_result.uncovered?(8)).to be_truthy
+    end
+
+    it 'returns ERB node properties correctly' do
+      report.build
+      erb_result = report.results['spec/fixtures/test.html.erb'].first
+
+      expect(erb_result.node.name).to eq('if')
+      expect(erb_result.node.human_name).to eq('if block')
+      expect(erb_result.first_line).to eq(6)
+      expect(erb_result.last_line).to eq(10)
+    end
+
+    it 'has no ERB files without coverage when the report covers ERB' do
+      expect(report.erb_files_without_coverage).to be_empty
+    end
+
+    context 'when the report has no ERB coverage' do
+      let(:options_with_erb) do
+        Undercover::Options.new.tap do |opt|
+          opt.git_dir = 'spec/fixtures/test.git'
+          opt.glob_allow_filters = ['*.rb', '*.erb']
+          opt.glob_reject_filters = []
+        end
+      end
+
+      subject(:report) do
+        adapter = Undercover::SimplecovResultAdapter.new({'coverage' => {'lib/undercover.rb' => {'lines' => [1]}}})
+        described_class.new(changeset, options_with_erb, adapter)
+      end
+
+      it 'skips ERB files instead of flagging them' do
+        report.build
+        expect(report.results).to be_empty
+        expect(report.erb_files_without_coverage).to eq(['spec/fixtures/test.html.erb'])
+      end
+    end
+
+    context 'with empty ERB file' do
+      let(:changeset) do
+        mock_changeset = instance_double(Undercover::Changeset)
+        allow(mock_changeset)
+          .to receive(:each_changed_line)
+          .and_yield('spec/fixtures/empty.html.erb', 1)
+        allow(mock_changeset).to receive(:filter_with)
+        allow(mock_changeset).to receive(:repo_workdir).and_return('.')
+        allow(mock_changeset).to receive(:file_paths).and_return(['spec/fixtures/empty.html.erb'])
+        mock_changeset
+      end
+
+      it 'skips empty ERB files' do
+        report.build
+        expect(report.results.keys).not_to include('spec/fixtures/empty.html.erb')
+      end
+    end
+  end
+
   def lcov_from_options(opts)
     Undercover::LcovParser.parse(File.open(opts.lcov), opts)
   end
