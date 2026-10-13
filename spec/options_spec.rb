@@ -19,6 +19,11 @@ describe Undercover::Options do
         .and raise_error(SystemExit) { |error| expect(error.status).to eq(0) }
     end
 
+    it 'sets commits_only from --commits-only' do
+      expect(options.parse([]).commits_only).to be_nil
+      expect(described_class.new.parse(['--commits-only']).commits_only).to be(true)
+    end
+
     it 'warns that --path is deprecated and does not use it' do
       expect { options.parse(['--path', 'some/project']) }
         .to output(/--path is deprecated and ignored/).to_stderr
