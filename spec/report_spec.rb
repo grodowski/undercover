@@ -349,6 +349,37 @@ describe Undercover::Report do
     end
   end
 
+  context 'when mapping changed lines to results' do
+    let(:lcov) { Undercover::LcovParser.parse('spec/fixtures/fixtures.lcov', nil) }
+
+    def results_for_lines(*lines, file: 'class.rb')
+      changeset = instance_double(Undercover::Changeset, filter_with: nil, repo_workdir: 'spec/fixtures',
+                                                         file_paths: [file])
+      allow(changeset).to receive(:each_changed_line) { |&blk| lines.each { blk.call(file, _1) } }
+      described_class.new(changeset, options, lcov).build.results[file].map(&:name)
+    end
+
+    it 'picks the innermost result covering the line' do
+      expect(results_for_lines(9)).to eq(['foo'])
+      expect(results_for_lines(14)).to eq(['foo_child'])
+      expect(results_for_lines(17)).to eq(['BaconClass'])
+    end
+
+    it 'picks the first listed result when several start on the same line' do
+      expect(results_for_lines(4, file: 'same_line_nodes.rb')).to eq(['pick'])
+    end
+
+    it 'falls back to the first result for lines outside every result' do
+      expect(results_for_lines(1)).to eq(['BaconClass'])
+    end
+
+    it "reads each file's coverage once, however many results and changed lines it has" do
+      expect(lcov).to receive(:coverage).with('class.rb').once.and_call_original
+
+      expect(results_for_lines(*1..18)).to contain_exactly('BaconClass', 'bar', 'foo', 'BaconChildClass', 'foo_child')
+    end
+  end
+
   context 'without SimpleCov resultset' do
     let(:options_without_simplecov) do
       Undercover::Options.new.tap do |opt|

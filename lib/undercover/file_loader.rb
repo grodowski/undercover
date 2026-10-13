@@ -22,7 +22,7 @@ module Undercover
 
     private
 
-    # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+    # rubocop:disable Metrics/AbcSize
     def load_erb_file(key, filepath)
       return unless coverage_adapter.erb_coverage?
 
@@ -34,21 +34,23 @@ module Undercover
                                       .build_from_ruby_source(ruby_source)
       return if erb_file.children.empty?
 
-      loaded_files[key] = erb_file
-                          .find_all(->(node) { !node.is_a?(Imagen::Node::ErbFile) })
-                          .map { |node| Result.new(node, coverage_adapter, filepath) }
+      loaded_files[key] = build_results(erb_file.find_all(->(node) { !node.is_a?(Imagen::Node::ErbFile) }), filepath)
     rescue StandardError => e
       warn "#{filepath}: ERB parsing failed (#{e.message})"
     end
-    # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
+    # rubocop:enable Metrics/AbcSize
 
     def load_ruby_file(key, filepath)
       root_ast = Imagen::Node::Root.new.build_from_file(File.join(code_dir, filepath))
       return if root_ast.children.empty?
 
-      loaded_files[key] = root_ast
-                          .find_all(->(node) { !node.is_a?(Imagen::Node::Root) })
-                          .map { |node| Result.new(node, coverage_adapter, filepath) }
+      loaded_files[key] = build_results(root_ast.find_all(->(node) { !node.is_a?(Imagen::Node::Root) }), filepath)
+    end
+
+    # Indexes the file's coverage once for all of its nodes
+    def build_results(nodes, filepath)
+      index = CoverageIndex.new(coverage_adapter.coverage(filepath))
+      nodes.map { |node| Result.new(node, coverage_adapter, filepath, coverage_index: index) }
     end
   end
 end
