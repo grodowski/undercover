@@ -253,11 +253,16 @@ describe Undercover::Report do
 
   context 'when a sparse checkout left the covered files out of the working tree' do
     around do |example|
-      Dir.mktmpdir { |dir| @repo_dir = dir and example.run }
+      Dir.mktmpdir do |dir|
+        @repo_dir = dir
+        example.run
+      end
     end
 
+    # isolated from the developer's git config, which may sign commits or run hooks
     def git(*args)
-      system('git', '-C', @repo_dir, '-c', 'user.name=spec', '-c', 'user.email=spec@example.com', *args,
+      system('git', '-C', @repo_dir, '-c', 'user.name=spec', '-c', 'user.email=spec@example.com',
+             '-c', 'commit.gpgsign=false', '-c', 'core.hooksPath=/dev/null', *args,
              exception: true, out: File::NULL, err: File::NULL)
     end
 
