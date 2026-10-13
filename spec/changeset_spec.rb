@@ -42,6 +42,23 @@ describe Undercover::Changeset do
     expect(file_three_lines).to eq([1, 2, 3, 4, 5, 6])
   end
 
+  it 'ignores the index and working tree with commits_only' do
+    changeset = Undercover::Changeset.new('spec/fixtures/test.git', 'master', commits_only: true)
+
+    expect(changeset.file_paths).to match_array(%w[file_three module.rb])
+
+    file_three_lines = []
+    changeset.each_changed_line do |filepath, line_no|
+      file_three_lines << line_no if filepath == 'file_three'
+    end
+    expect(file_three_lines).to eq([1, 2, 3, 4, 5, 6])
+  end
+
+  it 'requires a compare_base with commits_only' do
+    expect { Undercover::Changeset.new('spec/fixtures/test.git', commits_only: true) }
+      .to raise_error(ArgumentError, 'commits_only requires a compare_base')
+  end
+
   it 'has a last_modified when changes are present' do
     changeset = Undercover::Changeset.new(
       'spec/fixtures/test.git',

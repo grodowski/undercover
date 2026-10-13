@@ -41,6 +41,7 @@ module Undercover
                   :path,
                   :git_dir,
                   :compare,
+                  :commits_only,
                   :syntax_version,
                   :run_mode,
                   :file_scope,
@@ -84,6 +85,7 @@ module Undercover
         project_path_option(opts)
         git_dir_option(opts)
         compare_option(opts)
+        commits_only_option(opts)
         ruby_syntax_option(opts)
         max_warnings_limit_option(opts)
         file_filters(opts)
@@ -163,6 +165,13 @@ module Undercover
       desc = 'Generate coverage warnings for all changes after `ref`'
       parser.on('-c', '--compare ref', desc) do |ref|
         self.compare = ref
+      end
+    end
+
+    def commits_only_option(parser)
+      desc = 'Only check committed changes after `--compare ref`, ignoring the index and working tree'
+      parser.on('--commits-only', desc) do
+        self.commits_only = true
       end
     end
 

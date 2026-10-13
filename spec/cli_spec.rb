@@ -22,6 +22,24 @@ describe Undercover::CLI do
     subject.run([])
   end
 
+  it 'creates a commits_only changeset with --commits-only' do
+    stub_stdout
+    stub_build
+
+    expect(Undercover::Changeset)
+      .to receive(:new).with('.git', 'master', commits_only: true).and_call_original
+    subject.run(['--compare', 'master', '--commits-only'])
+  end
+
+  it 'errors on --commits-only without --compare' do
+    stub_build
+
+    expect(Undercover::Changeset).not_to receive(:new)
+    expect do
+      expect(subject.run(['--commits-only'])).to eq(1)
+    end.to output(/--commits-only requires --compare ref/).to_stdout
+  end
+
   it 'reads options from project configuration file' do
     allow_any_instance_of(Undercover::Options)
       .to receive(:project_options_file)

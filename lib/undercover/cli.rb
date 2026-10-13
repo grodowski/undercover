@@ -16,6 +16,7 @@ module Undercover
       coverage_path = opts.simplecov_resultset || opts.lcov
       return handle_missing_coverage_path(opts) if coverage_path.nil?
       return handle_missing_file(coverage_path) unless File.exist?(coverage_path)
+      return handle_commits_only_without_compare if opts.commits_only && !opts.compare
 
       changeset_obj = changeset(opts)
       only_files = changeset_obj.file_paths.then { |f| f.empty? ? nil : f }
@@ -42,6 +43,11 @@ module Undercover
 
     def self.handle_missing_file(coverage_path)
       puts Rainbow("❌ ERROR: Coverage report not found at: #{coverage_path}").red
+      1
+    end
+
+    def self.handle_commits_only_without_compare
+      puts Rainbow('❌ ERROR: --commits-only requires --compare ref').red
       1
     end
 
@@ -85,7 +91,7 @@ module Undercover
     # --git-dir is resolved against the working directory, and the repository it points
     # at determines the project root. Everything else is derived from there.
     def self.changeset(opts)
-      Undercover::Changeset.new(opts.git_dir, opts.compare)
+      Undercover::Changeset.new(opts.git_dir, opts.compare, commits_only: opts.commits_only)
     end
   end
 end
