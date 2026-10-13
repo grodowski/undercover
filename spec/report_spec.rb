@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 require 'undercover'
+require 'tmpdir'
 
 describe Undercover::Report do
   let(:options) do
@@ -148,6 +149,7 @@ describe Undercover::Report do
         .and_yield('.undercover_config', 1) # unparsable, won't appear in the report
       allow(mock_changeset).to receive(:filter_with)
       allow(mock_changeset).to receive(:repo_workdir).and_return('spec/fixtures')
+      allow(mock_changeset).to receive(:head_path?).and_return(false)
       allow(mock_changeset).to receive(:file_paths).and_return([])
       mock_changeset
     end
@@ -246,6 +248,40 @@ describe Undercover::Report do
       expect(warnings[0].file_path).to eq('app/lib/foo_lib.rb')
       expect(warnings[0].first_line).to eq(10)
       expect(warnings[0].coverage_f).to eq(0.6)
+    end
+  end
+
+  context 'when a sparse checkout left the covered files out of the working tree' do
+    around do |example|
+      Dir.mktmpdir do |dir|
+        @repo_dir = dir
+        example.run
+      end
+    end
+
+    # isolated from the developer's git config, which may sign commits or run hooks
+    def git(*args)
+      system('git', '-C', @repo_dir, '-c', 'user.name=spec', '-c', 'user.email=spec@example.com',
+             '-c', 'commit.gpgsign=false', '-c', 'core.hooksPath=/dev/null', *args,
+             exception: true, out: File::NULL, err: File::NULL)
+    end
+
+    it 'derives the coverage root from HEAD' do
+      FileUtils.mkdir_p(File.join(@repo_dir, 'apps/dash'))
+      File.write(File.join(@repo_dir, 'apps/dash/main.rb'), "def main\nend\n")
+      File.write(File.join(@repo_dir, 'README.md'), "readme\n")
+      git('init', '-q')
+      git('add', '.')
+      git('commit', '-qm', 'init')
+      git('sparse-checkout', 'set', '--no-cone', '/README.md')
+      expect(File.exist?(File.join(@repo_dir, 'apps'))).to be(false)
+
+      adapter = Undercover::SimplecovResultAdapter.new(
+        {'meta' => {'simplecov_root' => '/ci/build/apps/dash'}, 'coverage' => {'main.rb' => {'lines' => [1, nil]}}}
+      )
+      changeset = Undercover::Changeset.new(File.join(@repo_dir, '.git'))
+
+      expect(described_class.new(changeset, Undercover::Options.new, adapter).coverage_root).to eq('apps/dash')
     end
   end
 
@@ -354,7 +390,7 @@ describe Undercover::Report do
 
     def results_for_lines(*lines, file: 'class.rb')
       changeset = instance_double(Undercover::Changeset, filter_with: nil, repo_workdir: 'spec/fixtures',
-                                                         file_paths: [file])
+                                                         file_paths: [file], head_path?: false)
       allow(changeset).to receive(:each_changed_line) { |&blk| lines.each { blk.call(file, _1) } }
       described_class.new(changeset, options, lcov).build.results[file].map(&:name)
     end
@@ -417,6 +453,7 @@ describe Undercover::Report do
         .and_yield('spec/fixtures/test.html.erb', 8)
       allow(mock_changeset).to receive(:filter_with)
       allow(mock_changeset).to receive(:repo_workdir).and_return('.')
+      allow(mock_changeset).to receive(:head_path?).and_return(false)
       allow(mock_changeset).to receive(:file_paths).and_return(['spec/fixtures/test.html.erb'])
       mock_changeset
     end
@@ -493,6 +530,7 @@ describe Undercover::Report do
           .and_yield('spec/fixtures/empty.html.erb', 1)
         allow(mock_changeset).to receive(:filter_with)
         allow(mock_changeset).to receive(:repo_workdir).and_return('.')
+        allow(mock_changeset).to receive(:head_path?).and_return(false)
         allow(mock_changeset).to receive(:file_paths).and_return(['spec/fixtures/empty.html.erb'])
         mock_changeset
       end

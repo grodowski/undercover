@@ -189,6 +189,7 @@ describe 'Undercover::Report load_erb_file rescue' do
     allow(mock_changeset).to receive(:each_changed_line).and_yield('spec/fixtures/test.html.erb', 8)
     allow(mock_changeset).to receive(:filter_with)
     allow(mock_changeset).to receive(:repo_workdir).and_return('.')
+    allow(mock_changeset).to receive(:head_path?).and_return(false)
     allow(mock_changeset).to receive(:file_paths).and_return(['spec/fixtures/test.html.erb'])
     mock_changeset
   end
@@ -208,6 +209,7 @@ describe 'Undercover::Report load_erb_file rescue' do
       .and_yield('spec/fixtures/nonexistent.erb', 1)
     allow(changeset).to receive(:filter_with)
     allow(changeset).to receive(:repo_workdir).and_return('.')
+    allow(changeset).to receive(:head_path?).and_return(false)
     allow(changeset).to receive(:file_paths).and_return(['spec/fixtures/nonexistent.erb'])
 
     nonexistent_report = Undercover::Report.new(

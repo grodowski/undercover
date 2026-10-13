@@ -21,13 +21,16 @@ module Undercover
     # @param simplecov_root [String, nil] SimpleCov.root as recorded in the report
     # @param coverage_keys [Array<String>] paths relative to SimpleCov.root, used to
     #   confirm a candidate actually holds the covered files
+    # @param exists [#call, nil] whether a path relative to git_root exists in the
+    #   repository; checks the disk by default
     # @return [String] prefix that joins a coverage key onto a repository path,
     #   NONE when coverage was recorded at the repository root or cannot be placed
-    def self.derive(git_root, simplecov_root, coverage_keys = nil)
+    def self.derive(git_root, simplecov_root, coverage_keys = nil, exists: nil)
       return NONE if git_root.nil? || simplecov_root.nil? || simplecov_root.empty?
 
-      candidates(git_root, simplecov_root).find do |prefix|
-        holds_covered_files?(git_root, prefix, coverage_keys)
+      exists ||= ->(path) { File.exist?(File.join(git_root, path)) }
+      candidates(simplecov_root, exists).find do |prefix|
+        holds_covered_files?(prefix, coverage_keys, exists)
       end || NONE
     end
 
@@ -48,22 +51,22 @@ module Undercover
     # Tails of SimpleCov.root that exist in the repository, longest first. "/build/x/app"
     # offers "app", then "x/app", then "build/x/app"; the longest that exists wins, so a
     # nested app beats a directory that happens to share its leaf name.
-    def self.candidates(git_root, simplecov_root)
+    def self.candidates(simplecov_root, exists)
       parts = Pathname.new(simplecov_root).each_filename.to_a
       (1..parts.length)
         .map { |depth| parts.last(depth).join('/') }
-        .select { |prefix| Dir.exist?(File.join(git_root, prefix)) }
+        .select { |prefix| exists.call(prefix) }
         .sort_by { |prefix| -prefix.length }
     end
     private_class_method :candidates
 
     # Guards against a coincidence: the repository may contain a directory named like
     # SimpleCov.root's leaf without being the place the coverage came from.
-    def self.holds_covered_files?(git_root, prefix, coverage_keys)
+    def self.holds_covered_files?(prefix, coverage_keys, exists)
       keys = Array(coverage_keys).reject { |key| key.nil? || key.empty? }
       return true if keys.empty?
 
-      keys.first(SAMPLE_SIZE).any? { |key| File.exist?(File.join(git_root, prefix, key)) }
+      keys.first(SAMPLE_SIZE).any? { |key| exists.call(File.join(prefix, key)) }
     end
     private_class_method :holds_covered_files?
   end

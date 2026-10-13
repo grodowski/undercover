@@ -59,6 +59,14 @@ describe Undercover::Changeset do
       .to raise_error(ArgumentError, 'commits_only requires a compare_base')
   end
 
+  it 'answers whether HEAD has a path, whatever the working tree holds' do
+    changeset = Undercover::Changeset.new('spec/fixtures/test.git')
+
+    expect(changeset.head_path?('module.rb')).to be(true)
+    expect(changeset.head_path?('staged_file')).to be(false)
+    expect(changeset.head_path?('nope/missing.rb')).to be(false)
+  end
+
   it 'has a last_modified when changes are present' do
     changeset = Undercover::Changeset.new(
       'spec/fixtures/test.git',

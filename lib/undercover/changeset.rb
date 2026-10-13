@@ -24,6 +24,17 @@ module Undercover
       repo.workdir
     end
 
+    # Answers from HEAD's tree rather than the disk, so it holds for files a sparse
+    # checkout left out of the working tree.
+    # @param path [String] relative to the repository root
+    # @return Boolean whether HEAD has a file or directory at path
+    def head_path?(path)
+      head.tree.path(path)
+      true
+    rescue Rugged::TreeError
+      false
+    end
+
     def last_modified
       mod = file_paths.map do |f|
         path = File.join(repo.workdir, f)
