@@ -16,6 +16,15 @@ describe Undercover::CoverageRoot do
       expect(described_class.derive(git_root, "#{git_root}/app", keys)).to eq('app')
     end
 
+    it 'checks paths with a custom exists predicate instead of the disk' do
+      in_repository = %w[apps apps/dash apps/dash/main.rb]
+
+      expect(described_class.derive('/nowhere', '/ci/apps/dash', %w[main.rb], exists: in_repository.method(:include?)))
+        .to eq('apps/dash')
+      expect(described_class.derive('/nowhere', '/ci/apps/dash', %w[other.rb], exists: in_repository.method(:include?)))
+        .to eq('')
+    end
+
     it 'derives it from a SimpleCov.root recorded on another machine' do
       # undercover-ci analyses an uploaded report against its own clone, so the absolute
       # path never matches; only the tail is meaningful

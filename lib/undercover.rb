@@ -149,7 +149,12 @@ module Undercover
     # by the covered-file check in CoverageRoot.
     def resolve_coverage_root
       simplecov_root = coverage_adapter.simplecov_root || Dir.pwd
-      CoverageRoot.derive(code_dir, simplecov_root, coverage_adapter.coverage_keys)
+      CoverageRoot.derive(code_dir, simplecov_root, coverage_adapter.coverage_keys, exists: method(:repository_path?))
+    end
+
+    # On disk, or committed at HEAD for files a sparse checkout left out
+    def repository_path?(path)
+      File.exist?(File.join(code_dir, path)) || changeset.head_path?(path)
     end
   end
 end
