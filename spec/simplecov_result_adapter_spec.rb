@@ -34,6 +34,16 @@ describe Undercover::SimplecovResultAdapter do
     expect(branchful).to eq(expected)
   end
 
+  it 'knows whether the report covers ERB templates before filtering with only_files' do
+    erb_report = {'coverage' => {'app/views/home.html.erb' => {'lines' => [1]}, 'app/main.rb' => {'lines' => [1]}}}
+    adapter = described_class.new(erb_report, nil, only_files: ['app/main.rb'])
+    adapter.coverage_root = Undercover::CoverageRoot::NONE
+
+    expect(adapter.coverage_keys).to eq(['app/main.rb'])
+    expect(adapter.erb_coverage?).to be(true)
+    expect(described_class.new({'coverage' => {'app/main.rb' => {'lines' => [1]}}}).erb_coverage?).to be(false)
+  end
+
   it 'raises an error with a malformed JSON' do
     skip
   end

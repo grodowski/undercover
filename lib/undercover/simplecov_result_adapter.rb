@@ -22,6 +22,13 @@ module Undercover
       @simplecov_result = simplecov_result
       @only_files = only_files
       @coverage_root = CoverageRoot::NONE
+      @erb_coverage = (simplecov_result['coverage'] || {}).keys.any? { _1.end_with?('.erb') }
+    end
+
+    # @return Boolean whether the report covers any ERB template, which takes
+    #   SimpleCov's eval coverage. Recorded before only_files drops unchanged files.
+    def erb_coverage?
+      @erb_coverage
     end
 
     # Filtering waits for the coverage root, since only_files is relative to the repository

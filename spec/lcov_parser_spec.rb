@@ -37,6 +37,15 @@ describe Undercover::LcovParser do
     expect(branchful).to eq(expected)
   end
 
+  it 'knows whether the report covers ERB templates before filtering with only_files' do
+    lcov = "SF:app/views/home.html.erb\nDA:1,1\nend_of_record\nSF:app/main.rb\nDA:1,1\nend_of_record\n"
+    parser = described_class.new(StringIO.new(lcov), nil, only_files: ['app/main.rb']).parse
+
+    expect(parser.coverage_keys).to eq(['app/main.rb'])
+    expect(parser.erb_coverage?).to be(true)
+    expect(described_class.parse('spec/fixtures/sample.lcov').erb_coverage?).to be(false)
+  end
+
   it 'passes blank lines' do
     parser = described_class.new(StringIO.new("\n"), nil)
 

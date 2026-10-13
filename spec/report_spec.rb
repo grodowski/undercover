@@ -429,6 +429,31 @@ describe Undercover::Report do
       expect(erb_result.last_line).to eq(10)
     end
 
+    it 'has no ERB files without coverage when the report covers ERB' do
+      expect(report.erb_files_without_coverage).to be_empty
+    end
+
+    context 'when the report has no ERB coverage' do
+      let(:options_with_erb) do
+        Undercover::Options.new.tap do |opt|
+          opt.git_dir = 'spec/fixtures/test.git'
+          opt.glob_allow_filters = ['*.rb', '*.erb']
+          opt.glob_reject_filters = []
+        end
+      end
+
+      subject(:report) do
+        adapter = Undercover::SimplecovResultAdapter.new({'coverage' => {'lib/undercover.rb' => {'lines' => [1]}}})
+        described_class.new(changeset, options_with_erb, adapter)
+      end
+
+      it 'skips ERB files instead of flagging them' do
+        report.build
+        expect(report.results).to be_empty
+        expect(report.erb_files_without_coverage).to eq(['spec/fixtures/test.html.erb'])
+      end
+    end
+
     context 'with empty ERB file' do
       let(:changeset) do
         mock_changeset = instance_double(Undercover::Changeset)

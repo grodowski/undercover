@@ -112,6 +112,17 @@ module Undercover
       @globbed_out_files ||= changeset.file_paths.select { |path| filter_set.rejected_by_globs?(path) }
     end
 
+    # Changed ERB templates left unchecked because the coverage report has no ERB coverage
+    # at all, meaning SimpleCov ran without enable_coverage(:eval). Checking them anyway
+    # would flag every block at 0%.
+    def erb_files_without_coverage
+      return [] if coverage_adapter.erb_coverage?
+
+      @erb_files_without_coverage ||= changeset.file_paths.select do |path|
+        path.end_with?(FileLoader::ERB_EXTENSION) && filter_set.include?(path)
+      end
+    end
+
     def inspect
       "#<Undercover::Report:#{object_id} results: #{results.size}>"
     end

@@ -24,6 +24,8 @@ module Undercover
 
     # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     def load_erb_file(key, filepath)
+      return unless coverage_adapter.erb_coverage?
+
       full_path = File.join(code_dir, filepath)
       return unless File.exist?(full_path)
 
