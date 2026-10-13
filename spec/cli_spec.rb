@@ -27,8 +27,8 @@ describe Undercover::CLI do
     stub_build
 
     expect(Undercover::Changeset)
-      .to receive(:new).with('.git', 'master', commits_only: true).and_call_original
-    subject.run(['--compare', 'master', '--commits-only'])
+      .to receive(:new).with('spec/fixtures/test.git', 'master', commits_only: true).and_call_original
+    subject.run(%w[-gspec/fixtures/test.git --compare master --commits-only])
   end
 
   it 'errors on --commits-only without --compare' do
