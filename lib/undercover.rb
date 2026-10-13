@@ -4,11 +4,11 @@ $LOAD_PATH << 'lib'
 require 'json'
 require 'imagen'
 require 'rainbow'
-require 'bigdecimal'
 require 'forwardable'
 require 'simplecov'
 
 require 'undercover/lcov_parser'
+require 'undercover/coverage_index'
 require 'undercover/result'
 require 'undercover/cli'
 require 'undercover/changeset'
@@ -63,23 +63,11 @@ module Undercover
       changeset.each_changed_line do |filepath, line_no|
         break if max_warnings_limit && flag_count >= max_warnings_limit
 
-        dist_from_line_no = lambda do |res|
-          return BigDecimal::INFINITY if line_no < res.first_line
-
-          res_lines = res.first_line..res.last_line
-          return BigDecimal::INFINITY unless res_lines.cover?(line_no)
-
-          line_no - res.first_line
-        end
-        dist_from_line_no_sorter = lambda do |res1, res2|
-          dist_from_line_no[res1] <=> dist_from_line_no[res2]
-        end
-
         load_and_parse_file(filepath)
 
         next unless loaded_files[filepath]
 
-        res = loaded_files[filepath].min(&dist_from_line_no_sorter)
+        res = result_for_line(filepath, line_no)
         if res.uncovered?(line_no) && !res.flagged?
           res.flag
           flag_count += 1
@@ -131,6 +119,25 @@ module Undercover
     private
 
     attr_reader :loaded_files
+
+    # The innermost result whose lines cover line_no: the one starting closest above it,
+    # the first one listed on a tie. Lines outside every result fall back to the first.
+    def result_for_line(filepath, line_no)
+      @line_results ||= {}
+      by_line = @line_results[filepath] ||= index_results_by_line(loaded_files[filepath])
+      by_line[line_no] || loaded_files[filepath].first
+    end
+
+    def index_results_by_line(file_results)
+      by_line = {}
+      file_results.each do |res|
+        (res.first_line..res.last_line).each do |line_no|
+          current = by_line[line_no]
+          by_line[line_no] = res if current.nil? || res.first_line > current.first_line
+        end
+      end
+      by_line
+    end
 
     def build_filter_set(opts)
       FilterSet.new(opts.glob_allow_filters, opts.glob_reject_filters, coverage_adapter.ignored_files || [],

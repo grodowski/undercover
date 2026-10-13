@@ -11,19 +11,12 @@ module Undercover
     def_delegators :node, :first_line, :last_line, :name
     def_delegators :coverage_adapter, :skipped?, :branch_label
 
-    def initialize(node, coverage_adapter, file_path) # rubocop:disable Metrics/MethodLength,Metrics/AbcSize
+    # @param coverage_index [CoverageIndex] the file's coverage, shared by all of its nodes
+    def initialize(node, coverage_adapter, file_path, coverage_index: nil)
       @node = node
       @coverage_adapter = coverage_adapter
-      file_cov = coverage_adapter.coverage(file_path)
-      @coverage = file_cov.select do |ln, _|
-        if first_line == last_line
-          ln == first_line
-        elsif node.empty_def? || node.is_a?(Imagen::Node::Block) || node.is_a?(Imagen::Node::ErbNode)
-          ln >= first_line && ln <= last_line # rubocop:disable Style/ComparableBetween
-        else
-          ln > first_line && ln < last_line
-        end
-      end
+      coverage_index ||= CoverageIndex.new(coverage_adapter.coverage(file_path))
+      @coverage = coverage_index.within(coverage_lines)
 
       @file_path = file_path
       @flagged = false
@@ -37,18 +30,12 @@ module Undercover
       @flagged
     end
 
-    def uncovered?(line_no) # rubocop:disable Metrics/AbcSize
+    def uncovered?(line_no)
       return false if skipped?(file_path, line_no)
       return true if coverage.empty?
+      return true if uncovered_branch_lines.include?(line_no)
 
-      # check branch coverage for line_no
-      coverage.each do |ln, _block, _branch, cov|
-        return true if ln == line_no && cov && cov != 'ignored' && cov.zero?
-      end
-
-      # check line coverage for line_no
-      line_cov = coverage.select { |cov| cov.size == 2 }.find { |ln, _cov| ln == line_no }
-      line_cov && line_cov[1].zero?
+      line_hits[line_no]&.zero?
     end
 
     # Method `coverage_f` returns the total coverage of this Undercover::Result
@@ -143,6 +130,30 @@ module Undercover
     alias to_s inspect
 
     private
+
+    def coverage_lines
+      return first_line..first_line if first_line == last_line
+      return first_line..last_line if covers_own_boundaries?
+
+      (first_line + 1)..(last_line - 1)
+    end
+
+    def covers_own_boundaries?
+      node.empty_def? || node.is_a?(Imagen::Node::Block) || node.is_a?(Imagen::Node::ErbNode)
+    end
+
+    def uncovered_branch_lines
+      @uncovered_branch_lines ||= coverage.filter_map do |ln, _block, _branch, cov|
+        ln if cov && cov != 'ignored' && cov.zero?
+      end.to_set
+    end
+
+    # first line tuple per line, as a linear search would find it
+    def line_hits
+      @line_hits ||= coverage.each_with_object({}) do |cov, hits|
+        hits[cov[0]] = cov[1] if cov.size == 2 && !hits.key?(cov[0])
+      end
+    end
 
     def count_covered_branches(line_number) # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
       branches = coverage.select { |cov| cov.size == 4 && cov[0] == line_number }

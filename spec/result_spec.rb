@@ -31,6 +31,15 @@ describe Undercover::Result do
     expect(result.coverage_f).to eq(0.0)
   end
 
+  it 'reads coverage from a shared index instead of the adapter' do
+    node = ast.find_all(with_name('BaconClass')).first
+    expected = described_class.new(node, coverage, 'class.rb').coverage
+    index = Undercover::CoverageIndex.new(coverage.coverage('class.rb'))
+
+    expect(coverage).not_to receive(:coverage)
+    expect(described_class.new(node, coverage, 'class.rb', coverage_index: index).coverage).to eq(expected)
+  end
+
   it 'has a fiendly #inspect' do
     node = ast.find_all(with_name('foo')).first
     result = described_class.new(node, coverage, 'class.rb')
