@@ -9,13 +9,6 @@ $LOAD_PATH.unshift("#{__dir__}/../lib")
 verbose_before_require = $VERBOSE
 $VERBOSE = nil
 require 'undercover'
-require 'benchmark'
 $VERBOSE = verbose_before_require
 
-result = 0
-time = Benchmark.realtime do
-  result = Undercover::CLI.run(ARGV)
-end
-
-puts "Undercover finished in #{time.round(4)}s"
-exit result
+exit Undercover::CLI.run(ARGV, timed: true)

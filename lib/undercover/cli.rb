@@ -2,14 +2,20 @@
 
 require 'undercover'
 require 'rainbow'
+require 'benchmark'
 
 module Undercover
   module CLI
-    def self.run(args)
+    def self.run(args, timed: false)
       opts = Undercover::Options.new.parse(args)
       syntax_version(opts.syntax_version)
+      # Text after the JSON document would break parsing it
+      return run_report(opts) if !timed || opts.formatter == 'json'
 
-      run_report(opts)
+      result = nil
+      time = Benchmark.realtime { result = run_report(opts) }
+      puts "Undercover finished in #{time.round(4)}s"
+      result
     end
 
     def self.run_report(opts) # rubocop:disable Metrics/AbcSize,Metrics/MethodLength

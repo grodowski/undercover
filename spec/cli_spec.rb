@@ -269,6 +269,22 @@ describe Undercover::CLI do
     end.to output(/\{\s*"warnings":\s*\[\]/).to_stdout
   end
 
+  it 'prints how long the run took when timed' do
+    stub_build.and_return(report_double(flagged_results: []))
+
+    expect do
+      expect(subject.run([], timed: true)).to eq(0)
+    end.to output(/No coverage is missing.*\nUndercover finished in \d+(\.\d+)?s\n\z/m).to_stdout
+  end
+
+  it 'does not print the timing after JSON output' do
+    stub_build.and_return(report_double(flagged_results: []))
+
+    expect do
+      expect(subject.run(['--format', 'json'], timed: true)).to eq(0)
+    end.to output(satisfy { JSON.parse(_1) }).to_stdout
+  end
+
   it 'sets ruby syntax version from options' do
     stub_stdout
     stub_build
