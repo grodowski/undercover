@@ -18,9 +18,10 @@ describe Imagen::Node::ErbFile do
       expect(erb_file.children).to all(be_a(Imagen::Node::ErbNode))
     end
 
-    it 'returns self with no children on syntax error' do
+    it 'returns self with no children and records the error on syntax error' do
       erb_file.build_from_ruby_source('if (')
       expect(erb_file.children).to be_empty
+      expect(erb_file.parse_error).to match(/unexpected/)
     end
   end
 
@@ -283,6 +284,25 @@ describe 'Undercover::Report load_erb_file rescue' do
     allow(Undercover::ErbExtractor).to receive(:call).and_raise(StandardError, 'parse error')
     expect { report.build }.to output(/ERB parsing failed/).to_stderr
     expect(report.results).to be_empty
+    expect(report.erb_parse_failures).to eq(['spec/fixtures/test.html.erb'])
+  end
+
+  it 'parses and warns about an unparseable template once, however many lines changed' do
+    template = 'spec/fixtures/unparseable.html.erb'
+    allow(changeset).to receive(:each_changed_line).and_yield(template, 1).and_yield(template, 2)
+                                                   .and_yield(template, 3)
+    allow(changeset).to receive(:file_paths).and_return([template])
+    expect(Undercover::ErbExtractor).to receive(:call).once.and_call_original
+
+    expect { report.build }
+      .to output("#{template}: ERB parsing failed (unexpected token $end)\n").to_stderr
+    expect(report.results).to be_empty
+    expect(report.erb_parse_failures).to eq([template])
+  end
+
+  it 'has no parse failures for a template that parses' do
+    report.build
+    expect(report.erb_parse_failures).to be_empty
   end
 
   it 'skips silently when the ERB file does not exist on disk' do

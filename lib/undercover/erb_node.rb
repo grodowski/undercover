@@ -13,7 +13,7 @@ module Imagen
     # that Root plays for Ruby files: ErbVisitor puts all parsed block nodes
     # as children of this node.
     class ErbFile < Base
-      attr_reader :full_path
+      attr_reader :full_path, :parse_error
 
       def initialize(filepath, code_dir)
         super()
@@ -26,7 +26,7 @@ module Imagen
         Undercover::ErbVisitor.traverse(ast, self)
         self
       rescue ::Parser::SyntaxError => e
-        warn "#{full_path}: ERB parsing failed (#{e.message})"
+        @parse_error = e.message
         self
       end
 

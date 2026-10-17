@@ -111,6 +111,11 @@ module Undercover
       end
     end
 
+    # Changed ERB templates left unchecked because they could not be parsed
+    def erb_parse_failures
+      @erb_parse_failures ||= []
+    end
+
     def inspect
       "#<Undercover::Report:#{object_id} results: #{results.size}>"
     end
