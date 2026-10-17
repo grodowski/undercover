@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - **Breaking:** require SimpleCov `>= 1.0` and Ruby `>= 3.2`, restoring `ignored_files` under SimpleCov 1.x. Pin `undercover ~> 0.8.0` for SimpleCov 0.x / Ruby 3.0–3.1 ([#270](https://github.com/grodowski/undercover/pull/270))
 
 ### Fixed
+- Stop warning that every candidate file was skipped by `--include-files`/`--exclude-files` when ERB templates were checked against globs but skipped for lack of ERB coverage; only the files the globs skipped are counted
 - Parse an unparseable ERB template and warn about it once per run instead of once per changed line, and list such templates in `Undercover::Report#erb_parse_failures`
 - Recommend an ERB opt-in that keeps the default `--include-files` globs (`*.rake`, `*.ru`, `Rakefile`) in the README and CLI warning, and show the default `--exclude-files` globs in `--help` instead of "Empty by default"
 - Parse ERB templates that use output block helpers such as `<%= form_with ... do |f| %>`, `<%= link_to ... do %>` and `<%= content_tag(...) { |x| %>`. Such templates were reported as unparseable and skipped

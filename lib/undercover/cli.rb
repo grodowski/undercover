@@ -55,8 +55,8 @@ module Undercover
       validation_error = report.validate(coverage_path)
       flagged = validation_error ? [] : report.flagged_results
       unless validation_error
-        warn_if_everything_was_globbed_out(report, opts)
         warn_if_erb_has_no_coverage(report)
+        warn_if_everything_was_globbed_out(report, opts)
       end
       formatter = build_formatter(flagged, validation_error, opts)
 
@@ -72,10 +72,17 @@ module Undercover
       skipped = report.globbed_out_files
       return if skipped.empty?
       return warn_erb_is_opt_in(skipped) if erb_not_opted_in?(skipped, opts)
+      return warn_globbed_out_besides_erb(skipped) if report.erb_files_without_coverage.any?
 
       warn(Rainbow("⚠️  WARNING: nothing was checked - all #{skipped.size} candidate file(s) were " \
                    'skipped by --include-files/--exclude-files. Globs are matched relative to the ' \
                    'directory SimpleCov covered, so they should not repeat its path.').yellow)
+    end
+
+    # Templates skipped for lack of coverage were candidates too, so not everything was globbed out
+    def self.warn_globbed_out_besides_erb(skipped)
+      warn(Rainbow("⚠️  WARNING: besides those ERB templates, #{skipped.size} candidate file(s) were skipped " \
+                   'by --include-files/--exclude-files.').yellow)
     end
 
     # The default globs skip ERB templates, so blaming the glob root would mislead
