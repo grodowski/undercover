@@ -522,6 +522,32 @@ describe Undercover::Report do
       end
     end
 
+    context 'with an if nested in a block helper' do
+      let(:template) { 'spec/fixtures/block_helper.html.erb' }
+      let(:changeset) do
+        mock_changeset = instance_double(Undercover::Changeset)
+        allow(mock_changeset).to receive(:each_changed_line).and_yield(template, 4)
+        allow(mock_changeset).to receive(:filter_with)
+        allow(mock_changeset).to receive(:repo_workdir).and_return('.')
+        allow(mock_changeset).to receive(:head_path?).and_return(false)
+        allow(mock_changeset).to receive(:file_paths).and_return([template])
+        mock_changeset
+      end
+
+      subject(:report) do
+        adapter = Undercover::SimplecovResultAdapter.new(
+          {'coverage' => {template => {'lines' => [1, 1, 1, 0, nil, nil]}}}
+        )
+        described_class.new(changeset, options_with_erb, adapter)
+      end
+
+      it 'flags the if on its own lines' do
+        report.build
+        flagged = report.flagged_results
+        expect(flagged.map { [_1.node.name, _1.first_line, _1.last_line] }).to eq([['if', 3, 5]])
+      end
+    end
+
     context 'with empty ERB file' do
       let(:changeset) do
         mock_changeset = instance_double(Undercover::Changeset)

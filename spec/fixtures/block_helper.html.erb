@@ -1,0 +1,6 @@
+<%= form_with model: @user do |f| %>
+  <%= f.text_field :name %>
+  <% if @user.admin? %>
+    <%= f.check_box :admin %>
+  <% end %>
+<% end %>
