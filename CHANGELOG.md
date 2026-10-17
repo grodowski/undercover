@@ -7,13 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 ### Added
 - Add coverage report filtering to reduce resource usage ([#263](https://github.com/grodowski/undercover/pull/263))
-- ERB view template coverage, opt in with `--include-files '*.rb,*.erb'`. Requires Ruby 3.2+ and `SimpleCov.enable_coverage :eval` ([#250](https://github.com/grodowski/undercover/pull/250))
+- ERB view template coverage, opt in with `--include-files '*.rb,*.rake,*.ru,Rakefile,*.erb'`. Requires Ruby 3.2+ and `SimpleCov.enable_coverage :eval` ([#250](https://github.com/grodowski/undercover/pull/250))
 - Add `--commits-only` to check only committed changes after `--compare ref`, ignoring the index and working tree, for sparse or partial clones ([#273](https://github.com/grodowski/undercover/pull/273))
 
 ### Changed
 - **Breaking:** require SimpleCov `>= 1.0` and Ruby `>= 3.2`, restoring `ignored_files` under SimpleCov 1.x. Pin `undercover ~> 0.8.0` for SimpleCov 0.x / Ruby 3.0–3.1 ([#270](https://github.com/grodowski/undercover/pull/270))
 
 ### Fixed
+- Recommend an ERB opt-in that keeps the default `--include-files` globs (`*.rake`, `*.ru`, `Rakefile`) in the README and CLI warning, and show the default `--exclude-files` globs in `--help` instead of "Empty by default"
 - Parse ERB templates that use output block helpers such as `<%= form_with ... do |f| %>`, `<%= link_to ... do %>` and `<%= content_tag(...) { |x| %>`. Such templates were reported as unparseable and skipped
 - Find the coverage root of a monorepo app in sparse checkouts, by checking paths against HEAD when they are not on disk ([#275](https://github.com/grodowski/undercover/pull/275))
 - Analyse large files in linear time. Matching changed lines to code blocks was quadratic in file size, so a PR touching big files could take minutes; a 6,000-line file now takes 0.2s instead of 27s ([#274](https://github.com/grodowski/undercover/pull/274))

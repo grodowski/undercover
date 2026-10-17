@@ -81,16 +81,22 @@ SimpleCov.start do
 end
 ```
 
-3. **Opt-in via `--include-files`** since view coverage is not enabled by default:
+3. **Opt-in via `--include-files`** since view coverage is not enabled by default. The option replaces the default list (`*.rb,*.rake,*.ru,Rakefile`), so repeat the defaults alongside `*.erb`:
 
 ```sh
-undercover --include-files '*.rb,*.erb'
+undercover --include-files '*.rb,*.rake,*.ru,Rakefile,*.erb'
 ```
 
 Or in your `.undercover` config file:
 
 ```sh
--f *.rb,*.erb
+-f *.rb,*.rake,*.ru,Rakefile,*.erb
+```
+
+`--exclude-files` likewise replaces its defaults (`test/*,spec/*,db/*,config/*,*_test.rb,*_spec.rb,vendor/*`). To also skip generator templates, which are never rendered by your tests, keep the defaults in the list:
+
+```sh
+-x test/*,spec/*,db/*,config/*,*_test.rb,*_spec.rb,vendor/*,*/templates/*
 ```
 
 **Why opt-in?** View coverage requires `enable_coverage(:eval)`, which is not enabled by default in SimpleCov. Without it, view files would be flagged as having 0% coverage (false positives).
@@ -199,7 +205,7 @@ Usage: undercover [options]
     -r, --ruby-syntax ver            Ruby syntax version, one of: current, ruby18, ruby19, ruby20, ruby21, ruby22, ruby23, ruby24, ruby25, ruby26, ruby30, ruby31, ruby32, ruby33
     -w, --max-warnings limit         Maximum number of warnings to generate before stopping analysis. Useful as a performance improvement for large diffs.
     -f, --include-files globs        Include files matching specified glob patterns (comma separated). Defaults to '*.rb,*.rake,*.ru,Rakefile'
-    -x, --exclude-files globs        Skip files matching specified glob patterns (comma separated). Empty by default.
+    -x, --exclude-files globs        Skip files matching specified glob patterns (comma separated). Defaults to 'test/*,spec/*,db/*,config/*,*_test.rb,*_spec.rb,vendor/*'
         --format FORMAT              Output format: text, json (default: text)
     -h, --help                       Prints this help
         --version                    Show version

@@ -172,7 +172,8 @@ describe Undercover::CLI do
     allow(mock_report).to receive(:flagged_results) { [] }
 
     expect { subject.run([]) }
-      .to output(/1 changed ERB template\(s\) were skipped because view coverage is opt-in/).to_stderr
+      .to output(a_string_including('1 changed ERB template(s) were skipped because view coverage is opt-in')
+        .and(a_string_including("--include-files '*.rb,*.rake,*.ru,Rakefile,*.erb'"))).to_stderr
   end
 
   it 'blames the globs when ERB templates were included but still skipped' do

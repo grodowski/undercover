@@ -87,8 +87,9 @@ module Undercover
     def self.warn_erb_is_opt_in(skipped)
       templates = skipped.count { _1.end_with?(FileLoader::ERB_EXTENSION) }
       warn(Rainbow("⚠️  WARNING: nothing was checked - #{templates} changed ERB template(s) were skipped " \
-                   "because view coverage is opt-in. Check them with --include-files '*.rb,*.erb' " \
-                   'and enable_coverage(:eval) in SimpleCov.start.').yellow)
+                   'because view coverage is opt-in. Check them with ' \
+                   "--include-files '*.rb,*.rake,*.ru,Rakefile,*.erb' and enable_coverage(:eval) in SimpleCov.start.")
+             .yellow)
     end
 
     def self.warn_if_erb_has_no_coverage(report)
