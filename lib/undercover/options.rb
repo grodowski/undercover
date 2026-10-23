@@ -48,7 +48,8 @@ module Undercover
                   :glob_allow_filters,
                   :glob_reject_filters,
                   :max_warnings_limit,
-                  :formatter
+                  :formatter,
+                  :no_hint
 
     def initialize
       @run_mode = DIFF_TRIGGER_LINE
@@ -90,6 +91,7 @@ module Undercover
         max_warnings_limit_option(opts)
         file_filters(opts)
         format_option(opts)
+        hint_option(opts)
       end.parse(args)
 
       guess_resultset_path unless simplecov_resultset
@@ -219,6 +221,13 @@ module Undercover
       desc = "Output format: #{FORMATS.join(', ')} (default: text)"
       parser.on('--format FORMAT', FORMATS, desc) do |format|
         self.formatter = format
+      end
+    end
+
+    def hint_option(parser)
+      desc = 'Hide the one-line hint printed after the text report (or set UNDERCOVER_NO_HINT=1)'
+      parser.on('--no-hint', desc) do
+        self.no_hint = true
       end
     end
   end

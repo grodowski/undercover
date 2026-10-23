@@ -5,6 +5,12 @@ require 'spec_helper'
 RSpec::Matchers.define_negated_matcher :a_string_excluding, :include
 
 describe Undercover::CLI do
+  before do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with('CLAUDECODE').and_return(nil)
+    allow(ENV).to receive(:[]).with('UNDERCOVER_NO_HINT').and_return('1')
+  end
+
   it 'creates an Undercover::Report with defaults' do
     stub_stdout
     stub_build
@@ -234,6 +240,70 @@ describe Undercover::CLI do
     allow(mock_report).to receive(:flagged_results) { [] }
 
     expect { subject.run([]) }.not_to output.to_stderr
+  end
+
+  describe 'hint' do
+    before do
+      allow(ENV).to receive(:[]).with('UNDERCOVER_NO_HINT').and_return(nil)
+      stub_build.and_return(report_double(flagged_results: []))
+    end
+
+    it 'prints the UndercoverCI hint to stderr without changing the exit code' do
+      allow(Undercover::Formatter).to receive(:new).and_return(
+        instance_double(Undercover::Formatter, to_s: 'report', exit_code: 1)
+      )
+      expect do
+        expect do
+          expect(subject.run([])).to eq(1)
+        end.to output("#{described_class::HINTS[:undercover_ci]}\n").to_stderr
+      end.to output(a_string_excluding('UndercoverCI')).to_stdout
+    end
+
+    it 'prints the Claude Code skill hint instead in Claude Code' do
+      stub_stdout
+      allow(ENV).to receive(:[]).with('CLAUDECODE').and_return('1')
+      expect { subject.run([]) }.to output("#{described_class::HINTS[:claude_code]}\n").to_stderr
+    end
+
+    it 'does not print the hint with --format json' do
+      stub_stdout
+      expect { subject.run(%w[--format json]) }.not_to output.to_stderr
+    end
+
+    it 'does not print the hint with --no-hint' do
+      stub_stdout
+      expect { subject.run(%w[--no-hint]) }.not_to output.to_stderr
+    end
+
+    it 'does not print the hint with UNDERCOVER_NO_HINT set' do
+      stub_stdout
+      allow(ENV).to receive(:[]).with('UNDERCOVER_NO_HINT').and_return('1')
+      expect { subject.run([]) }.not_to output.to_stderr
+    end
+  end
+
+  describe '.hint_for' do
+    let(:text) { Undercover::Options.new.parse([]) }
+    let(:json) { Undercover::Options.new.parse(%w[--format json]) }
+    let(:hidden) { Undercover::Options.new.parse(%w[--no-hint]) }
+
+    it 'picks the UndercoverCI hint everywhere outside Claude Code' do
+      expect(described_class.hint_for(text, {})).to eq(described_class::HINTS[:undercover_ci])
+      expect(described_class.hint_for(text, 'CI' => 'true')).to eq(described_class::HINTS[:undercover_ci])
+    end
+
+    it 'picks the Claude Code skill hint in Claude Code' do
+      expect(described_class.hint_for(text, 'CLAUDECODE' => '1')).to eq(described_class::HINTS[:claude_code])
+      expect(described_class.hint_for(text, 'CLAUDECODE' => '1', 'CI' => 'true'))
+        .to eq(described_class::HINTS[:claude_code])
+    end
+
+    it 'returns nil with --format json, --no-hint or UNDERCOVER_NO_HINT' do
+      expect(described_class.hint_for(json, {})).to be_nil
+      expect(described_class.hint_for(hidden, {})).to be_nil
+      expect(described_class.hint_for(text, 'UNDERCOVER_NO_HINT' => '1')).to be_nil
+      expect(described_class.hint_for(text, 'UNDERCOVER_NO_HINT' => '')).to eq(described_class::HINTS[:undercover_ci])
+    end
   end
 
   it 'prints changeset validation for stale coverage' do

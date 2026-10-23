@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Add coverage report filtering to reduce resource usage ([#263](https://github.com/grodowski/undercover/pull/263))
 - ERB view template coverage, opt in with `--include-files '*.rb,*.rake,*.ru,Rakefile,*.erb'`. Requires Ruby 3.2+ and `SimpleCov.enable_coverage :eval` ([#250](https://github.com/grodowski/undercover/pull/250))
+- Print a one-line hint about UndercoverCI after the text report (in Claude Code sessions, about the undercover Claude Code skill instead); hide it with `--no-hint` or `UNDERCOVER_NO_HINT=1` ([#278](https://github.com/grodowski/undercover/pull/278))
 - Add `--commits-only` to check only committed changes after `--compare ref`, ignoring the index and working tree, for sparse or partial clones ([#273](https://github.com/grodowski/undercover/pull/273))
 
 ### Changed

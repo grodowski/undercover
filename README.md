@@ -178,6 +178,8 @@ Check out `docs/` for CI configuration examples:
 - [CircleCI - advanced](docs/circleci_advanced.yml)
 - [Semaphore](docs/semaphore.yml)
 
+`undercover` prints a one-line hint about UndercoverCI to stderr after the text report (in Claude Code sessions, about the undercover Claude Code skill instead). Hide it with `--no-hint` (also in `.undercover`) or `UNDERCOVER_NO_HINT=1`.
+
 Merging coverage results ([sample gist](https://gist.github.com/grodowski/9744ff91034dce8df20c2a8210409fb0)) is required for parallel tests before processing with `undercover`.
 
 ## Code review integrations
@@ -207,6 +209,7 @@ Usage: undercover [options]
     -f, --include-files globs        Include files matching specified glob patterns (comma separated). Defaults to '*.rb,*.rake,*.ru,Rakefile'
     -x, --exclude-files globs        Skip files matching specified glob patterns (comma separated). Defaults to 'test/*,spec/*,db/*,config/*,*_test.rb,*_spec.rb,vendor/*'
         --format FORMAT              Output format: text, json (default: text)
+        --no-hint                    Hide the one-line hint printed after the text report (or set UNDERCOVER_NO_HINT=1)
     -h, --help                       Prints this help
         --version                    Show version
 ```

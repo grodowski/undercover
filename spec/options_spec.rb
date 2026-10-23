@@ -32,6 +32,21 @@ describe Undercover::Options do
       expect(described_class.new.parse(['--commits-only']).commits_only).to be(true)
     end
 
+    it 'sets no_hint from --no-hint' do
+      expect(options.parse([]).no_hint).to be_nil
+      expect(described_class.new.parse(['--no-hint']).no_hint).to be(true)
+    end
+
+    it 'reads --no-hint from the .undercover file' do
+      Tempfile.create('undercover_config') do |file|
+        file.write("--no-hint\n")
+        file.close
+        allow(options).to receive(:project_options_file).and_return(file.path)
+
+        expect(options.parse([]).no_hint).to be(true)
+      end
+    end
+
     it 'warns that --path is deprecated and does not use it' do
       expect { options.parse(['--path', 'some/project']) }
         .to output(/--path is deprecated and ignored/).to_stderr
