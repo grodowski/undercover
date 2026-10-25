@@ -30,7 +30,7 @@ Gem::Specification.new do |spec| # rubocop:disable Metrics/BlockLength
   spec.add_dependency 'base64'
   spec.add_dependency 'benchmark'
   spec.add_dependency 'erubi', '>= 1.13'
-  spec.add_dependency 'imagen', '>= 0.2.0'
+  spec.add_dependency 'prism', '>= 1.8', '< 3'
   spec.add_dependency 'rainbow', '>= 2.1', '< 4.0'
   spec.add_dependency 'rugged', '>= 0.27', '< 1.10'
   spec.add_dependency 'simplecov', '>= 1.0'

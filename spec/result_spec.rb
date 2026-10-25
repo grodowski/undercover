@@ -4,35 +4,35 @@ require 'spec_helper'
 require 'undercover'
 
 describe Undercover::Result do
-  let(:ast) { Imagen.from_local('spec/fixtures/class.rb') }
+  let(:ast) { all_nodes('spec/fixtures/class.rb') }
   let(:lcov) do
     Undercover::LcovParser.parse('spec/fixtures/fixtures.lcov', nil)
   end
   let(:coverage) { lcov }
 
   it 'computes class coverage as float' do
-    node = ast.find_all(with_name('BaconClass')).first
+    node = ast.find(&with_name('BaconClass'))
     result = described_class.new(node, coverage, 'class.rb')
 
     expect(result.coverage_f).to eq(0.8333)
   end
 
   it 'computes method coverage as float' do
-    node = ast.find_all(with_name('bar')).first
+    node = ast.find(&with_name('bar'))
     result = described_class.new(node, coverage, 'class.rb')
 
     expect(result.coverage_f).to eq(1.0)
   end
 
   it 'computes coverage for a not covered method' do
-    node = ast.find_all(with_name('foo')).first
+    node = ast.find(&with_name('foo'))
     result = described_class.new(node, coverage, 'class.rb')
 
     expect(result.coverage_f).to eq(0.0)
   end
 
   it 'reads coverage from a shared index instead of the adapter' do
-    node = ast.find_all(with_name('BaconClass')).first
+    node = ast.find(&with_name('BaconClass'))
     expected = described_class.new(node, coverage, 'class.rb').coverage
     index = Undercover::CoverageIndex.new(coverage.coverage('class.rb'))
 
@@ -41,21 +41,21 @@ describe Undercover::Result do
   end
 
   it 'has a fiendly #inspect' do
-    node = ast.find_all(with_name('foo')).first
+    node = ast.find(&with_name('foo'))
     result = described_class.new(node, coverage, 'class.rb')
 
     expect(result.to_s).to match(/#<Undercover::Report::Result:\d+ name: foo, coverage: 0.0/)
   end
 
   context 'for an empty module def' do
-    let(:ast) { Imagen.from_local('spec/fixtures/empty_class_def.rb') }
+    let(:ast) { all_nodes('spec/fixtures/empty_class_def.rb') }
     let(:lcov) do
       Undercover::LcovParser.parse('spec/fixtures/empty_class_def.lcov')
     end
     let(:coverage) { lcov }
 
     it 'is not NaN' do
-      node = ast.find_all(with_name('ApplicationJob')).first
+      node = ast.find(&with_name('ApplicationJob'))
       result = described_class.new(node, coverage, 'empty_class_def.rb')
 
       expect(result.coverage_f).to eq(1.0)
@@ -63,14 +63,14 @@ describe Undercover::Result do
   end
 
   context 'for a branch without line coverage' do
-    let(:ast) { Imagen.from_local('spec/fixtures/module.rb') }
+    let(:ast) { all_nodes('spec/fixtures/module.rb') }
     let(:lcov) do
       Undercover::LcovParser.parse('spec/fixtures/fixtures.lcov')
     end
     let(:coverage) { lcov }
 
     it 'uncovered gives false' do
-      node = ast.find_all(with_name('foobar')).first
+      node = ast.find(&with_name('foobar'))
       result = described_class.new(node, coverage, 'module.rb')
 
       expect(result.uncovered?(27)).to be_falsy
@@ -78,14 +78,14 @@ describe Undercover::Result do
   end
 
   context 'for oneline block uncovered' do
-    let(:ast) { Imagen.from_local('spec/fixtures/one_line_block.rb') }
+    let(:ast) { all_nodes('spec/fixtures/one_line_block.rb') }
     let(:lcov) do
       Undercover::LcovParser.parse('spec/fixtures/one_line_block.lcov')
     end
     let(:coverage) { lcov }
 
     it 'uncovered gives true' do
-      node = ast.children[0].find_all(->(_) { true }).last
+      node = ast.last
       result = described_class.new(node, coverage, 'one_line_block.rb')
 
       expect(result.uncovered?(7)).to be_truthy
@@ -93,14 +93,14 @@ describe Undercover::Result do
   end
 
   context 'for single-line node covered' do
-    let(:ast) { Imagen.from_local('spec/fixtures/single_line.rb') }
+    let(:ast) { all_nodes('spec/fixtures/single_line.rb') }
     let(:lcov) do
       Undercover::LcovParser.parse('spec/fixtures/single_line.lcov')
     end
     let(:coverage) { lcov }
 
     it 'uncovered gives false' do
-      node = ast.children[0].find_all(->(_) { true }).last
+      node = ast.last
       result = described_class.new(node, coverage, 'single_line.rb')
 
       expect(result.uncovered?(1)).to be_falsy
@@ -113,8 +113,7 @@ describe Undercover::Result do
         'map { |x| x + 1 }'
     end
     let(:ast) do
-      root = Imagen::Node::Root.new
-      Imagen::Visitor.traverse(Imagen::AST::Parser.parse(source_file, 'method_block_multi.rb'), root)
+      all_nodes('method_block_multi.rb', source_file)
     end
     let(:lcov) do
       file = Tempfile.new
@@ -130,7 +129,7 @@ describe Undercover::Result do
     let(:coverage) { lcov }
 
     it "doesn't report false positive on block" do
-      node = ast.children[0].find_all(->(_) { true }).last
+      node = ast.last
       result = described_class.new(node, coverage, 'method_block_multi.rb')
 
       expect(result.uncovered?(1)).to be_falsy
@@ -145,8 +144,7 @@ describe Undercover::Result do
         "end\n"
     end
     let(:ast) do
-      root = Imagen::Node::Root.new
-      Imagen::Visitor.traverse(Imagen::AST::Parser.parse(source_file, 'method_block_multi.rb'), root)
+      all_nodes('method_block_multi.rb', source_file)
     end
     let(:lcov) do
       file = Tempfile.new
@@ -164,7 +162,7 @@ describe Undercover::Result do
     let(:coverage) { lcov }
 
     it "doesn't report false positive on block" do
-      node = ast.children[0].find_all(->(_) { true }).last
+      node = ast.last
       result = described_class.new(node, coverage, 'method_block_multi.rb')
 
       expect(result.uncovered?(1)).to be_falsy
@@ -177,8 +175,7 @@ describe Undercover::Result do
         "def c_single; puts 'bar'; end\n"
     end
     let(:ast) do
-      root = Imagen::Node::Root.new
-      Imagen::Visitor.traverse(Imagen::AST::Parser.parse(source_file, 'def_single_line.rb'), root)
+      all_nodes('def_single_line.rb', source_file)
     end
     let(:lcov) do
       file = Tempfile.new
@@ -194,7 +191,7 @@ describe Undercover::Result do
     let(:coverage) { lcov }
 
     it "doesn't report false positive on block" do
-      nodes = ast.find_all(->(node) { !node.is_a?(Imagen::Node::Root) })
+      nodes = ast
       nodes.each do |node|
         result = described_class.new(node, coverage, 'def_single_line.rb')
         expect(result.uncovered?(1)).to be_falsy
@@ -204,7 +201,7 @@ describe Undercover::Result do
   end
 
   context ':nocov: with a SimpleCov report' do
-    let(:ast) { Imagen.from_local('spec/fixtures/nocov.rb') }
+    let(:ast) { all_nodes('spec/fixtures/nocov.rb') }
     let(:simplecov) do
       # effect of nocov_token - files ignored entirely or partially in the coverage file
       simplecov_coverage_fixture 'spec/fixtures/nocov.json'
@@ -212,7 +209,7 @@ describe Undercover::Result do
     let(:coverage) { simplecov }
 
     it 'respects lines skipped by simplecov' do
-      nodes = ast.find_all(->(node) { !node.is_a?(Imagen::Node::Root) })
+      nodes = ast
 
       skipped_result = described_class.new(nodes[0], coverage, 'spec/fixtures/nocov.rb')
       flagged_result = described_class.new(nodes[1], coverage, 'spec/fixtures/nocov.rb')
@@ -230,14 +227,14 @@ describe Undercover::Result do
   end
 
   context ':nocov: with SimpleCov report and multi-line branch coverage' do
-    let(:ast) { Imagen.from_local('spec/fixtures/branch_ignored.rb') }
+    let(:ast) { all_nodes('spec/fixtures/branch_ignored.rb') }
     let(:simplecov) do
       simplecov_coverage_fixture 'spec/fixtures/branch_ignored_coverage/branch_ignored_test.json'
     end
     let(:coverage) { simplecov }
 
     it 'accepts ignored branches with present line coverage (:nocov: edge case)' do
-      nodes = ast.find_all(->(node) { !node.is_a?(Imagen::Node::Root) })
+      nodes = ast
       test_method_result = described_class.new(nodes[0], coverage, 'branch_ignored.rb')
 
       # has ignored branch due to overlap with :nocov:, but uningnored lines
@@ -255,7 +252,7 @@ describe Undercover::Result do
     end
 
     it '#pretty_print prints skipped branch' do
-      nodes = ast.find_all(->(node) { !node.is_a?(Imagen::Node::Root) })
+      nodes = ast
       test_method_result = described_class.new(nodes[0], coverage, 'branch_ignored.rb')
 
       pretty_output = test_method_result.pretty_print
@@ -286,8 +283,7 @@ describe Undercover::Result do
         "end\n"
     end
     let(:ast) do
-      root = Imagen::Node::Root.new
-      Imagen::Visitor.traverse(Imagen::AST::Parser.parse(source_file, file_path), root)
+      all_nodes(file_path, source_file)
     end
     let(:mock_coverage) do
       coverage_data = [
@@ -297,7 +293,7 @@ describe Undercover::Result do
     end
 
     it 'handles skipped lines correctly' do
-      node = ast.find_all(->(n) { n.name == 'foo' }).first
+      node = ast.find { |n| n.name == 'foo' }
       result = described_class.new(node, mock_coverage, file_path)
 
       # This should trigger the skipped line handling in the coverage block
@@ -313,8 +309,7 @@ describe Undercover::Result do
         "end\n"
     end
     let(:ast) do
-      root = Imagen::Node::Root.new
-      Imagen::Visitor.traverse(Imagen::AST::Parser.parse(source_file, file_path), root)
+      all_nodes(file_path, source_file)
     end
     let(:mock_coverage_with_skipped) do
       coverage_data = [
@@ -328,7 +323,7 @@ describe Undercover::Result do
     end
 
     it 'marks skipped lines as covered and skips to next iteration' do
-      node = ast.find_all(->(n) { n.name == 'skipped_method' }).first
+      node = ast.find { |n| n.name == 'skipped_method' }
       result = described_class.new(node, mock_coverage_with_skipped, file_path)
 
       # Line 2 should be marked as covered (1) due to being skipped
@@ -339,11 +334,11 @@ describe Undercover::Result do
   end
 
   context 'with pretty print formatting' do
-    let(:ast) { Imagen.from_local('spec/fixtures/class.rb') }
+    let(:ast) { all_nodes('spec/fixtures/class.rb') }
     let(:coverage) { lcov }
 
     it 'handles different line types in pretty_print' do
-      node = ast.find_all(with_name('BaconClass')).first
+      node = ast.find(&with_name('BaconClass'))
       result = described_class.new(node, coverage, 'class.rb')
 
       # Test the pretty_print method that has uncovered branches
@@ -357,9 +352,8 @@ describe Undercover::Result do
       file_path = 'skipped_test.rb'
       source_file = "def test_method\n  puts 'skipped line'\n  puts 'normal line'\nend\n"
 
-      ast = Imagen::Node::Root.new
-      Imagen::Visitor.traverse(Imagen::AST::Parser.parse(source_file, file_path), ast)
-      node = ast.find_all(->(n) { n.name == 'test_method' }).first
+      ast = all_nodes(file_path, source_file)
+      node = ast.find { |n| n.name == 'test_method' }
 
       # Create mock coverage that will return true for skipped? on line 2
       mock_coverage = double('coverage')
@@ -380,9 +374,7 @@ describe Undercover::Result do
     let(:source_file) { "def foo\n  a\n  x ? a : b\n  b\nend\n" }
     let(:file_path) { 'test.rb' }
     let(:ast) do
-      root = Imagen::Node::Root.new
-      Imagen::Visitor.traverse(Imagen::AST::Parser.parse(source_file, file_path), root)
-      root
+      all_nodes(file_path, source_file)
     end
     let(:mock_adapter) do
       double('adapter').tap do |a|
@@ -398,7 +390,7 @@ describe Undercover::Result do
     end
 
     subject do
-      node = ast.find_all(with_name('foo')).first
+      node = ast.find(&with_name('foo'))
       described_class.new(node, mock_adapter, file_path).branches
     end
 
@@ -421,7 +413,7 @@ describe Undercover::Result do
   end
 
   context 'safe navigation in method arg' do
-    let(:ast) { Imagen.from_local('spec/fixtures/safe_navigation_in_method_arg.rb') }
+    let(:ast) { all_nodes('spec/fixtures/safe_navigation_in_method_arg.rb') }
 
     context 'for a json file' do
       let(:simplecov) do
@@ -431,7 +423,7 @@ describe Undercover::Result do
       let(:coverage) { simplecov }
 
       it '#pretty_print prints branch on n/a line' do
-        nodes = ast.find_all(->(node) { !node.is_a?(Imagen::Node::Root) })
+        nodes = ast
         test_method_result = described_class.new(nodes[1], coverage, 'safe_navigation_in_method_arg.rb')
 
         pretty_output = test_method_result.pretty_print
@@ -457,7 +449,7 @@ describe Undercover::Result do
       end
 
       it '#pretty_print prints branch on n/a line' do
-        nodes = ast.find_all(->(node) { !node.is_a?(Imagen::Node::Root) })
+        nodes = ast
         test_method_result = described_class.new(nodes[1], coverage, 'safe_navigation_in_method_arg.rb')
 
         pretty_output = test_method_result.pretty_print

@@ -3,12 +3,6 @@
 
 $LOAD_PATH.unshift("#{__dir__}/../lib")
 
-# Silence load-time noise from dependencies (parser warns about its Ruby version), but
-# only while requiring: $VERBOSE = nil also turns Kernel#warn into a no-op, and undercover
-# uses it to surface deprecations and configuration problems.
-verbose_before_require = $VERBOSE
-$VERBOSE = nil
 require 'undercover'
-$VERBOSE = verbose_before_require
 
 exit Undercover::CLI.run(ARGV, timed: true)

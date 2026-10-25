@@ -58,10 +58,9 @@ def stub_stdout
   allow($stdout).to receive(:puts)
 end
 
-# Matchers compatible with Imagen::Node::Base#find_all
-# TODO: deduplicate with Imagen gem
-def of_type(type)
-  ->(node) { node.is_a?(type) }
+# All nodes of a parsed file, nested ones after their parent
+def all_nodes(path, source = File.read(path))
+  Undercover::Node.parse(source, path).flat_map { |root| root.find_all(->(_) { true }) }
 end
 
 def with_name(name)

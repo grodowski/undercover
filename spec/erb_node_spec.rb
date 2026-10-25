@@ -3,61 +3,31 @@
 require 'spec_helper'
 require 'undercover'
 
-describe Imagen::Node::ErbFile do
-  let(:code_dir) { 'spec/fixtures' }
-  let(:filepath) { 'test.html.erb' }
-  subject(:erb_file) { described_class.new(filepath, code_dir) }
-
-  describe '#build_from_ruby_source' do
-    it 'parses ERB and builds child nodes for block constructs' do
-      source = File.read(File.join(code_dir, filepath))
-      ruby_source = Undercover::ErbExtractor.call(source)
-      erb_file.build_from_ruby_source(ruby_source)
-
-      expect(erb_file.children).not_to be_empty
-      expect(erb_file.children).to all(be_a(Imagen::Node::ErbNode))
-    end
-
-    it 'returns self with no children and records the error on syntax error' do
-      erb_file.build_from_ruby_source('if (')
-      expect(erb_file.children).to be_empty
-      expect(erb_file.parse_error).to match(/unexpected/)
-    end
-  end
-
-  describe '#human_name' do
-    it { expect(erb_file.human_name).to eq('erb file') }
-  end
-
-  describe '#first_line / #last_line' do
-    it { expect(erb_file.first_line).to be_nil }
-    it { expect(erb_file.last_line).to be_nil }
-  end
+def parse_erb(erb_source, path = File::NULL)
+  Undercover::ErbNode.parse(erb_source, path).flat_map { |root| root.find_all(->(_) { true }) }
 end
 
-describe Imagen::Node::ErbNode do
-  let(:code_dir) { 'spec/fixtures' }
-  let(:filepath) { 'test.html.erb' }
-  let(:full_path) { File.join(code_dir, filepath) }
-  let(:ruby_source) { Undercover::ErbExtractor.call(File.read(full_path)) }
-  let(:erb_file) do
-    Imagen::Node::ErbFile.new(filepath, code_dir).build_from_ruby_source(ruby_source)
-  end
-  let(:nodes) { erb_file.find_all(->(n) { !n.is_a?(Imagen::Node::ErbFile) }) }
+describe Undercover::ErbNode do
+  let(:full_path) { 'spec/fixtures/test.html.erb' }
+  let(:nodes) { parse_erb(File.read(full_path), full_path) }
 
   it 'finds all block constructs in the fixture' do
-    types = nodes.map { |n| n.ast_node.type }
-    expect(types).to include(:if, :block, :while, :case)
+    expect(nodes).to all(be_a(described_class))
+    expect(nodes.map(&:kind)).to include(:if, :block, :while, :case)
+  end
+
+  it 'raises a parse error on invalid Ruby' do
+    expect { parse_erb('<% if ( %>') }
+      .to raise_error(Undercover::Node::ParseError, /unexpected end-of-input.* on line 2/)
   end
 
   describe 'if node' do
-    subject(:node) { nodes.find { |n| n.ast_node.type == :if } }
+    subject(:node) { nodes.find { |n| n.kind == :if } }
 
     it { expect(node.name).to eq('if') }
     it { expect(node.human_name).to eq('if block') }
     it { expect(node.first_line).to eq(6) }
     it { expect(node.last_line).to eq(10) }
-    it { expect(node.empty_def?).to be(false) }
 
     it 'returns source lines from the original ERB file' do
       lines = node.source_lines
@@ -73,7 +43,7 @@ describe Imagen::Node::ErbNode do
   end
 
   describe 'each do block node' do
-    subject(:node) { nodes.find { |n| n.ast_node.type == :block } }
+    subject(:node) { nodes.find { |n| n.kind == :block } }
 
     it { expect(node.name).to eq('block (item)') }
     it { expect(node.human_name).to eq('block block') }
@@ -82,7 +52,7 @@ describe Imagen::Node::ErbNode do
   end
 
   describe 'while node' do
-    subject(:node) { nodes.find { |n| n.ast_node.type == :while } }
+    subject(:node) { nodes.find { |n| n.kind == :while } }
 
     it { expect(node.name).to eq('while') }
     it { expect(node.human_name).to eq('while block') }
@@ -91,7 +61,7 @@ describe Imagen::Node::ErbNode do
   end
 
   describe 'case node' do
-    subject(:node) { nodes.find { |n| n.ast_node.type == :case } }
+    subject(:node) { nodes.find { |n| n.kind == :case } }
 
     it { expect(node.name).to eq('case') }
     it { expect(node.human_name).to eq('case block') }
@@ -99,86 +69,63 @@ describe Imagen::Node::ErbNode do
     it { expect(node.last_line).to eq(20) }
   end
 
-  describe 'source_lines with missing file' do
-    it 'returns empty array when the source file does not exist' do
-      node = nodes.first
-      allow(node.ast_node.location.expression.source_buffer).to receive(:name).and_return('/nonexistent/file.erb')
-      expect(node.source_lines).to eq([])
-    end
+  it 'parses a top-level yield, as in a layout' do
+    expect(parse_erb("<%= yield %>\n<% if x %>\n<% end %>\n").map(&:name)).to eq(['if'])
   end
 end
 
 describe Undercover::ErbVisitor do
-  let(:code_dir) { 'spec/fixtures' }
-  let(:filepath) { 'test.html.erb' }
-  let(:full_path) { File.join(code_dir, filepath) }
-  let(:ruby_source) { Undercover::ErbExtractor.call(File.read(full_path)) }
-  let(:erb_file) do
-    Imagen::Node::ErbFile.new(filepath, code_dir).build_from_ruby_source(ruby_source)
-  end
-
   it 'does not create a separate node for elsif branches' do
-    nodes = erb_file.find_all(->(n) { !n.is_a?(Imagen::Node::ErbFile) })
-    if_nodes = nodes.select { |n| n.ast_node.type == :if }
+    if_nodes = parse_erb(File.read('spec/fixtures/test.html.erb')).select { |n| n.kind == :if }
     # test.html.erb has one if/else — no elsif — so exactly one if node
     expect(if_nodes.size).to eq(1)
   end
 
-  context 'with an elsif branch' do
-    let(:erb_source) do
-      <<~ERB
-        <% if @a %>
-          <p>A</p>
-        <% elsif @b %>
-          <p>B</p>
+  it 'collapses if/elsif into a single node and finds blocks in its branches' do
+    erb = <<~ERB
+      <% if @a %>
+        <p>A</p>
+      <% elsif @b %>
+        <% @items.each do |item| %>
+          <p><%= item %></p>
         <% end %>
-      ERB
-    end
-
-    it 'collapses if/elsif into a single node' do
-      ruby_source = Undercover::ErbExtractor.call(erb_source)
-      root = Imagen::Node::ErbFile.new('inline.erb', '.')
-      root.instance_variable_set(:@full_path, File::NULL)
-      Undercover::ErbVisitor.traverse(Imagen::AST::Parser.parse(ruby_source, File::NULL), root)
-
-      if_nodes = root.find_all(->(n) { !n.is_a?(Imagen::Node::ErbFile) })
-                     .select { |n| n.ast_node.type == :if }
-      expect(if_nodes.size).to eq(1)
-    end
+      <% end %>
+    ERB
+    expect(parse_erb(erb).map { |n| [n.name, n.first_line, n.last_line] })
+      .to eq([['if', 1, 7], ['block (item)', 4, 6]])
   end
 
-  context 'with a no-args block' do
-    let(:erb_source) do
-      <<~ERB
-        <% [1, 2].each do %>
-          <p>item</p>
+  it 'reports unless and until' do
+    erb = <<~ERB
+      <% unless @a %>
+        <% until @b %>
+          <p>B</p>
         <% end %>
-      ERB
-    end
+      <% end %>
+    ERB
+    expect(parse_erb(erb).map { |n| [n.human_name, n.name, n.first_line, n.last_line] })
+      .to eq([['unless block', 'unless', 1, 5], ['until block', 'until', 2, 4]])
+  end
 
-    it 'names the block without args' do
-      ruby_source = Undercover::ErbExtractor.call(erb_source)
-      root = Imagen::Node::ErbFile.new('inline.erb', '.')
-      root.instance_variable_set(:@full_path, File::NULL)
-      Undercover::ErbVisitor.traverse(Imagen::AST::Parser.parse(ruby_source, File::NULL), root)
+  it 'names the block without args' do
+    erb = <<~ERB
+      <% [1, 2].each do %>
+        <p>item</p>
+      <% end %>
+    ERB
+    expect(parse_erb(erb).map(&:name)).to eq(['block'])
+  end
 
-      block_node = root.children.find { |n| n.ast_node.type == :block }
-      expect(block_node.name).to eq('block')
-    end
+  it 'reports methods defined in a template as regular nodes' do
+    nodes = parse_erb("<% def helper %>\n  <p>x</p>\n<% end %>\n")
+    expect(nodes.map { |n| [n.class, n.human_name, n.name] })
+      .to eq([[Undercover::Node, 'instance method', 'helper']])
   end
 end
 
 describe Undercover::ErbExtractor do
-  def erb_nodes(erb_source)
-    root = Imagen::Node::ErbFile.new('inline.erb', '.')
-    root.instance_variable_set(:@full_path, File::NULL)
-    ast = Imagen::AST::Parser.parse(described_class.call(erb_source), File::NULL)
-    Undercover::ErbVisitor.traverse(ast, root)
-    root.find_all(->(n) { !n.is_a?(Imagen::Node::ErbFile) })
-  end
-
   def block_lines(erb_source)
-    erb_nodes(erb_source).select { |n| n.ast_node.type == :block }.map { |n| [n.first_line, n.last_line] }
+    parse_erb(erb_source).select { |n| n.kind == :block }.map { |n| [n.first_line, n.last_line] }
   end
 
   it 'parses form_with with a do |f| block' do
@@ -230,8 +177,8 @@ describe Undercover::ErbExtractor do
   end
 
   it 'places an if nested inside a block helper on its own lines' do
-    nodes = erb_nodes(File.read('spec/fixtures/block_helper.html.erb'))
-    expect(nodes.map { |n| [n.ast_node.type, n.first_line, n.last_line] }).to eq([[:block, 1, 6], [:if, 3, 5]])
+    nodes = parse_erb(File.read('spec/fixtures/block_helper.html.erb'))
+    expect(nodes.map { |n| [n.kind, n.first_line, n.last_line] }).to eq([[:block, 1, 6], [:if, 3, 5]])
   end
 
   it 'leaves non-block expressions as buffered output' do
@@ -246,17 +193,7 @@ describe Undercover::ErbExtractor do
         <p>OK</p>
       <% end %>
     ERB
-    expect(erb_nodes(erb).map { |n| [n.ast_node.type, n.first_line, n.last_line] }).to eq([[:case, 1, 4]])
-  end
-end
-
-describe 'Imagen::Node::ErbNode args_list' do
-  it 'returns nil when block AST node has no :args child' do
-    # Construct a synthetic :block node with no :args child to exercise the
-    # `return unless args_node` guard in args_list.
-    synthetic = Parser::AST::Node.new(:block, [])
-    node = Imagen::Node::ErbNode.new
-    expect(node.send(:args_list, synthetic)).to be_nil
+    expect(parse_erb(erb).map { |n| [n.kind, n.first_line, n.last_line] }).to eq([[:case, 1, 4]])
   end
 end
 
@@ -295,7 +232,8 @@ describe 'Undercover::Report load_erb_file rescue' do
     expect(Undercover::ErbExtractor).to receive(:call).once.and_call_original
 
     expect { report.build }
-      .to output("#{template}: ERB parsing failed (unexpected token $end)\n").to_stderr
+      .to output("#{template}: ERB parsing failed (unexpected end-of-input, assuming it is closing " \
+                 "the parent top level context on line 5)\n").to_stderr
     expect(report.results).to be_empty
     expect(report.erb_parse_failures).to eq([template])
   end

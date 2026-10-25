@@ -5,7 +5,7 @@ require 'undercover/ast_branch_annotator'
 
 describe Undercover::AstBranchAnnotator do
   def parse(src)
-    Imagen::AST::Parser.parse(src, 'test.rb')
+    Prism.parse(src).value
   end
 
   def annotate(src)
@@ -83,14 +83,23 @@ describe Undercover::AstBranchAnnotator do
     end
   end
 
-  describe 'if with unrecognized location map' do
-    it 'silently skips without raising (e.g. pattern-match guards)' do
-      condition = parse('x')
-      unknown_map = Struct.new(:node).new # not Condition or Ternary
-      if_node = Parser::AST::Node.new(:if, [condition], {location: unknown_map})
-
-      expect(described_class.call(if_node)).to eq({})
+  describe 'pattern matching' do
+    it 'does not label a guard, which is not a branch of its own' do
+      info = annotate("case x\nin Integer if x > 1\n  if y\n    a\n  end\nend")
+      expect(info).to eq(3 => 'if y')
     end
+
+    it 'labels conditions inside a pattern without a guard' do
+      expect(annotate("case x\nin Integer\n  a ? b : c\nend")).to eq(3 => '? a')
+    end
+  end
+
+  it 'labels the else of unless' do
+    expect(annotate("unless x\n  a\nelse\n  b\nend")).to eq(1 => 'unless x', 3 => 'else')
+  end
+
+  it 'labels modifier if and unless' do
+    expect(annotate("a if x\nb unless y")).to eq(1 => 'if x', 2 => 'unless y')
   end
 
   it 'recurses into nested constructs' do

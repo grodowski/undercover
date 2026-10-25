@@ -8,7 +8,6 @@ module Undercover
   module CLI
     def self.run(args, timed: false)
       opts = Undercover::Options.new.parse(args)
-      syntax_version(opts.syntax_version)
       # Text after the JSON document would break parsing it
       return run_report(opts) if !timed || opts.formatter == 'json'
 
@@ -119,12 +118,6 @@ module Undercover
       else
         Undercover::Formatter.new(flagged, validation_error)
       end
-    end
-
-    def self.syntax_version(version)
-      return unless version
-
-      Imagen.parser_version = version
     end
 
     # --git-dir is resolved against the working directory, and the repository it points

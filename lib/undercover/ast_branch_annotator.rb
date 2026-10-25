@@ -1,50 +1,62 @@
 # frozen_string_literal: true
 
+require 'prism'
+
 module Undercover
-  class AstBranchAnnotator
-    def self.call(ast_node)
-      new.annotate(ast_node)
+  # Labels the lines where Ruby's branch coverage starts a branch (if, unless, ternary,
+  # case/when) with the source of their condition
+  class AstBranchAnnotator < Prism::Visitor
+    def self.call(prism_node)
+      return {} unless prism_node.is_a?(Prism::Node)
+
+      new.tap { prism_node.accept(_1) }.info
     end
 
-    # rubocop:disable Metrics/MethodLength,Metrics/AbcSize
-    def annotate(ast_node, info = {})
-      return info unless ast_node.is_a?(::Parser::AST::Node)
+    attr_reader :info
 
-      case ast_node.type
-      when :if
-        annotate_if_node(ast_node, info)
-      when :case
-        ast_node.children.drop(1).each do |child|
-          next unless child.is_a?(::Parser::AST::Node) && child.type == :when
+    def initialize
+      super
+      @info = {}
+    end
 
-          cond_src = expression_source(child.children.first)
-          info[child.location.keyword.line] ||= "when #{cond_src}"
-        end
+    def visit_if_node(node)
+      if node.if_keyword_loc
+        label(node.if_keyword_loc, "#{node.if_keyword_loc.slice} #{node.predicate.slice}")
+        label_else(node.subsequent)
+      else
+        label(node.then_keyword_loc, "? #{node.predicate.slice}")
+        label(node.subsequent.else_keyword_loc, ':')
       end
-
-      ast_node.children.each { |c| annotate(c, info) }
-      info
+      super
     end
-    # rubocop:enable Metrics/MethodLength,Metrics/AbcSize
+
+    def visit_unless_node(node)
+      label(node.keyword_loc, "unless #{node.predicate.slice}")
+      label_else(node.else_clause)
+      super
+    end
+
+    def visit_when_node(node)
+      label(node.keyword_loc, "when #{node.conditions.first.slice}")
+      super
+    end
+
+    # A guard (`in x if y`) is not a branch of its own
+    def visit_in_node(node)
+      guard = node.pattern
+      return super unless guard.is_a?(Prism::IfNode) || guard.is_a?(Prism::UnlessNode)
+
+      [guard.statements, guard.predicate, node.statements].compact.each { _1.accept(self) }
+    end
 
     private
 
-    def annotate_if_node(ast_node, info) # rubocop:disable Metrics/MethodLength,Metrics/AbcSize
-      loc = ast_node.location
-      cond_src = expression_source(ast_node.children.first)
-      case loc
-      when Parser::Source::Map::Condition
-        kw = loc.keyword
-        info[kw.line] ||= "#{kw.source} #{cond_src}"
-        info[loc.else.line] ||= 'else' if loc.else&.source == 'else'
-      when Parser::Source::Map::Ternary
-        info[loc.question.line] ||= "? #{cond_src}"
-        info[loc.colon.line] ||= ':'
-      end
+    def label(location, text)
+      info[location.start_line] ||= text
     end
 
-    def expression_source(node)
-      node.location.expression.source
+    def label_else(branch)
+      label(branch.else_keyword_loc, 'else') if branch.is_a?(Prism::ElseNode)
     end
   end
 end

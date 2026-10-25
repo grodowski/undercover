@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add `--commits-only` to check only committed changes after `--compare ref`, ignoring the index and working tree, for sparse or partial clones ([#273](https://github.com/grodowski/undercover/pull/273))
 
 ### Changed
+- Parse Ruby with Prism instead of imagen and parser: Ruby 3.4/4.0 syntax is analysed instead of skipped, `_1` blocks are checked, destructured block params are named as written, and `--ruby-syntax`/`-r` is ignored with a warning ([#279](https://github.com/grodowski/undercover/pull/279))
 - **Breaking:** require SimpleCov `>= 1.0` and Ruby `>= 3.2`, restoring `ignored_files` under SimpleCov 1.x. Pin `undercover ~> 0.8.0` for SimpleCov 0.x / Ruby 3.0–3.1 ([#270](https://github.com/grodowski/undercover/pull/270))
 
 ### Fixed

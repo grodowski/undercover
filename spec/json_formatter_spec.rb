@@ -4,7 +4,7 @@ require 'spec_helper'
 require 'undercover/json_formatter'
 
 describe Undercover::JsonFormatter do
-  let(:mock_node) { double('node', name: 'Foo#bar', human_name: 'instance method', ast_node: nil) }
+  let(:mock_node) { double('node', name: 'Foo#bar', human_name: 'instance method', prism_node: nil) }
 
   let(:mock_coverage) { [[11, 0], [12, 5]] }
   let(:mock_branches) { [] }
@@ -137,7 +137,7 @@ describe Undercover::JsonFormatter do
     end
 
     context 'with multiple warnings in different files' do
-      let(:mock_node2) { double('node', name: 'Bar#baz', human_name: 'instance method', ast_node: nil) }
+      let(:mock_node2) { double('node', name: 'Bar#baz', human_name: 'instance method', prism_node: nil) }
       let(:mock_result2) do
         instance_double(
           Undercover::Result,

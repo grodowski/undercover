@@ -19,9 +19,9 @@ describe Undercover::Formatter do
   let(:results) { [result] }
 
   context 'with warnings from module.rb' do
-    let(:ast) { Imagen.from_local('spec/fixtures/module.rb') }
+    let(:ast) { all_nodes('spec/fixtures/module.rb') }
     let(:coverage) { lcov }
-    let(:node) { ast.find_all(with_name('BaconModule')).first }
+    let(:node) { ast.find(&with_name('BaconModule')) }
     let(:result) { Undercover::Result.new(node, coverage, 'module.rb') }
 
     it 'returns a useful message with branch coverage for module.rb' do
@@ -37,9 +37,9 @@ describe Undercover::Formatter do
   end
 
   context 'with warnings from class.rb' do
-    let(:ast) { Imagen.from_local('spec/fixtures/class.rb') }
+    let(:ast) { all_nodes('spec/fixtures/class.rb') }
     let(:coverage) { lcov }
-    let(:node) { ast.find_all(with_name('BaconClass')).first }
+    let(:node) { ast.find(&with_name('BaconClass')) }
     let(:result) { Undercover::Result.new(node, coverage, 'class.rb') }
 
     it 'returns a useful message with branch coverage for class.rb' do

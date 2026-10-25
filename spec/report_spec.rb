@@ -119,8 +119,8 @@ describe Undercover::Report do
   end
 
   it 'does not parse files outside of the lcov report' do
-    allow(Parser::CurrentRuby).to receive(:parse_file).and_call_original
-    expect(Parser::CurrentRuby)
+    allow(Undercover::Node).to receive(:parse_file).and_call_original
+    expect(Undercover::Node)
       .not_to receive(:parse_file).with('spec/fixtures/no_lcov.rb')
 
     report.build
@@ -409,6 +409,18 @@ describe Undercover::Report do
       expect(results_for_lines(1)).to eq(['BaconClass'])
     end
 
+    it 'warns once about a Ruby file that does not parse, and skips it' do
+      changeset = instance_double(Undercover::Changeset, filter_with: nil, repo_workdir: 'spec/fixtures',
+                                                         file_paths: [], head_path?: false)
+      allow(changeset).to receive(:each_changed_line)
+        .and_yield('unparseable.rb', 1).and_yield('unparseable.rb', 2).and_yield('class.rb', 9)
+      expect(Undercover::Node).to receive(:parse_file).twice.and_call_original
+
+      report = described_class.new(changeset, options, lcov)
+      expect { report.build }.to output(/\Aunparseable.rb: Ruby parsing failed \(.+ on line \d\)\n\z/).to_stderr
+      expect(report.results.keys).to eq(['class.rb'])
+    end
+
     it "reads each file's coverage once, however many results and changed lines it has" do
       expect(lcov).to receive(:coverage).with('class.rb').once.and_call_original
 
@@ -468,7 +480,7 @@ describe Undercover::Report do
 
       erb_results = report.results['spec/fixtures/test.html.erb'].to_a
       expect(erb_results.size).to eq(1)
-      expect(erb_results.first.node).to be_a(Imagen::Node::ErbNode)
+      expect(erb_results.first.node).to be_a(Undercover::ErbNode)
     end
 
     it 'computes coverage for ERB files' do

@@ -11,47 +11,35 @@ module Undercover
 
     def load_and_parse_file(filepath)
       key = filepath.gsub(/^\.\//, '')
-      return if loaded_files[key]
+      return if loaded_files.key?(key)
 
-      if filepath.end_with?(ERB_EXTENSION)
-        load_erb_file(key, filepath)
-      else
-        load_ruby_file(key, filepath)
-      end
+      loaded_files[key] = nil
+      nodes = filepath.end_with?(ERB_EXTENSION) ? load_erb_file(key, filepath) : load_ruby_file(key, filepath)
+      loaded_files[key] = build_results(nodes, filepath) if nodes&.any?
     end
 
     private
 
-    # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     def load_erb_file(key, filepath)
       return unless coverage_adapter.erb_coverage?
-      return if erb_parse_failures.include?(key)
 
       full_path = File.join(code_dir, filepath)
       return unless File.exist?(full_path)
 
-      ruby_source = Undercover::ErbExtractor.call(File.read(full_path))
-      erb_file = Imagen::Node::ErbFile.new(filepath, code_dir)
-                                      .build_from_ruby_source(ruby_source)
-      return erb_parse_failed(key, erb_file.parse_error) if erb_file.parse_error
-      return if erb_file.children.empty?
-
-      loaded_files[key] = build_results(erb_file.find_all(->(node) { !node.is_a?(Imagen::Node::ErbFile) }), filepath)
+      all_nodes(ErbNode.parse(File.read(full_path), full_path))
     rescue StandardError => e
-      erb_parse_failed(key, e.message)
-    end
-    # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
-
-    def erb_parse_failed(key, message)
       erb_parse_failures << key
-      warn "#{key}: ERB parsing failed (#{message})"
+      warn "#{key}: ERB parsing failed (#{e.message})"
     end
 
     def load_ruby_file(key, filepath)
-      root_ast = Imagen::Node::Root.new.build_from_file(File.join(code_dir, filepath))
-      return if root_ast.children.empty?
+      all_nodes(Node.parse_file(File.join(code_dir, filepath)))
+    rescue Node::ParseError => e
+      warn "#{key}: Ruby parsing failed (#{e.message})"
+    end
 
-      loaded_files[key] = build_results(root_ast.find_all(->(node) { !node.is_a?(Imagen::Node::Root) }), filepath)
+    def all_nodes(roots)
+      roots.flat_map { _1.find_all(->(_node) { true }) }
     end
 
     # Indexes the file's coverage once for all of its nodes

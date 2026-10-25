@@ -4,7 +4,7 @@ require 'erubi'
 
 module Undercover
   # Extracts a Ruby string from an ERB template, preserving line positions so
-  # the parser gem produces an AST whose line numbers map 1:1 back to the
+  # Prism produces a syntax tree whose line numbers map 1:1 back to the
   # original .erb file.
   #
   # Uses erubi (pure Ruby, no native extension).
