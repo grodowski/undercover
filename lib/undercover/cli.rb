@@ -5,7 +5,14 @@ require 'rainbow'
 require 'benchmark'
 
 module Undercover
-  module CLI
+  module CLI # rubocop:disable Metrics/ModuleLength
+    HINTS = {
+      undercover_ci: 'UndercoverCI shows these results on your pull requests: https://undercover-ci.com ' \
+                     '(hide with --no-hint)',
+      claude_code: 'undercover has a Claude Code skill: https://github.com/grodowski/undercover-claude ' \
+                   '(hide with --no-hint)'
+    }.freeze
+
     def self.run(args, timed: false)
       opts = Undercover::Options.new.parse(args)
       # Text after the JSON document would break parsing it
@@ -66,7 +73,14 @@ module Undercover
       formatter = build_formatter(flagged, validation_error, opts)
 
       puts formatter
+      hint_for(opts)&.then { warn(_1) }
       formatter.exit_code
+    end
+
+    def self.hint_for(opts, env = ENV)
+      return if opts.formatter == 'json' || opts.no_hint || !env['UNDERCOVER_NO_HINT'].to_s.empty?
+
+      env['CLAUDECODE'].to_s.empty? ? HINTS[:undercover_ci] : HINTS[:claude_code]
     end
 
     # Reporting nothing because every candidate was filtered out looks identical to a
