@@ -13,6 +13,14 @@ describe Undercover::Options do
         .and raise_error(SystemExit) { |error| expect(error.status).to eq(0) }
     end
 
+    it 'shows the default include and exclude globs in help' do
+      expect { options.parse(['--help']) }
+        .to output(a_string_including("Defaults to '*.rb,*.rake,*.ru,Rakefile'")
+          .and(a_string_including("Defaults to 'test/*,spec/*,db/*,config/*,*_test.rb,*_spec.rb,vendor/*'")))
+        .to_stdout
+        .and raise_error(SystemExit)
+    end
+
     it 'handles version option' do
       expect { options.parse(['--version']) }
         .to output(/\d+\.\d+\.\d+/).to_stdout

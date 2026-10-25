@@ -18,9 +18,10 @@ describe Imagen::Node::ErbFile do
       expect(erb_file.children).to all(be_a(Imagen::Node::ErbNode))
     end
 
-    it 'returns self with no children on syntax error' do
+    it 'returns self with no children and records the error on syntax error' do
       erb_file.build_from_ruby_source('if (')
       expect(erb_file.children).to be_empty
+      expect(erb_file.parse_error).to match(/unexpected/)
     end
   end
 
@@ -167,6 +168,88 @@ describe Undercover::ErbVisitor do
   end
 end
 
+describe Undercover::ErbExtractor do
+  def erb_nodes(erb_source)
+    root = Imagen::Node::ErbFile.new('inline.erb', '.')
+    root.instance_variable_set(:@full_path, File::NULL)
+    ast = Imagen::AST::Parser.parse(described_class.call(erb_source), File::NULL)
+    Undercover::ErbVisitor.traverse(ast, root)
+    root.find_all(->(n) { !n.is_a?(Imagen::Node::ErbFile) })
+  end
+
+  def block_lines(erb_source)
+    erb_nodes(erb_source).select { |n| n.ast_node.type == :block }.map { |n| [n.first_line, n.last_line] }
+  end
+
+  it 'parses form_with with a do |f| block' do
+    erb = <<~ERB
+      <%= form_with model: @user do |f| %>
+        <%= f.text_field :name %>
+      <% end %>
+    ERB
+    expect(block_lines(erb)).to eq([[1, 3]])
+  end
+
+  it 'parses a multi-line form_with block' do
+    erb = <<~ERB
+      <%= form_with model: @user,
+                    url: users_path do |f| %>
+        <%= f.submit %>
+      <% end %>
+    ERB
+    expect(block_lines(erb)).to eq([[1, 4]])
+  end
+
+  it 'parses link_to and turbo_frame_tag do blocks' do
+    erb = <<~ERB
+      <%= turbo_frame_tag "user" do %>
+        <%= link_to user_path(@user) do %>
+          <span>Profile</span>
+        <% end %>
+      <% end %>
+    ERB
+    expect(block_lines(erb)).to eq([[1, 5], [2, 4]])
+  end
+
+  it 'parses content_tag with a brace block' do
+    erb = <<~ERB
+      <%= content_tag(:ul) { |x| %>
+        <li>item</li>
+      <% } %>
+    ERB
+    expect(block_lines(erb)).to eq([[1, 3]])
+  end
+
+  it 'parses a block opened by an unescaped <%== tag' do
+    erb = <<~ERB
+      <%== tag.div do %>
+        <p>raw</p>
+      <% end %>
+    ERB
+    expect(block_lines(erb)).to eq([[1, 3]])
+  end
+
+  it 'places an if nested inside a block helper on its own lines' do
+    nodes = erb_nodes(File.read('spec/fixtures/block_helper.html.erb'))
+    expect(nodes.map { |n| [n.ast_node.type, n.first_line, n.last_line] }).to eq([[:block, 1, 6], [:if, 3, 5]])
+  end
+
+  it 'leaves non-block expressions as buffered output' do
+    expect(described_class.call("<%= link_to 'Home', root_path %>\n"))
+      .to include("_buf << ( link_to 'Home', root_path ).to_s")
+  end
+
+  it 'parses a case whose first when is in a separate tag' do
+    erb = <<~ERB
+      <% case @status %>
+      <% when :ok %>
+        <p>OK</p>
+      <% end %>
+    ERB
+    expect(erb_nodes(erb).map { |n| [n.ast_node.type, n.first_line, n.last_line] }).to eq([[:case, 1, 4]])
+  end
+end
+
 describe 'Imagen::Node::ErbNode args_list' do
   it 'returns nil when block AST node has no :args child' do
     # Construct a synthetic :block node with no :args child to exercise the
@@ -201,6 +284,25 @@ describe 'Undercover::Report load_erb_file rescue' do
     allow(Undercover::ErbExtractor).to receive(:call).and_raise(StandardError, 'parse error')
     expect { report.build }.to output(/ERB parsing failed/).to_stderr
     expect(report.results).to be_empty
+    expect(report.erb_parse_failures).to eq(['spec/fixtures/test.html.erb'])
+  end
+
+  it 'parses and warns about an unparseable template once, however many lines changed' do
+    template = 'spec/fixtures/unparseable.html.erb'
+    allow(changeset).to receive(:each_changed_line).and_yield(template, 1).and_yield(template, 2)
+                                                   .and_yield(template, 3)
+    allow(changeset).to receive(:file_paths).and_return([template])
+    expect(Undercover::ErbExtractor).to receive(:call).once.and_call_original
+
+    expect { report.build }
+      .to output("#{template}: ERB parsing failed (unexpected token $end)\n").to_stderr
+    expect(report.results).to be_empty
+    expect(report.erb_parse_failures).to eq([template])
+  end
+
+  it 'has no parse failures for a template that parses' do
+    report.build
+    expect(report.erb_parse_failures).to be_empty
   end
 
   it 'skips silently when the ERB file does not exist on disk' do

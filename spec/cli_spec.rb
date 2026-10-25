@@ -2,6 +2,8 @@
 
 require 'spec_helper'
 
+RSpec::Matchers.define_negated_matcher :a_string_excluding, :include
+
 describe Undercover::CLI do
   it 'creates an Undercover::Report with defaults' do
     stub_stdout
@@ -162,7 +164,9 @@ describe Undercover::CLI do
     stub_build.and_return(mock_report)
     allow(mock_report).to receive(:flagged_results) { [] }
 
-    expect { subject.run([]) }.to output(/nothing was checked - all 2 candidate file\(s\) were skipped/).to_stderr
+    expect { subject.run([]) }.to output(
+      a_string_matching(/nothing was checked - all 2 candidate file\(s\) were skipped/).and(a_string_excluding('ERB'))
+    ).to_stderr
   end
 
   it 'explains that ERB templates are opt-in when the default globs skipped them' do
@@ -172,7 +176,8 @@ describe Undercover::CLI do
     allow(mock_report).to receive(:flagged_results) { [] }
 
     expect { subject.run([]) }
-      .to output(/1 changed ERB template\(s\) were skipped because view coverage is opt-in/).to_stderr
+      .to output(a_string_including('1 changed ERB template(s) were skipped because view coverage is opt-in')
+        .and(a_string_including("--include-files '*.rb,*.rake,*.ru,Rakefile,*.erb'"))).to_stderr
   end
 
   it 'blames the globs when ERB templates were included but still skipped' do
@@ -194,6 +199,31 @@ describe Undercover::CLI do
 
     expect { subject.run([]) }
       .to output(/skipped 1 ERB template\(s\) - the coverage report has no ERB coverage/).to_stderr
+  end
+
+  it 'does not blame the globs when only ERB templates without coverage were skipped' do
+    stub_stdout
+    mock_report = report_double(erb_files_without_coverage: %w[app/views/home.html.erb])
+    stub_build.and_return(mock_report)
+    allow(mock_report).to receive(:flagged_results) { [] }
+
+    expect { subject.run([]) }.to output(
+      a_string_including('skipped 1 ERB template(s) - the coverage report has no ERB coverage')
+        .and(a_string_excluding('--include-files/--exclude-files'))
+    ).to_stderr
+  end
+
+  it 'counts only the globbed out files when ERB templates without coverage were skipped too' do
+    stub_stdout
+    mock_report = report_double(globbed_out_files: %w[.undercover lib/tasks/cases.rake],
+                                erb_files_without_coverage: %w[app/views/home.html.erb])
+    stub_build.and_return(mock_report)
+    allow(mock_report).to receive(:flagged_results) { [] }
+
+    expect { subject.run(['-f', '*.rb,*.erb']) }.to output(
+      a_string_matching(/skipped 1 ERB template\(s\).*\n.*besides those ERB templates, 2 candidate file\(s\)/)
+        .and(a_string_excluding('nothing was checked'))
+    ).to_stderr
   end
 
   it 'does not warn about globs when there are results to report' do
@@ -237,6 +267,22 @@ describe Undercover::CLI do
     expect do
       expect(subject.run(['--format', 'json'])).to eq(0)
     end.to output(/\{\s*"warnings":\s*\[\]/).to_stdout
+  end
+
+  it 'prints how long the run took when timed' do
+    stub_build.and_return(report_double(flagged_results: []))
+
+    expect do
+      expect(subject.run([], timed: true)).to eq(0)
+    end.to output(/No coverage is missing.*\nUndercover finished in \d+(\.\d+)?s\n\z/m).to_stdout
+  end
+
+  it 'does not print the timing after JSON output' do
+    stub_build.and_return(report_double(flagged_results: []))
+
+    expect do
+      expect(subject.run(['--format', 'json'], timed: true)).to eq(0)
+    end.to output(satisfy { JSON.parse(_1) }).to_stdout
   end
 
   it 'sets ruby syntax version from options' do

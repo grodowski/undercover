@@ -2,14 +2,20 @@
 
 require 'undercover'
 require 'rainbow'
+require 'benchmark'
 
 module Undercover
   module CLI
-    def self.run(args)
+    def self.run(args, timed: false)
       opts = Undercover::Options.new.parse(args)
       syntax_version(opts.syntax_version)
+      # Text after the JSON document would break parsing it
+      return run_report(opts) if !timed || opts.formatter == 'json'
 
-      run_report(opts)
+      result = nil
+      time = Benchmark.realtime { result = run_report(opts) }
+      puts "Undercover finished in #{time.round(4)}s"
+      result
     end
 
     def self.run_report(opts) # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
@@ -55,8 +61,8 @@ module Undercover
       validation_error = report.validate(coverage_path)
       flagged = validation_error ? [] : report.flagged_results
       unless validation_error
-        warn_if_everything_was_globbed_out(report, opts)
         warn_if_erb_has_no_coverage(report)
+        warn_if_everything_was_globbed_out(report, opts)
       end
       formatter = build_formatter(flagged, validation_error, opts)
 
@@ -72,10 +78,17 @@ module Undercover
       skipped = report.globbed_out_files
       return if skipped.empty?
       return warn_erb_is_opt_in(skipped) if erb_not_opted_in?(skipped, opts)
+      return warn_globbed_out_besides_erb(skipped) if report.erb_files_without_coverage.any?
 
       warn(Rainbow("⚠️  WARNING: nothing was checked - all #{skipped.size} candidate file(s) were " \
                    'skipped by --include-files/--exclude-files. Globs are matched relative to the ' \
                    'directory SimpleCov covered, so they should not repeat its path.').yellow)
+    end
+
+    # Templates skipped for lack of coverage were candidates too, so not everything was globbed out
+    def self.warn_globbed_out_besides_erb(skipped)
+      warn(Rainbow("⚠️  WARNING: besides those ERB templates, #{skipped.size} candidate file(s) were skipped " \
+                   'by --include-files/--exclude-files.').yellow)
     end
 
     # The default globs skip ERB templates, so blaming the glob root would mislead
@@ -87,8 +100,9 @@ module Undercover
     def self.warn_erb_is_opt_in(skipped)
       templates = skipped.count { _1.end_with?(FileLoader::ERB_EXTENSION) }
       warn(Rainbow("⚠️  WARNING: nothing was checked - #{templates} changed ERB template(s) were skipped " \
-                   "because view coverage is opt-in. Check them with --include-files '*.rb,*.erb' " \
-                   'and enable_coverage(:eval) in SimpleCov.start.').yellow)
+                   'because view coverage is opt-in. Check them with ' \
+                   "--include-files '*.rb,*.rake,*.ru,Rakefile,*.erb' and enable_coverage(:eval) in SimpleCov.start.")
+             .yellow)
     end
 
     def self.warn_if_erb_has_no_coverage(report)

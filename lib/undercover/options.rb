@@ -208,7 +208,8 @@ module Undercover
         self.glob_allow_filters = split_comma_separated_with_braces(comma_separated_globs)
       end
 
-      desc = 'Skip files matching specified glob patterns (comma separated). Empty by default.'
+      desc = 'Skip files matching specified glob patterns (comma separated). ' \
+             "Defaults to '#{DEFAULT_FILE_EXCLUDE_GLOBS.join(',')}'"
       parser.on('-x', '--exclude-files globs', desc) do |comma_separated_globs|
         self.glob_reject_filters = split_comma_separated_with_braces(comma_separated_globs)
       end
