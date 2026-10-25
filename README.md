@@ -66,6 +66,15 @@ end
 
 Then run your test suite once through to generate the initial coverage file before you can run the `undercover` command.
 
+Ruby's branch coverage counts a hidden `else` for every `case` (and `if`) without one, so a `case` that handles all its values still gets flagged for a missing branch. To ignore these implicit branches:
+
+```ruby
+SimpleCov.start do
+  coverage :branch, ignore: :implicit_else # SimpleCov 1.3+
+  # SimpleCov 1.0-1.2: enable_coverage(:branch) and SimpleCov.ignore_branches :implicit_else
+end
+```
+
 ## ERB view template coverage
 
 Undercover supports coverage analysis for ERB view templates. This requires:
