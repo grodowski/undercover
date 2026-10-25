@@ -139,7 +139,7 @@ module Undercover
     end
 
     def covers_own_boundaries?
-      node.empty_def? || node.is_a?(Imagen::Node::Block) || node.is_a?(Imagen::Node::ErbNode)
+      node.empty_def? || node.kind == :block || node.is_a?(ErbNode)
     end
 
     def uncovered_branch_lines

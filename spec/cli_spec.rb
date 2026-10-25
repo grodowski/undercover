@@ -285,21 +285,6 @@ describe Undercover::CLI do
     end.to output(satisfy { JSON.parse(_1) }).to_stdout
   end
 
-  it 'sets ruby syntax version from options' do
-    stub_stdout
-    stub_build
-
-    v_default = Imagen.parser_version
-
-    subject.run(['-r ruby23'])
-    expect(Imagen.parser_version).to eq('ruby23')
-
-    subject.run(%w[--ruby-syntax ruby26])
-    expect(Imagen.parser_version).to eq('ruby26')
-
-    Imagen.parser_version = v_default
-  end
-
   it 'sets max_warnings_limit from options' do
     stub_stdout
     stub_build

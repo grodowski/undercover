@@ -2,7 +2,6 @@
 
 $LOAD_PATH << 'lib'
 require 'json'
-require 'imagen'
 require 'rainbow'
 require 'forwardable'
 require 'simplecov'
@@ -19,7 +18,10 @@ require 'undercover/coverage_root'
 require 'undercover/filter_set'
 require 'undercover/simplecov_result_adapter'
 require 'undercover/version'
+require 'undercover/node'
+require 'undercover/node_visitor'
 require 'undercover/erb_node'
+require 'undercover/erb_visitor'
 require 'undercover/erb_extractor'
 require 'undercover/file_loader'
 

@@ -63,7 +63,7 @@ module Undercover
     end
 
     def annotated_branches(result) # rubocop:disable Metrics/AbcSize
-      ast_info = AstBranchAnnotator.call(result.node.ast_node)
+      ast_info = AstBranchAnnotator.call(result.node.prism_node)
       counts_per_line = result.branches.each_with_object(Hash.new(0)) { |b, h| h[b[:line]] += 1 }
       result.branches.map do |entry|
         arm = result.branch_label(result.file_path, entry[:branch]) if counts_per_line[entry[:line]] > 1

@@ -42,7 +42,6 @@ module Undercover
                   :git_dir,
                   :compare,
                   :commits_only,
-                  :syntax_version,
                   :run_mode,
                   :file_scope,
                   :glob_allow_filters,
@@ -175,11 +174,13 @@ module Undercover
       end
     end
 
+    # Deprecated. Kept so that a `-r ruby32` line in an existing .undercover file does not fail to load.
     def ruby_syntax_option(parser)
-      versions = Imagen::AVAILABLE_RUBY_VERSIONS.sort.join(', ')
-      desc = "Ruby syntax version, one of: #{versions}"
-      parser.on('-r', '--ruby-syntax ver', desc) do |version|
-        self.syntax_version = version.strip
+      parser.on('-r', '--ruby-syntax ver', 'Deprecated, has no effect') do
+        next if @ruby_syntax_warned
+
+        warn('--ruby-syntax is ignored, undercover parses with Prism; remove it from your config')
+        @ruby_syntax_warned = true
       end
     end
 

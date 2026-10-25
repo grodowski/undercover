@@ -42,6 +42,12 @@ describe Undercover::Options do
       expect(options.git_dir).to eq('.git')
     end
 
+    it 'accepts --ruby-syntax, warns once and ignores it' do
+      expect { options.parse(['-r', 'ruby23', '--ruby-syntax', 'ruby26']) }
+        .to output("--ruby-syntax is ignored, undercover parses with Prism; remove it from your config\n").to_stderr
+      expect(options).not_to respond_to(:syntax_version)
+    end
+
     it 'guesses lcov path' do
       project_name = Pathname.new(File.expand_path('.')).split.last
       default_path = "coverage/lcov/#{project_name}.lcov"
