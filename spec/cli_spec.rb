@@ -255,14 +255,21 @@ describe Undercover::CLI do
       expect do
         expect do
           expect(subject.run([])).to eq(1)
-        end.to output("#{described_class::HINTS[:undercover_ci]}\n").to_stderr
+        end.to output("#{Rainbow(described_class::HINTS[:undercover_ci]).faint}\n").to_stderr
       end.to output(a_string_excluding('UndercoverCI')).to_stdout
+    end
+
+    it 'flushes the report on stdout before printing the hint' do
+      stub_stdout
+      expect($stdout).to receive(:flush).ordered
+      expect(described_class).to receive(:warn).with(Rainbow(described_class::HINTS[:undercover_ci]).faint).ordered
+      subject.run([])
     end
 
     it 'prints the Claude Code skill hint instead in Claude Code' do
       stub_stdout
       allow(ENV).to receive(:[]).with('CLAUDECODE').and_return('1')
-      expect { subject.run([]) }.to output("#{described_class::HINTS[:claude_code]}\n").to_stderr
+      expect { subject.run([]) }.to output("#{Rainbow(described_class::HINTS[:claude_code]).faint}\n").to_stderr
     end
 
     it 'does not print the hint with --format json' do

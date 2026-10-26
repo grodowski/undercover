@@ -73,8 +73,17 @@ module Undercover
       formatter = build_formatter(flagged, validation_error, opts)
 
       puts formatter
-      hint_for(opts)&.then { warn(_1) }
+      print_hint(opts)
       formatter.exit_code
+    end
+
+    # Flushes stdout first: when it's piped (CI logs) it is buffered, and the hint on
+    # stderr would otherwise land before the report
+    def self.print_hint(opts)
+      hint = hint_for(opts) or return
+
+      $stdout.flush
+      warn(Rainbow(hint).faint)
     end
 
     def self.hint_for(opts, env = ENV)
