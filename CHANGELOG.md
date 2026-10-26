@@ -5,11 +5,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.9.0] - 2026-10-26
 ### Added
-- Add coverage report filtering to reduce resource usage ([#263](https://github.com/grodowski/undercover/pull/263))
 - ERB view template coverage, opt in with `--include-files '*.rb,*.rake,*.ru,Rakefile,*.erb'`. Requires Ruby 3.2+ and `SimpleCov.enable_coverage :eval` ([#250](https://github.com/grodowski/undercover/pull/250))
-- Print a one-line hint about UndercoverCI after the text report (in Claude Code sessions, about the undercover Claude Code skill instead); hide it with `--no-hint` or `UNDERCOVER_NO_HINT=1` ([#278](https://github.com/grodowski/undercover/pull/278))
 - Add `--commits-only` to check only committed changes after `--compare ref`, ignoring the index and working tree, for sparse or partial clones ([#273](https://github.com/grodowski/undercover/pull/273))
+- Add coverage report filtering to reduce resource usage ([#263](https://github.com/grodowski/undercover/pull/263))
+- Print a one-line hint about UndercoverCI after the text report (in Claude Code sessions, about the undercover Claude Code skill instead); hide it with `--no-hint` or `UNDERCOVER_NO_HINT=1` ([#278](https://github.com/grodowski/undercover/pull/278))
 
 ### Changed
 - Parse Ruby with Prism instead of imagen and parser: Ruby 3.4/4.0 syntax is analysed instead of skipped, `_1` blocks are checked, destructured block params are named as written, and `--ruby-syntax`/`-r` is ignored with a warning ([#279](https://github.com/grodowski/undercover/pull/279))
@@ -239,7 +241,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - First release of `undercover` 🎉
 
-[Unreleased]: https://github.com/grodowski/undercover/compare/v0.8.5...HEAD
+[Unreleased]: https://github.com/grodowski/undercover/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/grodowski/undercover/compare/v0.8.5...v0.9.0
 [0.8.5]: https://github.com/grodowski/undercover/compare/v0.8.4...v0.8.5
 [0.8.4]: https://github.com/grodowski/undercover/compare/v0.8.3...v0.8.4
 [0.8.3]: https://github.com/grodowski/undercover/compare/v0.8.2...v0.8.3
