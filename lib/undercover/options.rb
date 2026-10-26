@@ -61,7 +61,7 @@ module Undercover
       self.formatter = 'text'
     end
 
-    # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
+    # rubocop:disable-next Metrics/MethodLength, Metrics/AbcSize
     def parse(args)
       args = build_opts(args)
 
@@ -97,7 +97,6 @@ module Undercover
       guess_lcov_path unless lcov
       self
     end
-    # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
 
     private
 

@@ -21,7 +21,7 @@ module SimpleCovJSONFormatter
   end
 end
 
-module SimpleCov
+module SimpleCov # rubocop:disable Style/OneClassPerFile
   class << self
     attr_accessor :filter_definitions
 
@@ -72,7 +72,7 @@ end
 
 # SimpleCov applies filters inside the private SimpleCov::Result#apply_filters!,
 # so hook that method to populate filter_definitions as files are dropped.
-module Undercover
+module Undercover # rubocop:disable Style/OneClassPerFile
   module SimplecovResultFilterTracking
     def apply_filters!(_filters)
       files_before = @files.to_a
@@ -83,7 +83,7 @@ module Undercover
 end
 SimpleCov::Result.prepend(Undercover::SimplecovResultFilterTracking)
 
-module Undercover
+module Undercover # rubocop:disable Style/OneClassPerFile
   class ResultHashFormatterWithRoot < SimpleCovJSONFormatter::ResultHashFormatter
     def format
       formatted_result[:meta] = {timestamp: @result.created_at.to_i}
@@ -136,7 +136,7 @@ module Undercover
   end
 end
 
-module SimpleCov
+module SimpleCov # rubocop:disable Style/OneClassPerFile
   module Formatter
     Undercover = ::Undercover::UndercoverSimplecovFormatter
   end
