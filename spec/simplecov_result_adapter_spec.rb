@@ -310,4 +310,37 @@ describe Undercover::SimplecovResultAdapter do
       expect(adapter.ignored_files).to eq([])
     end
   end
+
+  describe '#method_coverage' do
+    it 'returns call counts keyed by the line range of each method' do
+      adapter = simplecov_coverage_fixture('spec/fixtures/method_coverage.json')
+
+      expect(adapter.method_coverage('spec/fixtures/method_coverage.rb')).to eq(
+        [2, 2] => [3], [4, 4] => [0], [6, 11] => [0], [13, 15] => [2], [17, 17] => ['ignored']
+      )
+    end
+
+    it 'groups the methods one def defined in several classes' do
+      result = {
+        'coverage' => {
+          'concern.rb' => {
+            'lines' => [1, 1, 1],
+            'methods' => [
+              {'name' => 'Foo#bar', 'start_line' => 2, 'end_line' => 2, 'coverage' => 0},
+              {'name' => 'Baz#bar', 'start_line' => 2, 'end_line' => 2, 'coverage' => 4},
+            ]
+          }
+        }
+      }
+
+      expect(described_class.new(result).method_coverage('concern.rb')).to eq([2, 2] => [0, 4])
+    end
+
+    it 'returns nil without method coverage in the report' do
+      adapter = simplecov_coverage_fixture('spec/fixtures/nocov.json')
+
+      expect(adapter.method_coverage('spec/fixtures/nocov.rb')).to be_nil
+      expect(adapter.method_coverage('spec/fixtures/unknown.rb')).to be_nil
+    end
+  end
 end

@@ -56,6 +56,51 @@ RSpec.describe 'SimpleCov::Formatter::Undercover' do
     expect(formatted).to have_key(:meta)
     expect(formatted).to have_key(:coverage)
   end
+
+  context 'with method coverage' do
+    let(:result) do
+      SimpleCov::Result.from_hash(
+        'rspec' => {
+          'coverage' => {
+            'spec/fixtures/method_coverage.rb' => {
+              'lines' => [1, 1, nil, 1, nil, 1, nil, nil, nil, 0, nil, nil, 1, nil, nil, nil, 1, nil],
+              'methods' => {
+                '["MethodCoverage", :called_one_liner, 2, 2, 2, 32]' => 3,
+                '["MethodCoverage", :never_called, 6, 2, 11, 5]' => 0,
+                '["MethodCoverage", :ignored_one_liner, 17, 2, 17, 34]' => 0
+              }
+            }
+          },
+          'timestamp' => Time.now.to_i
+        }
+      ).first
+    end
+
+    it 'writes the methods, ignored ones marked like lines' do
+      allow(SimpleCov).to receive(:method_coverage?).and_return(true)
+
+      expect(formatted_result[:coverage]['spec/fixtures/method_coverage.rb'][:methods]).to contain_exactly(
+        {name: 'MethodCoverage#called_one_liner', start_line: 2, end_line: 2, coverage: 3},
+        {name: 'MethodCoverage#never_called', start_line: 6, end_line: 11, coverage: 0},
+        {name: 'MethodCoverage#ignored_one_liner', start_line: 17, end_line: 17, coverage: 'ignored'}
+      )
+    end
+
+    it 'writes what SimplecovResultAdapter reads' do
+      allow(SimpleCov).to receive(:method_coverage?).and_return(true)
+      adapter = Undercover::SimplecovResultAdapter.new(JSON.parse(JSON.generate(formatted_result)))
+
+      expect(adapter.method_coverage('spec/fixtures/method_coverage.rb')).to eq(
+        [2, 2] => [3], [6, 11] => [0], [17, 17] => ['ignored']
+      )
+    end
+
+    it 'writes no methods when SimpleCov does not collect them' do
+      allow(SimpleCov).to receive(:method_coverage?).and_return(false)
+
+      expect(formatted_result[:coverage]['spec/fixtures/method_coverage.rb']).not_to have_key(:methods)
+    end
+  end
 end
 
 RSpec.describe 'Undercover::ResultHashFormatterWithRoot' do

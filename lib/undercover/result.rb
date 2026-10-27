@@ -4,6 +4,8 @@ require 'forwardable'
 
 module Undercover
   class Result # rubocop:disable Metrics/ClassLength
+    class NoMethodCoverageError < StandardError; end
+
     extend Forwardable
 
     attr_reader :node, :coverage, :coverage_adapter, :file_path
@@ -32,18 +34,52 @@ module Undercover
 
     def uncovered?(line_no)
       return false if skipped?(file_path, line_no)
-      return true if coverage.empty?
+
+      if method_coverage?
+        # method wasn't called = no need to check other coverage events
+        return true unless method_called?
+        # method is called, but has no line coverage events = it is not uncovered
+        # might happen with methods with bodies only consisting of literals
+        return false if coverage.empty?
+      elsif coverage.empty?
+        # otherwise, no line coverage events = no coverage
+        return true
+      end
+
       return true if uncovered_branch_lines.include?(line_no)
 
       line_hits[line_no]&.zero?
     end
 
+    # Whether the report has SimpleCov's method coverage:
+    # - this node is a method;
+    # - its `def` was evaluated (and not skipped with some metaprogramming);
+    # - SimpleCov method coverage is enabled (enable_coverage :method).
+    def method_coverage?
+      method_call_counts.any?
+    end
+
+    # Whether this method was ever called.
+    # Line coverage can't tell: Ruby runs a def line when the file loads, which makes
+    # a one-line method look covered even if nothing calls it.
+    def method_called?
+      raise NoMethodCoverageError, "no method coverage for #{file_path_with_lines}" unless method_coverage?
+
+      method_call_counts.sum.positive?
+    end
+
     # Method `coverage_f` returns the total coverage of this Undercover::Result
     # as a % value, taking into account missing branches. Line coverage will be counted
     # as 0 if any branch is untested.
-    # rubocop:disable-next Metrics/AbcSize, Metrics/MethodLength
+    # rubocop:disable-next Metrics/AbcSize, Metrics/PerceivedComplexity, Metrics/MethodLength
     def coverage_f
-      return 0.0 if coverage.empty?
+      # Same logic as in #uncovered?
+      if method_coverage?
+        return 0.0 unless method_called?
+        return 1.0 if coverage.empty?
+      elsif coverage.empty?
+        return 0.0
+      end
 
       lines = {}
       coverage.each do |ln, block_or_line_cov, _, branch_cov|
@@ -92,6 +128,9 @@ module Undercover
         elsif skipped?(file_path, num)
           Rainbow(formatted_line).darkgray.dark +
             Rainbow(' skipped').italic.darkgray.dark
+        elsif num == first_line && method_never_called?
+          Rainbow(formatted_line).red +
+            Rainbow(' method never called').italic.darkgray.dark
         elsif covered.nil?
           Rainbow(formatted_line).darkgray.dark +
             Rainbow(' hits: n/a').italic.darkgray.dark +
@@ -139,6 +178,26 @@ module Undercover
 
     def covers_own_boundaries?
       node.empty_def? || node.kind == :block || node.is_a?(ErbNode)
+    end
+
+    METHOD_KINDS = %i[instance_method class_method].freeze
+    private_constant :METHOD_KINDS
+
+    def method_never_called?
+      method_coverage? && !method_called?
+    end
+
+    # Call counts of the method defined by this node's `def`:
+    # - one if it is a regular method and the method coverage measurement is on;
+    # - several if it is inside `included` block (a method for every module that includes it);
+    # - none if it is not a method or the method coverage measurement is off.
+    def method_call_counts
+      @method_call_counts ||=
+        if METHOD_KINDS.include?(node.kind)
+          (coverage_adapter.method_coverage(file_path)&.dig([first_line, last_line]) || []).grep(Integer)
+        else
+          []
+        end
     end
 
     def uncovered_branch_lines

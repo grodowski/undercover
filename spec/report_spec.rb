@@ -428,6 +428,38 @@ describe Undercover::Report do
     end
   end
 
+  context 'with method coverage' do
+    let(:file) { 'spec/fixtures/method_coverage.rb' }
+
+    def flagged_for_lines(*lines)
+      changeset = instance_double(Undercover::Changeset, filter_with: nil, repo_workdir: '.',
+                                                         file_paths: [file], head_path?: false)
+      allow(changeset).to receive(:each_changed_line) { |&blk| lines.each { blk.call(file, _1) } }
+      adapter = simplecov_coverage_fixture('spec/fixtures/method_coverage.json')
+      described_class.new(changeset, options, adapter).build.flagged_results.map(&:name)
+    end
+
+    it 'flags a changed one-line method that was never called' do
+      expect(flagged_for_lines(4)).to eq(['never_called_one_liner'])
+    end
+
+    it 'does not flag a changed one-line method that was called' do
+      expect(flagged_for_lines(2)).to be_empty
+    end
+
+    it 'flags a changed signature of a method that was never called' do
+      expect(flagged_for_lines(7)).to eq(['never_called'])
+    end
+
+    it 'flags a changed comment in a method that was never called' do
+      expect(flagged_for_lines(9)).to eq(['never_called'])
+    end
+
+    it 'does not flag a called method whose body has no line coverage' do
+      expect(flagged_for_lines(14)).to be_empty
+    end
+  end
+
   context 'without SimpleCov resultset' do
     let(:options_without_simplecov) do
       Undercover::Options.new.tap do |opt|

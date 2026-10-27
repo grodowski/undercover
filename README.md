@@ -60,11 +60,14 @@ SimpleCov.start do
   skip(/^\/spec\//) # For RSpec (`add_filter` on SimpleCov < 1.0)
   skip(/^\/test\//) # For Minitest
   enable_coverage(:branch) # Report branch coverage to trigger branch-level undercover warnings
+  enable_coverage(:method) # Report method coverage to flag methods that were never called
 end
 # ...
 ```
 
 Then run your test suite once through to generate the initial coverage file before you can run the `undercover` command.
+
+Method coverage catches what line coverage can't: Ruby runs a `def` line when the file is loaded, so a one-line method (`def name = @name`) looks covered even if nothing ever calls it, and so does a changed signature of a longer method. With `enable_coverage(:method)`, undercover flags such methods when they were never called.
 
 Ruby's branch coverage counts a hidden `else` for every `case` (and `if`) without one, so a `case` that handles all its values still gets flagged for a missing branch. To ignore these implicit branches:
 
@@ -274,6 +277,7 @@ Output structure:
 
 Each warning includes:
 - `uncovered_lines` — line numbers with zero execution count
+- `method_called` — for methods, whether the method was ever called; present only with method coverage (`enable_coverage(:method)`)
 - `uncovered_branches` — branch entries that were never taken, each with `line`, `block`, and `branch` identifiers. The optional `description` field names the branch from the source (e.g. `"if user.admin?"`, `"else"`, `"when :active"`). For same-line branches such as ternaries, the arm type is appended after ` → ` (e.g. `"? role == :admin → else"`).
 
 Branch-level entries require `enable_coverage(:branch)` in your SimpleCov configuration (see [Setting up coverage reporting](#setting-up-coverage-reporting)).

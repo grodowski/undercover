@@ -76,6 +76,9 @@ module Undercover
       nil
     end
 
+    # supported by SimplecovResultAdapter only
+    def method_coverage(_filepath); end
+
     def ignored_files
       # supported by SimplecovResultAdapter only
       []
