@@ -34,7 +34,7 @@ module Undercover
 
     def warnings # rubocop:disable Metrics/MethodLength
       @results.map do |result|
-        {
+        warning = {
           node: result.node.name,
           type: result.node.human_name,
           file: result.file_path,
@@ -44,6 +44,8 @@ module Undercover
           uncovered_lines: uncovered_lines(result),
           uncovered_branches: uncovered_branches(result)
         }
+        warning[:method_called] = result.method_called? if result.method_coverage?
+        warning
       end
     end
 

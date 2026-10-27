@@ -289,7 +289,7 @@ describe Undercover::Result do
       coverage_data = [
         [1, 1], [2, 0], [3, 1]
       ]
-      double('coverage', coverage: coverage_data, skipped?: true)
+      double('coverage', coverage: coverage_data, skipped?: true, method_coverage: nil)
     end
 
     it 'handles skipped lines correctly' do
@@ -319,6 +319,7 @@ describe Undercover::Result do
       allow(coverage_mock).to receive(:coverage).with(file_path).and_return(coverage_data)
       allow(coverage_mock).to receive(:skipped?).with(file_path, 2).and_return(true)
       allow(coverage_mock).to receive(:skipped?).with(file_path, 3).and_return(false)
+      allow(coverage_mock).to receive(:method_coverage).and_return(nil)
       coverage_mock
     end
 
@@ -361,6 +362,7 @@ describe Undercover::Result do
       allow(mock_coverage).to receive(:coverage).with(file_path).and_return(coverage_data)
       allow(mock_coverage).to receive(:skipped?).and_return(false) # Default to false
       allow(mock_coverage).to receive(:skipped?).with(file_path, 2).and_return(true)
+      allow(mock_coverage).to receive(:method_coverage).and_return(nil)
 
       result = described_class.new(node, mock_coverage, file_path)
 
@@ -467,6 +469,108 @@ describe Undercover::Result do
         OUTPUT
         expect(stripped_output.strip).to eq(expected_output.strip)
       end
+    end
+  end
+
+  context 'with method coverage' do
+    let(:file_path) { 'spec/fixtures/method_coverage.rb' }
+    let(:ast) { all_nodes(file_path) }
+    let(:coverage) { simplecov_coverage_fixture('spec/fixtures/method_coverage.json') }
+
+    def result_for(name)
+      described_class.new(ast.find(&with_name(name)), coverage, file_path)
+    end
+
+    context 'for a one-line method never called' do
+      subject(:result) { result_for('never_called_one_liner') }
+
+      it 'is uncovered although its line ran when the file loaded' do
+        expect(result.method_called?).to be(false)
+        expect(result.uncovered?(4)).to be(true)
+        expect(result.coverage_f).to eq(0.0)
+      end
+
+      it 'says so in #pretty_print' do
+        expect(result.pretty_print.gsub(/\e\[[0-9;]*m/, ''))
+          .to eq('4:   def never_called_one_liner = :never method never called')
+      end
+    end
+
+    context 'for a one-line method called' do
+      subject(:result) { result_for('called_one_liner') }
+
+      it 'is covered' do
+        expect(result.method_called?).to be(true)
+        expect(result.uncovered?(2)).to be(false)
+        expect(result.coverage_f).to eq(1.0)
+      end
+    end
+
+    context 'for a multi-line method never called' do
+      subject(:result) { result_for('never_called') }
+
+      it 'is uncovered on every line, including its signature lines, which have no line coverage' do
+        expect(result.uncovered?(6)).to be(true)
+        expect(result.uncovered?(7)).to be(true)
+        expect(result.uncovered?(9)).to be(true)
+        expect(result.uncovered?(10)).to be(true)
+        expect(result.coverage_f).to eq(0.0)
+      end
+    end
+
+    context 'for a called method with no line events in its body' do
+      subject(:result) { result_for('called_with_literal_body') }
+
+      it 'is covered' do
+        expect(result.coverage).to be_empty
+        expect(result.uncovered?(14)).to be(false)
+        expect(result.coverage_f).to eq(1.0)
+      end
+    end
+
+    context 'for a method ignored by SimpleCov' do
+      subject(:result) { result_for('ignored_one_liner') }
+
+      it 'has no method coverage, and its skipped line stays covered' do
+        expect(result.method_coverage?).to be(false)
+        expect(result.uncovered?(17)).to be(false)
+      end
+    end
+
+    it 'has no method coverage for other nodes' do
+      expect(result_for('MethodCoverage').method_coverage?).to be(false)
+    end
+
+    it 'refuses to tell whether a node without method coverage was called' do
+      expect { result_for('MethodCoverage').method_called? }
+        .to raise_error(described_class::NoMethodCoverageError, "no method coverage for #{file_path}:1:18")
+    end
+
+    it 'counts a def defined in several classes as called when any of them was' do
+      report = {
+        'coverage' => {
+          'concern.rb' => {
+            'lines' => [1, 1, nil, 1, nil],
+            'methods' => [
+              {'start_line' => 2, 'end_line' => 2, 'coverage' => 0},
+              {'start_line' => 2, 'end_line' => 2, 'coverage' => 4},
+              {'start_line' => 4, 'end_line' => 4, 'coverage' => 0},
+              {'start_line' => 4, 'end_line' => 4, 'coverage' => 0},
+            ]
+          }
+        }
+      }
+      adapter = Undercover::SimplecovResultAdapter.new(report)
+      nodes = all_nodes('concern.rb', "included do\n  def foo = 1\n\n  def bar = 2\nend\n")
+
+      expect(described_class.new(nodes.find(&with_name('foo')), adapter, 'concern.rb').method_called?).to be(true)
+      expect(described_class.new(nodes.find(&with_name('bar')), adapter, 'concern.rb').method_called?).to be(false)
+    end
+
+    it 'keeps line coverage alone for an LCOV report' do
+      result = described_class.new(all_nodes('spec/fixtures/class.rb').find(&with_name('foo')), lcov, 'class.rb')
+
+      expect(result.method_coverage?).to be(false)
     end
   end
 end

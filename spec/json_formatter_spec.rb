@@ -17,7 +17,8 @@ describe Undercover::JsonFormatter do
       first_line: 10,
       last_line: 15,
       coverage_f: 0.5,
-      coverage: mock_coverage
+      coverage: mock_coverage,
+      method_coverage?: false
     ).tap do |result|
       allow(result).to receive(:skipped?).and_return(false)
       allow(result).to receive(:branches).and_return(mock_branches)
@@ -85,6 +86,16 @@ describe Undercover::JsonFormatter do
         expect(subject[:summary][:total_warnings]).to eq(1)
         expect(subject[:summary][:files_affected]).to eq(1)
       end
+
+      it 'leaves out method_called without method coverage' do
+        expect(subject[:warnings].first).not_to have_key(:method_called)
+      end
+
+      it 'includes method_called with method coverage' do
+        allow(mock_result).to receive_messages(method_coverage?: true, method_called?: false)
+
+        expect(subject[:warnings].first[:method_called]).to be(false)
+      end
     end
 
     context 'when branches are marked as ignored' do
@@ -146,7 +157,8 @@ describe Undercover::JsonFormatter do
           first_line: 5,
           last_line: 8,
           coverage_f: 0.0,
-          coverage: [[6, 0], [7, 0]]
+          coverage: [[6, 0], [7, 0]],
+          method_coverage?: false
         ).tap do |result|
           allow(result).to receive(:skipped?).and_return(false)
           allow(result).to receive(:branches).and_return([])

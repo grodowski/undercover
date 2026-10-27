@@ -83,6 +83,20 @@ module Undercover
       source_file['branches']&.dig(branch_no - 1, 'type')
     end
 
+    # @param filepath[String]
+    # @return Hash call counts (or 'ignored') keyed by the [start_line, end_line] of the methods
+    #   defined in the file, several per key when a def ran in more than one class; nil when the
+    #   report has no method coverage
+    def method_coverage(filepath)
+      source_file = find_file(filepath)
+      return nil unless source_file&.key?('methods')
+
+      @method_coverage ||= {}
+      @method_coverage[filepath] ||= source_file['methods']
+                                     .group_by { [_1['start_line'], _1['end_line']] }
+                                     .transform_values { |methods| methods.map { _1['coverage'] } }
+    end
+
     # unused for now
     def total_coverage; end
     def total_branch_coverage; end
