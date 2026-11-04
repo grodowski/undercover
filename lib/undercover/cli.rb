@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'undercover'
+require 'undercover/upload'
 require 'rainbow'
 require 'benchmark'
 
@@ -14,6 +15,9 @@ module Undercover
     }.freeze
 
     def self.run(args, timed: false)
+      # Before Options#parse, so the project's .undercover file never applies to uploads
+      return Upload.run(args.drop(1)) if args.first == 'upload'
+
       opts = Undercover::Options.new.parse(args)
       # Text after the JSON document would break parsing it
       return run_report(opts) if !timed || opts.formatter == 'json'

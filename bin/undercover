@@ -3,6 +3,12 @@
 
 $LOAD_PATH.unshift("#{__dir__}/../lib")
 
+# Uploading needs neither rugged, prism nor simplecov, so it skips loading them
+if ARGV.first == 'upload'
+  require 'undercover/upload'
+  exit Undercover::Upload.run(ARGV.drop(1))
+end
+
 require 'undercover'
 
 exit Undercover::CLI.run(ARGV, timed: true)

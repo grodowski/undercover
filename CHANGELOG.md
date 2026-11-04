@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Add `undercover upload` to upload coverage to UndercoverCI from the gem, pinned in `Gemfile.lock`, instead of running `uploader.rb` fetched with curl. On GitHub Actions it takes the repository, commit and pull request from the environment. It ignores `.undercover`, says how to install the GitHub App when UndercoverCI isn't installed on the repository, and is the only command that makes network calls ([#283](https://github.com/grodowski/undercover/pull/283))
 
 ## [0.9.0] - 2026-10-26
 ### Added
