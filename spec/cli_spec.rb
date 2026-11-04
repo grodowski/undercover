@@ -646,10 +646,11 @@ describe Undercover::CLI do
       expect(requests).to be_empty
     end
 
-    it 'loads without rugged, prism or simplecov' do
-      script = 'require "undercover/cli"; Undercover::CLI.run(%w[upload --help]); ' \
-               'warn $LOADED_FEATURES.grep(/rugged|prism|simplecov/).inspect'
-      _out, err, status = Open3.capture3(RbConfig.ruby, '-I', File.expand_path('../lib', __dir__), '-e', script)
+    it 'loads without rugged, prism or simplecov from the executable' do
+      executable = File.expand_path('../bin/undercover', __dir__)
+      script = 'at_exit { warn $LOADED_FEATURES.grep(/rugged|prism|simplecov/).inspect }; ' \
+               "load #{executable.inspect}"
+      _out, err, status = Open3.capture3(RbConfig.ruby, '-e', script, 'upload', '--help')
 
       expect(status).to be_success
       expect(err).to eq("[]\n")
