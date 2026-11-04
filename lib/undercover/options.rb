@@ -66,7 +66,7 @@ module Undercover
       args = build_opts(args)
 
       OptionParser.new do |opts|
-        opts.banner = 'Usage: undercover [options]'
+        opts.banner = "Usage: undercover [options]\n       undercover upload [options]  (see undercover upload --help)"
 
         opts.on_tail('-h', '--help', 'Prints this help') do
           puts(opts)

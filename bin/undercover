@@ -3,6 +3,6 @@
 
 $LOAD_PATH.unshift("#{__dir__}/../lib")
 
-require 'undercover'
+require 'undercover/cli'
 
 exit Undercover::CLI.run(ARGV, timed: true)

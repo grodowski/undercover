@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'open3'
+require 'tmpdir'
 
 RSpec::Matchers.define_negated_matcher :a_string_excluding, :include
 
@@ -603,5 +605,54 @@ describe Undercover::CLI do
     end
     allow_any_instance_of(Undercover::Report).to receive(:validate) { nil }
     allow_any_instance_of(Undercover::Report).to receive(:build) { |rep| rep }
+  end
+
+  describe 'upload' do
+    let(:simplecov) { File.expand_path('fixtures/nocov.json', __dir__) }
+    let(:upload_args) { ['upload', '--repo', 'alice/bob', '--commit', '1fffbb', '--simplecov', simplecov] }
+    let(:requests) { [] }
+
+    before do
+      stub_const('ENV', ENV.to_h.reject { |name, _| name.start_with?('GITHUB_') })
+      http = instance_double(Net::HTTP)
+      allow(http).to receive(:request) do |req|
+        requests << req
+        instance_double(Net::HTTPResponse, code: '201', body: '')
+      end
+      allow(Net::HTTP).to receive(:start) { |*_args, **_kwargs, &block| block.call(http) }
+    end
+
+    it 'dispatches to Undercover::Upload without parsing undercover options' do
+      expect(Undercover::Options).not_to receive(:new)
+      expect(Undercover::Upload).to receive(:run).with(upload_args.drop(1)).and_return(0)
+
+      expect(subject.run(upload_args, timed: true)).to eq(0)
+    end
+
+    it 'ignores the .undercover file' do
+      Dir.mktmpdir do |dir|
+        File.write(File.join(dir, '.undercover'), "-c origin/main\n--include-files lib/**/*.rb\n-l sample.lcov\n")
+        Dir.chdir(dir) do
+          expect { expect(subject.run(upload_args)).to eq(0) }.to output("Done! 201\n").to_stdout
+        end
+      end
+
+      expect(JSON.parse(requests.first.body)).to include('repo' => 'alice/bob', 'file_type' => 'json')
+    end
+
+    it 'prints its own help' do
+      expect { expect(subject.run(%w[upload --help])).to eq(0) }
+        .to output(a_string_including('Usage: undercover upload [options]')).to_stdout
+      expect(requests).to be_empty
+    end
+
+    it 'loads without rugged, prism or simplecov' do
+      script = 'require "undercover/cli"; Undercover::CLI.run(%w[upload --help]); ' \
+               'warn $LOADED_FEATURES.grep(/rugged|prism|simplecov/).inspect'
+      _out, err, status = Open3.capture3(RbConfig.ruby, '-I', File.expand_path('../lib', __dir__), '-e', script)
+
+      expect(status).to be_success
+      expect(err).to eq("[]\n")
+    end
   end
 end
