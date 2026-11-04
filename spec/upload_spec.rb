@@ -51,7 +51,9 @@ describe Undercover::Upload do
   it 'prints usage and exits 0 with --help' do
     expect(Net::HTTP).not_to receive(:start)
     expect { expect(described_class.run(%w[--help], {})).to eq(0) }
-      .to output(a_string_including('Usage: undercover upload [options]', 'never does', '.undercover')).to_stdout
+      .to output(a_string_including('Usage: undercover upload [options]', 'posts the results as a check',
+                                    'GitHub App', 'only command that', '.undercover',
+                                    'bundle exec undercover upload')).to_stdout
   end
 
   it 'exits 1 with usage on an unknown option' do

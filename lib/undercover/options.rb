@@ -66,7 +66,8 @@ module Undercover
       args = build_opts(args)
 
       OptionParser.new do |opts|
-        opts.banner = "Usage: undercover [options]\n       undercover upload [options]  (see undercover upload --help)"
+        opts.banner = "Usage: undercover [options]\n       " \
+                      'undercover upload [options]   Upload coverage to UndercoverCI (see undercover upload --help)'
 
         opts.on_tail('-h', '--help', 'Prints this help') do
           puts(opts)
@@ -138,7 +139,7 @@ module Undercover
     end
 
     def resultset_path_option(parser)
-      desc = 'SimpleCov::Formatter::Undercover output file path (alternative to LCOV that will become default)'
+      desc = 'SimpleCov::Formatter::Undercover report path. Default: coverage/coverage.json'
       parser.on('-s', '--simplecov path', desc) do |path|
         self.simplecov_resultset = path
       end

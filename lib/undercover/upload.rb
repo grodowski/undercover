@@ -36,9 +36,12 @@ module Undercover
     BANNER = <<~TEXT
       Usage: undercover upload [options]
 
-      Uploads a coverage report to UndercoverCI (https://undercover-ci.com). This is the only
-      undercover command that makes network calls: `undercover` on its own never does.
-      Options come from these flags and the GitHub Actions environment, not from .undercover.
+      Uploads a coverage report to UndercoverCI (https://undercover-ci.com), which
+      posts the results as a check on the commit or pull request. The repository
+      needs the UndercoverCI GitHub App installed. This is the only command that
+      makes network calls; .undercover doesn't apply to it.
+
+      In GitHub Actions, run it without options:  bundle exec undercover upload
 
     TEXT
 
@@ -106,43 +109,47 @@ module Undercover
     def build_parser
       OptionParser.new do |opts|
         opts.banner = BANNER
+        report_options(opts)
         target_options(opts)
         pull_request_options(opts)
-        report_options(opts)
+        check_options(opts)
         opts.on_tail('-h', '--help', 'Prints this help') { options.help = true }
       end
     end
 
-    def target_options(opts)
-      opts.on('--repo REPO', 'Repository name, e.g. org/repo. Defaults to $GITHUB_REPOSITORY') do |v|
-        options.repo = v
-      end
-      opts.on('--commit COMMIT', 'Commit SHA. Defaults to the pull request head or $GITHUB_SHA') do |v|
-        options.commit = v
-      end
-      opts.on('--cancel', 'Cancel the coverage check instead of uploading') { options.cancel = true }
-      opts.on('--url URL', 'Custom UndercoverCI URL') { options.url = URI(_1) }
-    end
-
     def report_options(opts)
-      opts.on('--simplecov SIMPLECOV_JSON_FILE',
-              "Report from SimpleCov::Formatter::Undercover. Defaults to #{DEFAULT_SIMPLECOV}") do |v|
+      opts.on('--simplecov FILE',
+              "Report from SimpleCov::Formatter::Undercover. Default: #{DEFAULT_SIMPLECOV}") do |v|
         options.simplecov = v
       end
-      opts.on('--lcov LCOV_FILE', 'LCOV file path (deprecated)') { options.lcov = _1 }
+    end
+
+    def target_options(opts)
+      opts.on('--repo REPO', 'Repository, e.g. org/repo. Default: $GITHUB_REPOSITORY') do |v|
+        options.repo = v
+      end
+      opts.on('--commit SHA', 'Commit to check. Default: the pull request head, or $GITHUB_SHA') do |v|
+        options.commit = v
+      end
     end
 
     # optional arguments, so a CI template that expands to nothing (a push build) is not an error
     def pull_request_options(opts)
-      opts.on('--pull-request [NUMBER]', 'Pull request number, defaults to the GitHub Actions pull request') do |v|
+      opts.on('--pull-request [NUMBER]', 'Pull request number. Default: from the GitHub Actions event') do |v|
         options.pull_request = presence(v)
       end
-      opts.on('--pull-request-base-ref [BRANCH]', 'Pull request target branch, defaults to $GITHUB_BASE_REF') do |v|
+      opts.on('--pull-request-base-ref [BRANCH]', 'Pull request target branch. Default: $GITHUB_BASE_REF') do |v|
         options.pull_request_base_ref = presence(v)
       end
-      opts.on('--pull-request-head-ref [BRANCH]', 'Pull request branch, defaults to $GITHUB_HEAD_REF') do |v|
+      opts.on('--pull-request-head-ref [BRANCH]', 'Pull request branch. Default: $GITHUB_HEAD_REF') do |v|
         options.pull_request_head_ref = presence(v)
       end
+    end
+
+    def check_options(opts)
+      opts.on('--cancel', 'Cancel the check for --commit instead of uploading') { options.cancel = true }
+      opts.on('--url URL', "UndercoverCI endpoint. Default: #{DEFAULT_URL}") { options.url = URI(_1) }
+      opts.on('--lcov FILE', 'LCOV report (deprecated)') { options.lcov = _1 }
     end
 
     # On GitHub Actions a pull_request build checks out a merge commit (GITHUB_SHA), but
