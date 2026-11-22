@@ -9,7 +9,7 @@ describe Undercover::Options do
   describe '#parse' do
     it 'handles help option' do
       expect { options.parse(['--help']) }
-        .to output(/Usage: undercover/).to_stdout
+        .to output(/Usage: undercover.*undercover upload \[options\]\s+Upload coverage to UndercoverCI/m).to_stdout
         .and raise_error(SystemExit) { |error| expect(error.status).to eq(0) }
     end
 

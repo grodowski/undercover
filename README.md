@@ -200,6 +200,27 @@ A few options exist to provide automated comments from `undercover` in Pull Requ
 - [danger-undercover](https://github.com/nimblehq/danger-undercover)
 - [undercover-checkstyle](https://github.com/aki77/undercover-checkstyle)
 
+### Uploading to UndercoverCI
+
+`undercover upload` sends the coverage report from `SimpleCov::Formatter::Undercover` to [UndercoverCI](https://undercover-ci.com), which checks the pull request and reports back with GitHub Checks. It's the only `undercover` command that makes network calls: `undercover` on its own checks coverage locally and never sends anything anywhere.
+
+On GitHub Actions, run it after the tests:
+
+```yaml
+- name: Test
+  run: bundle exec rake
+- name: Upload coverage to UndercoverCI
+  run: bundle exec undercover upload
+```
+
+There, `--repo` defaults to `GITHUB_REPOSITORY`, `--commit` to the pull request head (or `GITHUB_SHA` on push builds), and `--pull-request` to the pull request being built. The report defaults to `coverage/coverage.json`. On other CI providers pass `--repo` and `--commit`:
+
+```sh
+bundle exec undercover upload --repo org/repo --commit "$COMMIT_SHA" --simplecov coverage/coverage.json
+```
+
+Use `--cancel` instead to cancel the check, for example when the build failed before producing coverage. The `.undercover` configuration file doesn't apply to `undercover upload`. See `undercover upload --help` for all options.
+
 ## Configuration
 
 ### CLI Options
@@ -208,6 +229,7 @@ Options can be passed when running the command from the command line:
 
 ```sh
 Usage: undercover [options]
+       undercover upload [options]  (see undercover upload --help)
     -s, --simplecov path             SimpleCov JSON report file
     -l, --lcov path                  LCOV report file path (to be deprecated)
     -g, --git-dir dir                Override `.git` with a custom directory
