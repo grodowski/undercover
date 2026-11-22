@@ -113,6 +113,23 @@ module Undercover # rubocop:disable Style/OneClassPerFile
         formatted_result[:coverage][path] = format_source_file(source_file)
       end
     end
+
+    # SimpleCovJSONFormatter (the simplecov_json_formatter gem) predates method coverage:
+    # its per-file hash has only lines and branches
+    def format_source_file(source_file)
+      super.tap { _1[:methods] = format_methods(source_file) if SimpleCov.method_coverage? }
+    end
+
+    def format_methods(source_file)
+      source_file.methods.map do |method|
+        {
+          name: method.to_s,
+          start_line: method.start_line,
+          end_line: method.end_line,
+          coverage: method.skipped? ? 'ignored' : method.coverage
+        }
+      end
+    end
   end
 
   class UndercoverSimplecovFormatter

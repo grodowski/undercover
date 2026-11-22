@@ -83,6 +83,21 @@ module Undercover
       source_file['branches']&.dig(branch_no - 1, 'type')
     end
 
+    # @param filepath[String]
+    # @return Hash call counts (or 'ignored') keyed by the [start_line, end_line, method_name] of
+    #   the methods defined in the file, several per key when a def ran in more than one class; nil
+    #   when the report has no method coverage. The name tells apart methods defined on one line
+    #   (`def unused = 1; def used = 2`).
+    def method_coverage(filepath)
+      source_file = find_file(filepath)
+      return nil unless source_file&.key?('methods')
+
+      @method_coverage ||= {}
+      @method_coverage[filepath] ||= source_file['methods']
+                                     .group_by { [_1['start_line'], _1['end_line'], method_name(_1['name'])] }
+                                     .transform_values { |methods| methods.map { _1['coverage'] } }
+    end
+
     # unused for now
     def total_coverage; end
     def total_branch_coverage; end
@@ -98,6 +113,11 @@ module Undercover
 
       wanted = only_files.to_set { |path| CoverageRoot.strip(path, coverage_root) }
       simplecov_result['coverage'].select! { |path, _| wanted.include?(path) }
+    end
+
+    # SimpleCov names methods "Class#method" ("#<Class:Foo>#method" for singleton methods)
+    def method_name(simplecov_name)
+      simplecov_name.rpartition('#').last
     end
 
     def find_file(filepath)

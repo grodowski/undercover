@@ -32,7 +32,13 @@ module Undercover
 
     def uncovered?(line_no)
       return false if skipped?(file_path, line_no)
-      return true if coverage.empty?
+
+      # method wasn't called = no need to check other coverage events
+      return true if method_never_called?
+      # no line coverage events = uncovered, unless the method is known to be called
+      # (which might happen with methods with bodies only consisting of literals)
+      return !method_coverage? if coverage.empty?
+
       return true if uncovered_branch_lines.include?(line_no)
 
       line_hits[line_no]&.zero?
@@ -43,7 +49,9 @@ module Undercover
     # as 0 if any branch is untested.
     # rubocop:disable-next Metrics/AbcSize, Metrics/MethodLength
     def coverage_f
-      return 0.0 if coverage.empty?
+      # Same logic as in #uncovered?
+      return 0.0 if method_never_called?
+      return method_coverage? ? 1.0 : 0.0 if coverage.empty?
 
       lines = {}
       coverage.each do |ln, block_or_line_cov, _, branch_cov|
@@ -92,6 +100,11 @@ module Undercover
         elsif skipped?(file_path, num)
           Rainbow(formatted_line).darkgray.dark +
             Rainbow(' skipped').italic.darkgray.dark
+        elsif num == first_line && method_never_called?
+          Rainbow(formatted_line).red +
+            Rainbow(" hits: #{covered || 'n/a'}").italic.darkgray.dark +
+            count_covered_branches(num) +
+            Rainbow(' calls: 0').italic.darkgray.dark
         elsif covered.nil?
           Rainbow(formatted_line).darkgray.dark +
             Rainbow(' hits: n/a').italic.darkgray.dark +
@@ -139,6 +152,36 @@ module Undercover
 
     def covers_own_boundaries?
       node.empty_def? || node.kind == :block || node.is_a?(ErbNode)
+    end
+
+    METHOD_KINDS = %i[instance_method class_method].freeze
+    private_constant :METHOD_KINDS
+
+    # Whether the report has SimpleCov's method coverage:
+    # - this node is a method;
+    # - its `def` was evaluated (and not skipped with some metaprogramming);
+    # - SimpleCov method coverage is enabled (enable_coverage :method).
+    def method_coverage?
+      method_call_counts.any?
+    end
+
+    # Line coverage can't tell whether a method was ever called: Ruby runs a def line when
+    # the file loads, which makes a one-line method look covered even if nothing calls it.
+    def method_never_called?
+      method_coverage? && method_call_counts.sum.zero?
+    end
+
+    # Call counts of the method defined by this node's `def`:
+    # - one if it is a regular method and the method coverage measurement is on;
+    # - several if it is inside `included` block (a method for every module that includes it);
+    # - none if it is not a method or the method coverage measurement is off.
+    def method_call_counts
+      @method_call_counts ||=
+        if METHOD_KINDS.include?(node.kind)
+          (coverage_adapter.method_coverage(file_path)&.dig([first_line, last_line, name]) || []).grep(Integer)
+        else
+          []
+        end
     end
 
     def uncovered_branch_lines
